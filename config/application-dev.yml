@@ -1,6 +1,10 @@
 # Messaging Development Configuration
 #
 # Overrides for local development
+#
+# Same credential posture as application.yml (ADR-0024 interim): ENV-VAR
+# REFERENCES ONLY for secrets — dev included. Point SMS_API_ENDPOINT etc. at a
+# local mock/sandbox in your shell; never commit literal tokens.
 
 server:
   host: 127.0.0.1
@@ -18,3 +22,15 @@ tracing:
 
 metrics:
   enabled: false  # Disable in development
+
+sms:
+  # Local dev default: a dummy gateway URL; override via SMS_API_ENDPOINT.
+  endpoint: "${SMS_API_ENDPOINT:http://localhost:9099}"
+  sender: "${SMS_SENDER:backbone-dev}"
+  api_token: "${SMS_API_TOKEN}"  # env ref only — no literal secrets
+
+outbox:
+  schema: "messaging"
+  # Sentinel platform company id (Uuid::nil()) — ADR-0014 posture 4; see
+  # docs/adr-notes/outbox-fence-and-credentials.md.
+  company_id: "00000000-0000-0000-0000-000000000000"

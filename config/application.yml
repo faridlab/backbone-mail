@@ -1,5 +1,10 @@
-# Minimal application configuration for the skeleton module.
+# Messaging application configuration.
 # Copy and adjust for your deployment environment.
+#
+# CREDENTIAL POSTURE (ADR-0024 interim): secrets are ENV-VAR REFERENCES ONLY —
+# no literal secret material in this file, in schema seed data, or in migrations.
+# When the fenced credential store ships, these refs migrate to store reads
+# (registered debt; see docs/adr-notes/outbox-fence-and-credentials.md).
 
 server:
   host: "0.0.0.0"
@@ -12,3 +17,28 @@ database:
 
 logging:
   level: "info"
+
+# SMS transport (Odoo `sms` port — sms.sms dispatch via the IAP-shaped gateway).
+# The provider endpoint is non-secret configuration; the token is a secret.
+sms:
+  # Gateway base URL (non-secret; e.g. the IAP-shaped /api/sms/3/send provider).
+  endpoint: "${SMS_API_ENDPOINT}"
+  # Outbound sender identity (non-secret).
+  sender: "${SMS_SENDER}"
+  # Provider API token. ENV REF ONLY — never a literal here (ADR-0024 interim).
+  api_token: "${SMS_API_TOKEN}"
+  # Increment 2: the /sms/status webhook HMAC secret (ADR-0021 scheme) reads
+  # SMS_WEBHOOK_SECRET under the same env-ref posture. The route itself is
+  # increment 2; declared here so the contract is visible from day one.
+  # webhook_secret: "${SMS_WEBHOOK_SECRET}"
+
+# Outbox/inbox substrate (ADR-0017: Odoo's `bus` maps onto backbone-outbox).
+outbox:
+  # Schema hosting outbox_events + inbox_consumed (this module's own schema).
+  schema: "messaging"
+  # ADR-0014 posture 4 (company_fence: none): messaging has no company dimension.
+  # outbox_events.company_id is NOT NULL, so every staged event carries the
+  # module-constant sentinel MESSAGING_PLATFORM_COMPANY_ID = Uuid::nil().
+  # Consumers key on channels, not companies — never filter these rows by
+  # company. See docs/adr-notes/outbox-fence-and-credentials.md.
+  company_id: "00000000-0000-0000-0000-000000000000"
