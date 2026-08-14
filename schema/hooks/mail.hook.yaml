@@ -1,0 +1,47 @@
+# =============================================================================
+# MailHooks — mail.mail.state state machine (MAIL-M2).
+# HAND-SET send-queue state; NOT label-inverted ('sent' means sent — unlike
+# MailNotification.notification_status and Sms.state, which both invert).
+#
+# Odoo source: mail_mail.py (state selection; send pipeline writes
+# state='exception' BEFORE the SMTP attempt so a crash leaves a durable
+# error, then 'sent' on a 250; no automatic retry/backoff — resend is
+# manual: exception → outgoing requeue).
+# =============================================================================
+
+name: MailHooks
+model: Mail
+
+states:
+  field: state
+  values:
+    outgoing:
+      initial: true
+    sent:
+      final: true
+    received:
+      final: true
+    exception: {}
+    cancel:
+      final: true
+  transitions:
+    smtp_accepted:
+      from: outgoing
+      to: sent
+      message: "SMTP 250 accepted — the mail row transitions to sent"
+    smtp_failed:
+      from: outgoing
+      to: exception
+      message: "Send failed — failure_type/failure_reason set; no automatic retry"
+    inbound_acknowledged:
+      from: sent
+      to: received
+      message: "An inbound reply matched this outbound message"
+    requeued:
+      from: exception
+      to: outgoing
+      message: "Manual resend — the row re-enters the queue picked by mail-send-queue"
+    cancelled:
+      from: [outgoing, exception]
+      to: cancel
+      message: "Manually cancelled before/at send"

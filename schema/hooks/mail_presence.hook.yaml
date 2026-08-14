@@ -1,0 +1,34 @@
+# =============================================================================
+# MailPresenceHooks — mail.presence.status (M11).
+# HAND-SET, written on each bus poll. offline is BOTH initial and final
+# (disconnected is the resting state); away derives from a stale
+# last_poll. Odoo persists presence with a manual commit — presence must
+# survive even if the request later errors, so the bus doesn't show a
+# stale 'online'. Increment 2+ (websocket layer) implements the poll
+# writer; this machine pins the state vocabulary.
+# =============================================================================
+
+name: MailPresenceHooks
+model: MailPresence
+
+states:
+  field: status
+  values:
+    online: {}
+    away: {}
+    offline:
+      initial: true
+      final: true
+  transitions:
+    go_online:
+      from: [away, offline]
+      to: online
+      message: "Session polled within the freshness window"
+    go_away:
+      from: [online, offline]
+      to: away
+      message: "last_poll went stale beyond the away threshold"
+    go_offline:
+      from: [online, away]
+      to: offline
+      message: "Session ended / reaped"

@@ -1,0 +1,24 @@
+# =============================================================================
+# MailBlacklistHooks — write-path guard on mail.blacklist (M24).
+# G-MAIL-2: unique(email). Enforced by @unique on MailBlacklist.email
+# (declared on the model; fires on raw SQL in v19).
+#
+# PORT CAVEAT (kept from the docs): the unique is on the AS-STORED value —
+# case-folding is APP-LAYER in Odoo (create/write lowercase first); a raw
+# mixed-case insert bypasses the fold and can create a near-duplicate. The
+# write service MUST lowercase before insert (or the port should move to a
+# DB-lowered expression index — left as a service-layer responsibility
+# here).
+# =============================================================================
+
+name: MailBlacklistHooks
+model: MailBlacklist
+
+rules:
+  G-MAIL-2:
+    when: [create, update]
+    condition: "email is unique across blacklist rows (as stored — the service lowercases before write)"
+    message: "Duplicate blacklisted address — enforced by @unique on MailBlacklist.email. The address is stored LOWERCASED; the write service folds case before insert."
+    code: mail_blacklist_duplicate_email
+    severity: error
+    enforcement: both

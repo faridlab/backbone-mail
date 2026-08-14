@@ -1,0 +1,669 @@
+# =============================================================================
+# Module: backbone-mail (schema keys: module/schema `messaging`)
+# Area: MAIL CORE — the mail.message family + followers/presence/blacklist/
+# tracking. Ported from docs/odoo/messaging/mail (community 19.0, b9eb72eb):
+# addons/mail/models/{mail_message,mail_mail,mail_notification,
+# mail_message_subtype,mail_message_reaction,mail_followers,mail_presence,
+# mail_blacklist,mail_tracking_value}.py.
+#
+# PORT DECISIONS (docs → backbone DSL):
+#  - company_fence: none — NO company_id on any entity (ADR-0014 posture 4;
+#    Odoo messaging is single-tenant: zero ir.rules, no company column).
+#    MailAliasDomain.company_id from the docs is DROPPED for that reason.
+#  - Odoo `_inherits` delegation (mail.mail → mail.message) ports as the
+#    explicit FK column Mail.mail_message_id (1:1, cascade).
+#  - Polymorphic refs (model/res_id) are logical columns: `model` string +
+#    `res_id` uuid, indexed, NO cross-module FK. Host tables never carry a
+#    message/follower column (MAIL-M16 — the polymorphic edge lives HERE).
+#  - m2m reverse collections (needaction/starred/notified_partner_ids,
+#    attachment_ids, channel_ids) are NOT columns — they are views over this
+#    module's join rows (mail.notification is the notified-partners relation
+#    table) or over other modules' tables. Documented in descriptions only.
+#  - The sms overlay values are FOLDED IN (this module owns both addons):
+#    MailMessageType gains 'sms', MailNotificationType gains 'sms',
+#    MailNotification.failure_type carries the full sms delivery-report
+#    vocabulary (SM-M5).
+# =============================================================================
+
+models:
+
+  # ===========================================================================
+  # mail.message — THE message record (MAIL-M1). Hand-rolled document-level
+  # ACL in Odoo (ZERO ir.rules) — procedural access, not a rule port.
+  # ===========================================================================
+  - name: MailMessage
+    collection: mail_messages
+    description: "mail.message — THE message record: every chatter post, notification, email and note is a row here (MAIL-M1). Polymorphic parent via (model, res_id); the (model,res_id) pair is the chatter hot path (two raw-SQL indexes in Odoo). No uniqueness — duplicate messages allowed by design; inbound dedup is by message_id + advisory lock, not a unique index."
+    fields:
+      id:
+        type: uuid
+        attributes: ["@id", "@default(uuid)"]
+        description: "Primary key"
+      subject:
+        type: string?
+        description: "Message subject. Empty for most comment/note posts; populated for the email channel."
+      date:
+        type: datetime
+        attributes: ["@default(now)"]
+        description: "Message timestamp. Set explicitly by inbound processing from the Date header."
+      body:
+        type: string
+        attributes: ["@indexed"]
+        description: "HTML body (sanitized on write). For SMS the plaintext is stashed separately and the body is HTML-ized."
+      message_type:
+        type: MailMessageType
+        attributes: ["@required", "@default(comment)"]
+        lifecycle: inert
+        description: "Channel marker: email=outbound email, comment=user post, notification=system/auto post, sms=SMS (folded in from the sms overlay, ondelete→comment)."
+      subtype_id:
+        type: uuid?
+        attributes: ["@foreign_key(MailMessageSubtype.messages)", "@exclude_from_foreign_key_check"]
+        description: "Chatter event subtype (drives tracking/notification behavior; null = comment) # logical FK to MailMessageSubtype.id"
+      is_internal:
+        type: boolean
+        attributes: ["@default(false)"]
+        description: "True if the subtype is internal (log/note) — drives the internal-vs-external chatter split (hidden from portal/external followers)."
+      author_id:
+        type: uuid?
+        attributes: ["@foreign_key(party.Party.messages_authored)", "@exclude_from_foreign_key_check"]
+        description: "Author partner # logical FK to party.Party.id. Nullable for gateway-created messages (identity falls back to email_from)."
+      author_guest_id:
+        type: uuid?
+        attributes: ["@foreign_key(MailGuest.messages_authored)", "@exclude_from_foreign_key_check"]
+        description: "Author guest (XOR with author_id for guest posts in discuss) # logical FK to MailGuest.id"
+      email_from:
+        type: string?
+        attributes: ["@indexed"]
+        description: "Author email (RFC 5322 'Name <addr>') — fallback identity when author_id is null (inbound mail)."
+      message_id:
+        type: string?
+        attributes: ["@indexed", "@exclude_from_foreign_key_check"]
+        description: "RFC 822 Message-ID header. THE inbound-routing dedup key (Odoo serializes duplicates via pg_try_advisory_xact_lock on its hash — MAIL-B6). Generated for outbound."
+      reply_to:
+        type: string?
+        description: "Reply-To header (per-thread, defaults to the thread's alias reply-to)."
+      model:
+        type: string?
+        attributes: ["@indexed"]
+        description: "res_model — the polymorphic parent model string (null for messages not attached to a document; channel messages link via the channel join instead)."
+      res_id:
+        type: uuid?
+        attributes: ["@indexed", "@exclude_from_foreign_key_check"]
+        description: "Polymorphic parent record id — pairs with `model` to form the (model,res_id) edge. LOGICAL column, no cross-module FK."
+      record_name:
+        type: string?
+        description: "Denormalized display name of the parent record (chatter header)."
+      moderation_status:
+        type: MailModerationStatus?
+        lifecycle: hand_set
+        description: "Moderation state for channel messages under moderation: pending=awaiting moderator, accepted/rejected_moderation=decision."
+      needaction:
+        type: boolean
+        attributes: ["@default(false)", "@indexed"]
+        description: "Whether this message is in any partner's needaction set (drives the inbox badge). Written by the notify pump."
+      has_error:
+        type: boolean
+        attributes: ["@default(false)"]
+        description: "Searchable computed in Odoo — True if any notification on this message is exception/bounce. Drives the 'has error' badge."
+      failure_reason:
+        type: string?
+        description: "Human-readable failure detail (copied from the failing mail/notification)."
+      rating_value:
+        type: float?
+        description: "Rating value placeholder (populated by the rating overlay; kept as a logical column)."
+      metadata:
+        type: Metadata
+        attributes: ["@audit_metadata"]
+        description: "Audit metadata (created_at, updated_at, deleted_at, created_by, updated_by, deleted_by)"
+    indexes:
+      - type: index
+        fields: [model, res_id]
+        name: mail_message_model_res_id_idx
+      - type: index
+        fields: [model, res_id, id]
+        name: mail_message_model_res_id_id_idx
+      - type: index
+        fields: [message_id]
+        name: mail_message_message_id_idx
+
+  # ===========================================================================
+  # mail.mail — the outgoing-EMAIL send-queue row (MAIL-M2). _inherits
+  # mail.message → explicit FK mail_message_id. state HAND-SET, NOT inverted.
+  # ===========================================================================
+  - name: Mail
+    collection: mails
+    description: "mail.mail — the outgoing-EMAIL send-queue row (MAIL-M2). Odoo delegates to mail.message via _inherits; ported as the explicit 1:1 FK mail_message_id (cascade). state is HAND-SET (outgoing/sent/received/exception/cancel) and NOT label-inverted ('sent' means 'sent'). The send pipeline writes state='exception' BEFORE the SMTP attempt so a crash leaves a durable error. mail_message_id_int mirrors the GC seam: a notification outlives the mail row that produced it."
+    fields:
+      id:
+        type: uuid
+        attributes: ["@id", "@default(uuid)"]
+        description: "Primary key"
+      mail_message_id:
+        type: uuid
+        attributes: ["@required", "@foreign_key(MailMessage.mails)", "@exclude_from_foreign_key_check"]
+        description: "The DELEGATION FK (mail.mail _inherits mail.message) — the 1:1 link; reading message fields follows it. ondelete=cascade # logical FK to MailMessage.id"
+      state:
+        type: MailState
+        attributes: ["@required", "@default(outgoing)"]
+        lifecycle:
+          shape: hand_set
+          state_machine: MailHooks
+          display_labels:
+            outgoing: "Outgoing"
+            sent: "Sent"
+            received: "Received"
+            exception: "Exception"
+            cancel: "Cancelled"
+        description: "HAND-SET send-queue state (MAIL-M2). outgoing=in queue (picked by mail-send-queue); sent=SMTP 250 accepted; received=inbound-acknowledged; exception=send failed (failure_type set — NO automatic retry/backoff); cancel=manually cancelled. NOT label-inverted (unlike MailNotification.notification_status and Sms.state). The sender writes state='exception' BEFORE the SMTP attempt (crash-safe), then 'sent' on 250."
+      failure_type:
+        type: MailFailureType?
+        description: "Failure code. THREE origins: SMTP/transport (mail_smtp/mail_server), synthesized (mail_email_invalid/mail_bounce/mail_recipient), mass-mode-internal (mail_blacklist). The sms vocabulary lives on Sms/MailNotification, not here."
+      scheduled_date:
+        type: datetime?
+        lifecycle: window
+        description: "Deferred-send time. Rows with scheduled_date > now are routed to the delayed batch; the send queue's effective domain is outgoing AND scheduled <= now."
+      auto_delete:
+        type: boolean
+        attributes: ["@default(false)"]
+        description: "If true, the mail row is unlinked after a successful send (the row is ephemeral; MailNotification keeps the status)."
+      failure_reason:
+        type: string?
+        description: "SMTP/transport error detail (copied from the exception)."
+      email_to:
+        type: string?
+        description: "Recipients (comma-separated RFC 5322 addrs), built from recipient data at send time."
+      email_cc:
+        type: string?
+        description: "CC recipients."
+      reply_to:
+        type: string?
+        description: "Reply-To header (overridden from the message default for outbound email)."
+      metadata:
+        type: Metadata
+        attributes: ["@audit_metadata"]
+        description: "Audit metadata (created_at, updated_at, deleted_at, created_by, updated_by, deleted_by)"
+    indexes:
+      - type: index
+        fields: [state, scheduled_date]
+        name: mail_state_scheduled_idx
+
+  # ===========================================================================
+  # mail.notification — THE per-recipient delivery-status sink (MAIL-M3).
+  # THE LABEL/VALUE INVERSION ORIGINATES HERE: pending displays 'Sent',
+  # sent displays 'Delivered'. sms overlay fields folded per SM-M5.
+  # ===========================================================================
+  - name: MailNotification
+    collection: mail_notifications
+    description: "mail.notification — THE per-recipient delivery-status sink: one row per (message, recipient) per channel (MAIL-M3). This table IS the mail.message notified-partners relation. LABEL/VALUE INVERSION ORIGIN: notification_status pending='Sent' (handed to MTA, awaiting DSN), sent='Delivered' (confirmed) — the exact pattern Sms.state copies (SM-F19). The GC reaps rows >180d but in Odoo never reaps portal rows (MAIL-B8 — a port should reap them; see mail-notification-gc job). sms overlay folded in: notification_type 'sms' + the full delivery-report failure vocabulary (SM-M5)."
+    fields:
+      id:
+        type: uuid
+        attributes: ["@id", "@default(uuid)"]
+        description: "Primary key"
+      mail_message_id:
+        type: uuid
+        attributes: ["@required", "@foreign_key(MailMessage.notifications)", "@exclude_from_foreign_key_check", "@indexed"]
+        description: "The message this notification hangs off (cascade). The back-direction of the notified-partners relation # logical FK to MailMessage.id"
+      res_partner_id:
+        type: uuid?
+        attributes: ["@foreign_key(party.Party.notifications)", "@exclude_from_foreign_key_check", "@indexed"]
+        description: "Recipient partner # logical FK to party.Party.id. G-MAIL-7: one status row per (message, partner) for the inbox/email channel (partial unique index; the sms channel is 1:many by uuid, outside this unique)."
+      notification_type:
+        type: MailNotificationType
+        attributes: ["@required", "@default(email)"]
+        lifecycle: inert
+        description: "Channel: inbox=in-app (instant, no MTA), email=outbound email (enqueues a Mail row), sms=SMS (folded in from the sms overlay — mints a Sms row + SmsTracker)."
+      notification_status:
+        type: MailNotificationStatus
+        attributes: ["@required", "@default(ready)", "@indexed"]
+        lifecycle:
+          shape: hand_set
+          state_machine: MailNotificationHooks
+          display_labels:
+            ready: "Ready to Send"
+            process: "Processing"
+            pending: "Sent"
+            sent: "Delivered"
+            bounce: "Bounced"
+            exception: "Exception"
+            canceled: "Cancelled"
+        description: "THE status field (MAIL-M3, the ORIGIN of the label-inversion pattern). HAND-SET, advanced by the notify pump + the mail send pipeline + inbound DSN + the sms tracker. ⚠️ LABEL/VALUE INVERSION preserved VERBATIM: pending displays 'Sent' (handed to MTA, awaiting DSN), sent displays 'Delivered' (confirmed). Consumers key off the VALUES — relabelling is safe-ish, re-valueing is NOT."
+      failure_type:
+        type: NotificationFailureType?
+        description: "Failure code (set on exception/bounce). Full folded vocabulary (SM-M5): the mail_* codes + the sms_* send codes + the 5 delivery-report codes (sms_expired/sms_invalid_destination/sms_not_allowed/sms_not_delivered/sms_rejected) written here by the SmsTracker."
+      failure_reason:
+        type: string?
+        description: "Human-readable failure detail."
+      mail_mail_id_int:
+        type: uuid?
+        description: "Denormalized copy of the Mail row id — NO FK. The GC seam: a notification OUTLIVES the mail row it came from (auto_delete removes the mail row while the notification keeps its status). Mirrors SmsTracker's uuid decoupling."
+      is_read:
+        type: boolean
+        attributes: ["@default(false)"]
+        description: "Whether the recipient opened/read this notification (inbox read state)."
+      metadata:
+        type: Metadata
+        attributes: ["@audit_metadata"]
+        description: "Audit metadata (created_at, updated_at, deleted_at, created_by, updated_by, deleted_by)"
+    indexes:
+      - type: unique
+        fields: [mail_message_id, res_partner_id]
+        where: "res_partner_id IS NOT NULL AND notification_type IN ('inbox','email')"
+        name: mail_notification_message_partner_uniq
+
+  # ===========================================================================
+  # mail.message.subtype — the chatter event type (M4).
+  # ===========================================================================
+  - name: MailMessageSubtype
+    collection: mail_message_subtypes
+    description: "mail.message.subtype — the chatter event type (M4). Each subtype declares whether it is internal/external, whether it triggers tracking, and is the default for new messages. Drives notification behavior: 'log a note' (internal) vs 'send a message' (external). Seeded catalog (Discussions/Note/Activities + per-model tracking subtypes added by other modules)."
+    fields:
+      id:
+        type: uuid
+        attributes: ["@id", "@default(uuid)"]
+        description: "Primary key"
+      name:
+        type: string
+        attributes: ["@required"]
+        description: "Subtype display name (translated in Odoo)."
+      description:
+        type: string?
+        description: "Subtype help text (translated in Odoo)."
+      internal:
+        type: boolean
+        attributes: ["@default(false)"]
+        description: "Internal-only subtype (log/note — hidden from portal/external followers). Drives MailMessage.is_internal."
+      parent_id:
+        type: uuid?
+        attributes: ["@foreign_key(MailMessageSubtype.children)", "@exclude_from_foreign_key_check"]
+        description: "Parent subtype (nested/equivalent subtypes across models) # logical FK to MailMessageSubtype.id"
+      relation_field:
+        type: string?
+        description: "The field linking a model-specific subtype to its generic parent."
+      res_model:
+        type: string?
+        description: "The model this subtype is specific to (null = generic/all models)."
+      default:
+        type: boolean
+        attributes: ["@default(false)"]
+        description: "Whether this is the default subtype for new messages (the Discussions subtype is the global default)."
+      hidden:
+        type: boolean
+        attributes: ["@default(false)"]
+        description: "Hidden from the follower-subtype-edit dialog (system subtypes)."
+      tracked:
+        type: boolean
+        attributes: ["@default(false)"]
+        description: "Whether this is a tracking subtype (emitted on field changes)."
+      metadata:
+        type: Metadata
+        attributes: ["@audit_metadata"]
+        description: "Audit metadata (created_at, updated_at, deleted_at, created_by, updated_by, deleted_by)"
+
+  # ===========================================================================
+  # mail.message.reaction — emoji reactions (M5). One row per
+  # (message, reactor, emoji); XOR partner/guest; create/unlink-only.
+  # ===========================================================================
+  - name: MailMessageReaction
+    collection: mail_message_reactions
+    description: "mail.message.reaction — emoji reactions on a message (M5). ONE row per (message, reactor, emoji). The reactor is XOR partner/guest (G-MAIL pattern, CHECK + 2 partial uniques). All fields readonly in Odoo (reactions are create/unlink-only, never edited)."
+    fields:
+      id:
+        type: uuid
+        attributes: ["@id", "@default(uuid)"]
+        description: "Primary key"
+      message_id:
+        type: uuid
+        attributes: ["@required", "@foreign_key(MailMessage.reactions)", "@exclude_from_foreign_key_check"]
+        description: "The reacted message (cascade) # logical FK to MailMessage.id"
+      content:
+        type: string
+        attributes: ["@required"]
+        description: "The emoji (unicode)."
+      partner_id:
+        type: uuid?
+        attributes: ["@foreign_key(party.Party.message_reactions)", "@exclude_from_foreign_key_check"]
+        description: "The reacting partner # logical FK to party.Party.id. XOR with guest_id (G-MAIL CHECK)."
+      guest_id:
+        type: uuid?
+        attributes: ["@foreign_key(MailGuest.message_reactions)", "@exclude_from_foreign_key_check"]
+        description: "The reacting guest # logical FK to MailGuest.id. XOR with partner_id."
+      metadata:
+        type: Metadata
+        attributes: ["@audit_metadata"]
+        description: "Audit metadata (created_at, updated_at, deleted_at, created_by, updated_by, deleted_by)"
+    indexes:
+      - type: unique
+        fields: [message_id, partner_id, content]
+        where: "partner_id IS NOT NULL"
+        name: mail_reaction_partner_uniq
+      - type: unique
+        fields: [message_id, guest_id, content]
+        where: "guest_id IS NOT NULL"
+        name: mail_reaction_guest_uniq
+
+  # ===========================================================================
+  # mail.followers — the subscription registry (M10).
+  # ===========================================================================
+  - name: MailFollowers
+    collection: mail_followers
+    description: "mail.followers — the subscription registry: one row per (document, partner/subtype-set) (M10). This is how 'who is notified about this record' is stored; a follower links a partner to a (res_model,res_id) with a chosen subtype set (null = all). G-MAIL-1 unique(res_model,res_id,partner_id) — the subscription-uniqueness guarantee. discuss channels DISABLE followers entirely (membership is DiscussChannelMember)."
+    fields:
+      id:
+        type: uuid
+        attributes: ["@id", "@default(uuid)"]
+        description: "Primary key"
+      res_model:
+        type: string
+        attributes: ["@required", "@indexed"]
+        description: "The followed document's model. Pairs with res_id + partner_id for G-MAIL-1 unique."
+      res_id:
+        type: uuid
+        attributes: ["@required", "@exclude_from_foreign_key_check"]
+        description: "The followed document's id (polymorphic, logical — no FK)."
+      partner_id:
+        type: uuid?
+        attributes: ["@foreign_key(party.Party.followers)", "@exclude_from_foreign_key_check", "@indexed"]
+        description: "The following partner # logical FK to party.Party.id. G-MAIL-1 unique(res_model,res_id,partner_id)."
+      channel_id:
+        type: uuid?
+        attributes: ["@foreign_key(DiscussChannel.followers)", "@exclude_from_foreign_key_check"]
+        description: "A channel-as-follower (a discuss channel following a document so posts echo into it) # logical FK to DiscussChannel.id"
+      subtype_ids:
+        type: json?
+        description: "The subtype set this follower is subscribed to (list of subtype ids; null/empty = ALL subtypes). Odoo models this as an m2m edited via the followers wizard; json array keeps the data layer self-contained."
+      metadata:
+        type: Metadata
+        attributes: ["@audit_metadata"]
+        description: "Audit metadata (created_at, updated_at, deleted_at, created_by, updated_by, deleted_by)"
+    indexes:
+      - type: unique
+        fields: [res_model, res_id, partner_id]
+        where: "partner_id IS NOT NULL"
+        name: mail_followers_document_partner_uniq
+
+  # ===========================================================================
+  # mail.presence — IM presence (M11). XOR user/guest, one row each.
+  # ===========================================================================
+  - name: MailPresence
+    collection: mail_presences
+    description: "mail.presence — IM presence: one row per connected user/guest (M11, XOR). status online/away/offline written on each bus poll; Odoo persists presence with a manual commit (it must survive even if the request later errors, so the bus doesn't show a stale 'online'). Stale rows reaped by GC."
+    fields:
+      id:
+        type: uuid
+        attributes: ["@id", "@default(uuid)"]
+        description: "Primary key"
+      user_id:
+        type: uuid?
+        attributes: ["@foreign_key(sapiens.User.id)", "@exclude_from_foreign_key_check"]
+        description: "The connected user # logical FK to sapiens.User.id. XOR with guest_id (one-row-per-person uniques)."
+      guest_id:
+        type: uuid?
+        attributes: ["@foreign_key(MailGuest.presence)", "@exclude_from_foreign_key_check"]
+        description: "The connected guest # logical FK to MailGuest.id. XOR with user_id."
+      status:
+        type: MailPresenceStatus
+        attributes: ["@required", "@default(offline)"]
+        lifecycle:
+          shape: hand_set
+          state_machine: MailPresenceHooks
+          display_labels:
+            online: "Online"
+            away: "Away"
+            offline: "Offline"
+        description: "IM presence status. Written by the poll handler on each poll; away/offline derived from a stale last_poll."
+      last_poll:
+        type: datetime?
+        description: "Last bus-poll time — used to compute away/offline (a stale last_poll means the session went away/offline)."
+      metadata:
+        type: Metadata
+        attributes: ["@audit_metadata"]
+        description: "Audit metadata (created_at, updated_at, deleted_at, created_by, updated_by, deleted_by)"
+    indexes:
+      - type: unique
+        fields: [user_id]
+        where: "user_id IS NOT NULL"
+        name: mail_presence_user_uniq
+      - type: unique
+        fields: [guest_id]
+        where: "guest_id IS NOT NULL"
+        name: mail_presence_guest_uniq
+
+  # ===========================================================================
+  # mail.blacklist — the email denylist (M24). Append-only-archive.
+  # ===========================================================================
+  - name: MailBlacklist
+    collection: mail_blacklists
+    description: "mail.blacklist — the email denylist: addresses that must never receive outbound mail (M24). CASE-INSENSITIVITY IS APP-LAYER in Odoo (the email is lowercased before insert; the unique is on the as-stored value — a raw mixed-case insert can create a near-duplicate). The port keeps the unique on email and documents the app-layer fold. _add/_remove use the ARCHIVE pattern (active=False to remove — never a physical delete)."
+    fields:
+      id:
+        type: uuid
+        attributes: ["@id", "@default(uuid)"]
+        description: "Primary key"
+      email:
+        type: string
+        attributes: ["@required", "@unique"]
+        description: "The blacklisted address, STORED LOWERCASED (case-folding is app-layer on write). G-MAIL-2 unique(email) — fires on raw SQL."
+      active:
+        type: boolean
+        attributes: ["@default(true)"]
+        description: "Archive flag. _remove sets active=False (archive, not delete); _add reactivates. The blacklist is append-only-archive."
+      metadata:
+        type: Metadata
+        attributes: ["@audit_metadata"]
+        description: "Audit metadata (created_at, updated_at, deleted_at, created_by, updated_by, deleted_by)"
+
+  # ===========================================================================
+  # mail.tracking.value — typed field-change slots (M22), NOT a JSON blob.
+  # ===========================================================================
+  - name: MailTrackingValue
+    collection: mail_tracking_values
+    description: "mail.tracking.value — a field-change record: the old and new values of a tracked field on a write, linked to the message that logged the change (M22). TYPED SLOTS NOT JSON: the value is stored in type-specific column pairs (old/new × integer/float/text/datetime) selected by field_type — a denormalization-for-queryability choice."
+    fields:
+      id:
+        type: uuid
+        attributes: ["@id", "@default(uuid)"]
+        description: "Primary key"
+      mail_message_id:
+        type: uuid
+        attributes: ["@required", "@foreign_key(MailMessage.tracking_values)", "@exclude_from_foreign_key_check"]
+        description: "The tracking message this change hangs off (cascade) # logical FK to MailMessage.id"
+      field:
+        type: string
+        attributes: ["@required"]
+        description: "The tracked field's technical name."
+      field_desc:
+        type: string?
+        description: "The tracked field's label (shown in the chatter)."
+      field_type:
+        type: string?
+        description: "The tracked field's type (integer/float/char/text/datetime/...) — selects which old/new slot is used."
+      old_value_integer:
+        type: integer?
+        description: "Old value for integer fields."
+      old_value_float:
+        type: float?
+        description: "Old value for float fields."
+      old_value_text:
+        type: string?
+        description: "Old value for text/char fields."
+      old_value_datetime:
+        type: datetime?
+        description: "Old value for datetime fields."
+      new_value_integer:
+        type: integer?
+        description: "New value for integer fields."
+      new_value_float:
+        type: float?
+        description: "New value for float fields."
+      new_value_text:
+        type: string?
+        description: "New value for text/char fields."
+      new_value_datetime:
+        type: datetime?
+        description: "New value for datetime fields."
+      currency_id:
+        type: uuid?
+        attributes: ["@exclude_from_foreign_key_check"]
+        description: "Currency for monetary field changes # logical FK to a currency module's Currency.id (cross-module, no FK)"
+      metadata:
+        type: Metadata
+        attributes: ["@audit_metadata"]
+        description: "Audit metadata (created_at, updated_at, deleted_at, created_by, updated_by, deleted_by)"
+    indexes:
+      - type: index
+        fields: [mail_message_id]
+        name: mail_tracking_value_message_idx
+
+# =============================================================================
+# ENUMS (mail core). The sms-overlay values are folded in where the overlay
+# extended a mail selection (message_type/notification_type/failure_type).
+# =============================================================================
+enums:
+  - name: MailMessageType
+    description: "Message channel marker (mail.message.message_type). 'sms' folded in from the sms overlay (ondelete→comment)."
+    variants:
+      - name: email
+        description: "Outbound email"
+      - name: comment
+        description: "User post, visible to followers (default)"
+        default: true
+      - name: notification
+        description: "System/auto post"
+      - name: sms
+        description: "SMS message (folded from the sms overlay)"
+
+  - name: MailState
+    description: "mail.mail.state — HAND-SET send-queue state (MAIL-M2). NOT label-inverted ('sent' means 'sent')."
+    variants:
+      - name: outgoing
+        description: "In queue — picked by the mail-send-queue job"
+        default: true
+      - name: sent
+        description: "SMTP 250 accepted"
+      - name: received
+        description: "Inbound-acknowledged (an inbound reply matched this outbound message)"
+      - name: exception
+        description: "Send failed (failure_type set); no automatic retry/backoff"
+      - name: cancel
+        description: "Manually cancelled"
+
+  - name: MailFailureType
+    description: "mail-side failure codes (mail.mail.failure_type). Three origins: SMTP/transport, synthesized, mass-mode-internal."
+    variants:
+      - name: mail_smtp
+        description: "SMTP/transport error"
+      - name: mail_email_invalid
+        description: "RCPT rejected the address (synthesized)"
+      - name: mail_bounce
+        description: "DSN bounce"
+      - name: mail_blacklist
+        description: "Recipient blacklisted (mass-mode-internal)"
+      - name: mail_recipient
+        description: "No valid recipient (synthesized)"
+      - name: mail_server
+        description: "Outgoing server error"
+      - name: unknown
+        description: "Unclassified failure"
+        default: true
+
+  - name: NotificationFailureType
+    description: "mail.notification.failure_type — FULL folded vocabulary (SM-M5): the mail_* codes + the sms send codes + the 5 delivery-report codes written here by the SmsTracker."
+    variants:
+      - name: mail_smtp
+        description: "SMTP/transport error"
+      - name: mail_email_invalid
+        description: "Invalid email (synthesized)"
+      - name: mail_bounce
+        description: "DSN bounce"
+      - name: mail_blacklist
+        description: "Recipient blacklisted"
+      - name: mail_recipient
+        description: "No valid recipient"
+      - name: mail_server
+        description: "Outgoing server error"
+      - name: unknown
+        description: "Unclassified failure"
+        default: true
+      - name: sms_number_missing
+        description: "No phone number (sms)"
+      - name: sms_number_format
+        description: "Unsanitizable number format (sms)"
+      - name: sms_country_not_supported
+        description: "Country not covered (sms)"
+      - name: sms_registration_needed
+        description: "Sender registration required (sms)"
+      - name: sms_credit
+        description: "Insufficient IAP credit (sms)"
+      - name: sms_server
+        description: "IAP server error (sms)"
+      - name: sms_acc
+        description: "IAP account error (sms)"
+      - name: sms_blacklist
+        description: "Number blacklisted / STOP (sms)"
+      - name: sms_duplicate
+        description: "Duplicate send suppressed (sms)"
+      - name: sms_optout
+        description: "Recipient opted out (sms)"
+      - name: sms_expired
+        description: "Delivery report: expired (tracker-written)"
+      - name: sms_invalid_destination
+        description: "Delivery report: invalid destination (tracker-written)"
+      - name: sms_not_allowed
+        description: "Delivery report: not allowed (tracker-written)"
+      - name: sms_not_delivered
+        description: "Delivery report: not delivered (tracker-written)"
+      - name: sms_rejected
+        description: "Delivery report: rejected (tracker-written)"
+
+  - name: MailNotificationType
+    description: "Notification channel (mail.notification.notification_type). 'sms' folded in from the sms overlay."
+    variants:
+      - name: inbox
+        description: "In-app notification (instant, no MTA)"
+      - name: email
+        description: "Outbound email (enqueues a Mail row)"
+        default: true
+      - name: sms
+        description: "SMS (folded from the sms overlay — mints a Sms row + SmsTracker)"
+
+  - name: MailNotificationStatus
+    description: "THE label-inverted status pump (MAIL-M3, the ORIGIN). pending='Sent' (handed to MTA), sent='Delivered' (confirmed) — preserved VERBATIM."
+    variants:
+      - name: ready
+        description: "Queued — row minted by the notify pump, awaiting dispatch"
+        default: true
+      - name: process
+        description: "The Mail row is being built/sent"
+      - name: pending
+        description: "LABEL 'Sent' — SMTP 250 accepted (handed to MTA, awaiting DSN)"
+      - name: sent
+        description: "LABEL 'Delivered' — DSN-confirmed (or inbox-channel instant delivery)"
+      - name: bounce
+        description: "Permanent failure (DSN bounce / SMTP 5xx); failure_type set"
+      - name: exception
+        description: "Transient failure (SMTP 4xx/transport); failure_type set"
+      - name: canceled
+        description: "Cancelled (e.g. a scheduled notification cancelled before fire)"
+
+  - name: MailModerationStatus
+    description: "Moderation state for channel messages under moderation (mail.message.moderation_status)."
+    variants:
+      - name: pending
+        description: "Awaiting moderator"
+        default: true
+      - name: accepted
+        description: "Accepted by moderator"
+      - name: rejected_moderation
+        description: "Rejected by moderator"
+
+  - name: MailPresenceStatus
+    description: "IM presence (mail.presence.status). Written on each bus poll."
+    variants:
+      - name: online
+        description: "Actively polling"
+      - name: away
+        description: "Stale poll window"
+      - name: offline
+        description: "Disconnected"
+        default: true

@@ -1,0 +1,67 @@
+# =============================================================================
+# MailNotificationHooks — mail.notification.notification_status (MAIL-M3).
+# THE LABEL/VALUE INVERSION ORIGIN (pending='Sent', sent='Delivered' —
+# display_labels on the model field preserve it VERBATIM; consumers key off
+# the VALUES). HAND-SET: advanced by the notify pump (ready→process), the
+# send pipeline (process→pending|exception|bounce), inbound DSNs
+# (pending→sent|bounce) and the sms tracker (sms channel).
+#
+# Rule G-MAIL-7 documents the partial unique index declared on the model
+# (mail_notification_message_partner_uniq).
+# =============================================================================
+
+name: MailNotificationHooks
+model: MailNotification
+
+states:
+  field: notification_status
+  values:
+    ready:
+      initial: true
+    process: {}
+    pending: {}
+    sent:
+      final: true
+    bounce:
+      final: true
+    exception: {}
+    canceled:
+      final: true
+  transitions:
+    dispatch_started:
+      from: ready
+      to: process
+      message: "The notify pump picked the row and is building/sending the Mail"
+    smtp_accepted:
+      from: [process, exception]
+      to: pending
+      message: "LABEL 'Sent' — handed to MTA, awaiting DSN"
+    delivery_confirmed:
+      from: pending
+      to: sent
+      message: "LABEL 'Delivered' — DSN-confirmed (or tracker-confirmed for sms)"
+    instant_delivered:
+      from: process
+      to: sent
+      message: "Inbox channel delivered instantly in-app (no MTA hop)"
+    bounced:
+      from: [pending, process, exception]
+      to: bounce
+      message: "Permanent failure (DSN bounce / SMTP 5xx) — failure_type set"
+    send_failed:
+      from: [process, pending]
+      to: exception
+      message: "Transient failure (SMTP 4xx/transport) — failure_type set"
+    canceled:
+      from: [ready, process, pending]
+      to: canceled
+      message: "Cancelled (e.g. a scheduled notification cancelled before fire)"
+
+rules:
+  G-MAIL-7:
+    when: [create, update]
+    condition: "no two rows share (mail_message_id, res_partner_id) where notification_type in ('inbox','email')"
+    message: "One status row per (message, partner) for the inbox/email channel — enforced by partial unique index mail_notification_message_partner_uniq (WHERE res_partner_id IS NOT NULL AND notification_type IN ('inbox','email')). The sms channel is 1:many by uuid and sits outside this unique."
+    code: mail_notification_message_partner_duplicate
+    severity: error
+    enforcement: db

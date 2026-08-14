@@ -1,0 +1,20 @@
+# =============================================================================
+# MailFollowersHooks — write-path guard on mail.followers (M10).
+# G-MAIL-1: unique(res_model, res_id, partner_id) — the
+# subscription-uniqueness guarantee. Enforced by the partial unique index
+# mail_followers_document_partner_uniq declared on the model (fires on raw
+# SQL in v19). NOTE: discuss channels bypass followers entirely (channels
+# use DiscussChannelMember rows).
+# =============================================================================
+
+name: MailFollowersHooks
+model: MailFollowers
+
+rules:
+  G-MAIL-1:
+    when: [create, update]
+    condition: "no two rows share (res_model, res_id, partner_id)"
+    message: "One follower row per (document, partner) — enforced by partial unique index mail_followers_document_partner_uniq (WHERE partner_id IS NOT NULL)."
+    code: mail_followers_duplicate_subscription
+    severity: error
+    enforcement: db
