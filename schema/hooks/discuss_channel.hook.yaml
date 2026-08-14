@@ -1,0 +1,24 @@
+# =============================================================================
+# DiscussChannelHooks — discuss.channel.channel_type (M37).
+# Set at create, IMMUTABLE after: Odoo raises on any write that changes
+# channel_type (the kind drives member semantics, default name and UI
+# surface — a silent rewrite would corrupt chat-vs-channel behavior).
+# Modeled with NO transitions and every state final: the only legal
+# "transition" is none. All three states final also documents that a
+# channel never leaves its kind.
+# =============================================================================
+
+name: DiscussChannelHooks
+model: DiscussChannel
+
+states:
+  field: channel_type
+  values:
+    chat:
+      final: true
+    channel:
+      initial: true
+      final: true
+    group:
+      final: true
+  transitions: {}

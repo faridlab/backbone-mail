@@ -1,0 +1,207 @@
+# =============================================================================
+# Module: backbone-mail — Area: DISCUSS DATA LAYER (M37/M38/M43).
+# Ported from docs/odoo/messaging/mail: addons/mail/models/discuss/
+# {discuss_channel,discuss_channel_member,mail_guest}.py.
+#
+# INCREMENT-1 SCOPE: tables + guards ONLY. The ~30-route websocket surface,
+# channel-fold-state behavior, unread counters and guest-env middleware are
+# Increment 2+ (routes/websocket layer).
+#
+# PORT DECISIONS:
+#  - channel_type is IMMUTABLE post-create in Odoo (guarded write) — ported
+#    as a hand_set lifecycle with a machine whose states are all final so a
+#    transition can never silently rewrite it.
+#  - Odoo m2m channel_ids on res.partner / mail.guest is represented by
+#    DiscussChannelMember rows (the join IS a model here); no collection
+#    columns.
+#  - G-MAIL-8: (channel,partner) and (channel,guest) partial uniques +
+#    CHECK-style rule (XOR).
+# =============================================================================
+
+models:
+
+  # ===========================================================================
+  # discuss.channel — the chat/channel/group container (M37).
+  # ===========================================================================
+  - name: DiscussChannel
+    collection: discuss_channels
+    description: "discuss.channel — the chat/channel/group container (M37). three channel_types: chat = 1:1 conversation (name auto-derived from the two members), channel = named group chat (public/private/group per default_access_mode semantics), group = small group chat. Members are DiscussChannelMember rows (this module's join model); followers are DISABLED on channels. channel_type is immutable post-create (Odoo guards the write — ported as an all-final state machine)."
+    fields:
+      id:
+        type: uuid
+        attributes: ["@id", "@default(uuid)"]
+        description: "Primary key"
+      name:
+        type: string?
+        description: "Channel/group name. For 1:1 chats computed from the other member's name (stored for search)."
+      channel_type:
+        type: DiscussChannelType
+        attributes: ["@required", "@default(channel)"]
+        lifecycle:
+          shape: hand_set
+          state_machine: DiscussChannelHooks
+          display_labels:
+            chat: "Chat"
+            channel: "Channel"
+            group: "Group"
+        description: "The channel kind (M37). Set at create, IMMUTABLE after (Odoo raises on writes that change it; the all-final machine enforces this). Drives member semantics, default name and UI surface."
+      description:
+        type: string?
+        description: "Channel topic/description."
+      uuid:
+        type: string?
+        attributes: ["@unique"]
+        description: "Public identifier used by guest/portal invitations (invitations address the channel by uuid, not id)."
+      default_access_mode:
+        type: string?
+        description: "Access mode for channel-type channels: public / private / group (Odoo selection kept as a plain string — no lifecycle semantics)."
+      avatar_128:
+        type: string?
+        description: "Channel avatar (base64 image bytes)."
+      email_send:
+        type: boolean
+        attributes: ["@default(false)"]
+        description: "Whether message posts in this channel also send emails to members who are not currently following the thread (channel-type only)."
+      moderation:
+        type: boolean
+        attributes: ["@default(false)"]
+        description: "Whether posts by non-moderators go through moderation (see MailMessage.moderation_status)."
+      group_public_id:
+        type: uuid?
+        attributes: ["@exclude_from_foreign_key_check"]
+        description: "The group that can see this public channel # logical FK to the ACL module's Group.id (cross-module, no FK)"
+      alias_id:
+        type: uuid?
+        attributes: ["@foreign_key(MailAlias.channel)", "@exclude_from_foreign_key_check"]
+        description: "The channel's inbound alias (channel-type channels can receive email) # logical FK to MailAlias.id"
+      last_message_id:
+        type: uuid?
+        attributes: ["@foreign_key(MailMessage.last_message_channels)", "@exclude_from_foreign_key_check"]
+        description: "Denormalized last-message pointer for channel list ordering # logical FK to MailMessage.id"
+      metadata:
+        type: Metadata
+        attributes: ["@audit_metadata"]
+        description: "Audit metadata (created_at, updated_at, deleted_at, created_by, updated_by, deleted_by)"
+    indexes:
+      - type: index
+        fields: [channel_type]
+        name: discuss_channel_type_idx
+
+  # ===========================================================================
+  # discuss.channel.member — THE membership join (M38). This model IS the
+  # m2m between channels and partners/guests.
+  # ===========================================================================
+  - name: DiscussChannelMember
+    collection: discuss_channel_members
+    description: "discuss.channel.member — THE membership join: one row per (channel, partner-or-guest) (M38). This model IS the channel↔partner/guest m2m (no separate relation table). G-MAIL-8: unique(channel,partner) + unique(channel,guest) as partial unique indexes; partner/guest XOR. Carries the per-member chat state: fold state, message unread/bookmark counters, ring state (rtc), last-seen message."
+    fields:
+      id:
+        type: uuid
+        attributes: ["@id", "@default(uuid)"]
+        description: "Primary key"
+      channel_id:
+        type: uuid
+        attributes: ["@required", "@foreign_key(DiscussChannel.members)", "@exclude_from_foreign_key_check", "@indexed"]
+        description: "The channel (cascade) # logical FK to DiscussChannel.id"
+      partner_id:
+        type: uuid?
+        attributes: ["@foreign_key(party.Party.channel_memberships)", "@exclude_from_foreign_key_check", "@indexed"]
+        description: "The member partner # logical FK to party.Party.id. XOR with guest_id (G-MAIL-8)."
+      guest_id:
+        type: uuid?
+        attributes: ["@foreign_key(MailGuest.channel_memberships)", "@exclude_from_foreign_key_check", "@indexed"]
+        description: "The member guest # logical FK to MailGuest.id. XOR with partner_id."
+      fold_state:
+        type: SidebarFoldState?
+        description: "The member's sidebar fold state for this channel (open/closed/null=undefined)."
+      message_unread_counter:
+        type: integer
+        attributes: ["@default(0)"]
+        description: "Unread message count for this member (Odoo computes in read; stored denormalized in later versions — port keeps it stored)."
+      unread_counter:
+        type: integer
+        attributes: ["@default(0)"]
+        description: "Mentions/important unread count (drives the badge)."
+      message_follower_counter:
+        type: integer
+        attributes: ["@default(0)"]
+        description: "Denormalized follower counter (0 for channels — followers disabled; kept for schema parity)."
+      seen_message_id:
+        type: uuid?
+        attributes: ["@foreign_key(MailMessage.seen_in_members)", "@exclude_from_foreign_key_check"]
+        description: "The last message this member has seen (the member's read pointer) # logical FK to MailMessage.id"
+      last_interest_dt:
+        type: datetime?
+        description: "Last-activity timestamp (used to order members / detect idle)."
+      is_pinned:
+        type: boolean
+        attributes: ["@default(false)"]
+        description: "Whether the member pinned this channel to the sidebar."
+      metadata:
+        type: Metadata
+        attributes: ["@audit_metadata"]
+        description: "Audit metadata (created_at, updated_at, deleted_at, created_by, updated_by, deleted_by)"
+    indexes:
+      - type: unique
+        fields: [channel_id, partner_id]
+        where: "partner_id IS NOT NULL"
+        name: discuss_channel_member_partner_uniq
+      - type: unique
+        fields: [channel_id, guest_id]
+        where: "guest_id IS NOT NULL"
+        name: discuss_channel_member_guest_uniq
+
+  # ===========================================================================
+  # mail.guest — the anonymous discuss identity (M43).
+  # ===========================================================================
+  - name: MailGuest
+    collection: mail_guests
+    description: "mail.guest — the anonymous discuss identity: a lightweight persona for non-authenticated channel participants (M43). Identity is the guest_token cookie (uuid); guests have no user/partner row. Guests are created on first access to a public channel/gateway and expire (auth_gc reaps guests not seen for ~1h; channel guests are tied to their invitation's lifetime)."
+    fields:
+      id:
+        type: uuid
+        attributes: ["@id", "@default(uuid)"]
+        description: "Primary key"
+      name:
+        type: string
+        attributes: ["@required"]
+        description: "Guest display name (picked or generated 'Guest 42')."
+      country_id:
+        type: uuid?
+        attributes: ["@exclude_from_foreign_key_check"]
+        description: "Guest's country (from geolocation at join; display flag only) # logical FK to geo module's Country.id (cross-module, no FK)"
+      last_connection_dt:
+        type: datetime?
+        description: "Last poll time — guests are reaped when this goes stale (auth_gc / autovacuum)."
+      active:
+        type: boolean
+        attributes: ["@default(true)"]
+        description: "Archive flag — guests are archived on expiry, rows reaped later."
+      metadata:
+        type: Metadata
+        attributes: ["@audit_metadata"]
+        description: "Audit metadata (created_at, updated_at, deleted_at, created_by, updated_by, deleted_by)"
+
+# =============================================================================
+# ENUMS (discuss)
+# =============================================================================
+enums:
+  - name: DiscussChannelType
+    description: "discuss.channel.channel_type — set at create, IMMUTABLE after (M37)."
+    variants:
+      - name: chat
+        description: "1:1 direct conversation (name from the two members)"
+      - name: channel
+        description: "Named channel (public/private/group via default_access_mode)"
+        default: true
+      - name: group
+        description: "Small multi-party group chat"
+
+  - name: SidebarFoldState
+    description: "Per-member sidebar fold state for a channel (discuss.channel.member.fold_state)."
+    variants:
+      - name: open
+        description: "Expanded in the sidebar"
+        default: true
+      - name: closed
+        description: "Collapsed in the sidebar"

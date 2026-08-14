@@ -1,0 +1,27 @@
+# =============================================================================
+# MailAliasDomainHooks — write-path guards on mail.alias.domain (M34).
+# G-MAIL-5: TWO uniques — UNIQUE(bounce_alias, name) +
+# UNIQUE(catchall_alias, name): the bounce/catchall local parts cannot
+# collide with an alias on the same domain. Enforced by the two partial
+# unique indexes declared on the model (mail_alias_domain_bounce_uniq /
+# mail_alias_domain_catchall_uniq — fires on raw SQL in v19).
+# =============================================================================
+
+name: MailAliasDomainHooks
+model: MailAliasDomain
+
+rules:
+  G-MAIL-5-bounce:
+    when: [create, update]
+    condition: "no two rows share (bounce_alias, name)"
+    message: "The bounce local part is taken on this domain — enforced by partial unique index mail_alias_domain_bounce_uniq (WHERE bounce_alias IS NOT NULL)."
+    code: mail_alias_domain_bounce_conflict
+    severity: error
+    enforcement: db
+  G-MAIL-5-catchall:
+    when: [create, update]
+    condition: "no two rows share (catchall_alias, name)"
+    message: "The catchall local part is taken on this domain — enforced by partial unique index mail_alias_domain_catchall_uniq (WHERE catchall_alias IS NOT NULL)."
+    code: mail_alias_domain_catchall_conflict
+    severity: error
+    enforcement: db

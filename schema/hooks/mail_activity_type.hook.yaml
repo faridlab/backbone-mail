@@ -1,0 +1,23 @@
+# =============================================================================
+# MailActivityTypeHooks — mail.activity.type.chaining_type (M19).
+# HAND-SET: suggest (default — the done dialog offers follow-ups) vs
+# trigger (the next activity in the chain is created automatically on
+# done). Effectively immutable once activities of the type exist (Odoo
+# hides the field then); modeled as a one-way transition.
+# =============================================================================
+
+name: MailActivityTypeHooks
+model: MailActivityType
+
+states:
+  field: chaining_type
+  values:
+    suggest:
+      initial: true
+    trigger:
+      final: true
+  transitions:
+    enable_trigger:
+      from: suggest
+      to: trigger
+      message: "Activities of this type now auto-chain on done (no backward transition — suggested dialogs stop appearing)"

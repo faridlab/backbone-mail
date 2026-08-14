@@ -1,0 +1,143 @@
+# =============================================================================
+# Module: backbone-mail — Area: ALIAS (M33/M34).
+# Ported from docs/odoo/messaging/mail: addons/mail/models/
+# {mail_alias,mail_alias_domain}.py (docs/odoo/messaging/mail/schema/models/
+# template-alias.model.yaml).
+#
+# PORT DECISIONS:
+#  - MailAliasDomain.company_id from the docs is DROPPED (company_fence:
+#    none, ADR-0014). The alias_domain table stays single-tenant: one
+#    catchall/bounce pair per domain name.
+#  - alias_model_id/alias_parent_model_id are registry refs (ir.model in
+#    Odoo — framework, not ported) → logical uuid columns, no FK.
+#  - The catchall/bounce defaults live ON the domain (inherited by aliases
+#    with force_thread_defaults semantics).
+# =============================================================================
+
+models:
+
+  # ===========================================================================
+  # mail.alias.domain — the domain-level catchall/bounce config (M34).
+  # ===========================================================================
+  - name: MailAliasDomain
+    collection: mail_alias_domains
+    description: "mail.alias.domain — the domain-level inbound config (M34): one row per mail domain with its catchall and bounce addresses. Aliases resolve IN THE CONTEXT of a domain; a message to an unknown local part falls back to the domain catchall (catchall@domain → routed to the catchall alias). G-MAIL-5: unique(bounce_alias,name) + unique(catchall_alias,name) — the catchall/bounce local parts cannot collide with an alias on the same domain. PORT NOTE: Odoo's company_id on this table is DROPPED (company_fence: none, ADR-0014)."
+    fields:
+      id:
+        type: uuid
+        attributes: ["@id", "@default(uuid)"]
+        description: "Primary key"
+      name:
+        type: string
+        attributes: ["@required", "@indexed"]
+        description: "The mail domain (e.g. example.com). G-MAIL-5 pairs with catchall_alias/bounce_alias in two partial uniques; the domain name itself is NOT globally unique in Odoo (one row per company) — single-tenant here, so treat one-row-per-name as the operational invariant."
+      catchall_alias:
+        type: string?
+        description: "Local part of the catchall address (default 'catchall'). Inbound messages to unknown local parts route here. G-MAIL-5 unique(catchall_alias,name)."
+      bounce_alias:
+        type: string?
+        description: "Local part of the bounce address (default 'bounce'). Used as Return-Path for outbound so DSNs route back. G-MAIL-5 unique(bounce_alias,name)."
+      bounce_alias_email:
+        type: string?
+        description: "Computed full bounce address (bounce_alias@name) — denormalized for the outgoing envelope."
+      catchall_alias_email:
+        type: string?
+        description: "Computed full catchall address (catchall_alias@name)."
+      use_mx:
+        type: boolean
+        attributes: ["@default(false)"]
+        description: "Whether to use MX records for this domain's mail routing."
+      mail_server_id:
+        type: uuid?
+        attributes: ["@exclude_from_foreign_key_check"]
+        description: "The dedicated outgoing mail server for this domain # logical FK to the gateway server config (ir.mail_server — NOT ported; Increment 2+ gateway layer). No FK."
+      from_filter:
+        type: string?
+        description: "Outbound From filter — when set, mail from this domain must match (spoofing guard on the gateway side)."
+      metadata:
+        type: Metadata
+        attributes: ["@audit_metadata"]
+        description: "Audit metadata (created_at, updated_at, deleted_at, created_by, updated_by, deleted_by)"
+    indexes:
+      - type: unique
+        fields: [bounce_alias, name]
+        where: "bounce_alias IS NOT NULL"
+        name: mail_alias_domain_bounce_uniq
+      - type: unique
+        fields: [catchall_alias, name]
+        where: "catchall_alias IS NOT NULL"
+        name: mail_alias_domain_catchall_uniq
+
+  # ===========================================================================
+  # mail.alias — THE inbound routing rule (M33): local part →
+  # (target model, defaults).
+  # ===========================================================================
+  - name: MailAlias
+    collection: mail_aliases
+    description: "mail.alias — THE inbound routing rule (M33): a local part that maps to a target (alias_model_id + a parent record via alias_parent_model_id/alias_parent_thread_id) with reply-collation defaults (reply_to, record thread). Inbound mail to <alias_name>@<domain> creates a record of alias_model_id (e.g. a lead), attaches to the parent thread, applies alias_defaults (a stringified dict — safe_eval'd in Odoo). The alias table is the inbound-mail address book for the whole app."
+    fields:
+      id:
+        type: uuid
+        attributes: ["@id", "@default(uuid)"]
+        description: "Primary key"
+      alias_name:
+        type: string?
+        attributes: ["@indexed"]
+        description: "The local part (before the @). Lowercased on write in Odoo. Null = disabled alias (e.g. channels without an inbound address)."
+      alias_domain_id:
+        type: uuid?
+        attributes: ["@foreign_key(MailAliasDomain.aliases)", "@exclude_from_foreign_key_check"]
+        description: "The owning domain (the alias's address is alias_name@alias_domain_id.name) # logical FK to MailAliasDomain.id"
+      alias_contact:
+        type: MailAliasContact
+        attributes: ["@default(followers)"]
+        description: "Who may post via this alias (M33): everyone = accept any sender; partners = only known partners; followers = only current followers of the target record."
+      alias_model_id:
+        type: uuid?
+        attributes: ["@exclude_from_foreign_key_check"]
+        description: "Registry ref: the model records are created in when mail arrives (ir.model in Odoo — framework, not ported). Logical column, no FK."
+      alias_parent_model_id:
+        type: uuid?
+        attributes: ["@exclude_from_foreign_key_check"]
+        description: "Registry ref: the model of the parent thread to attach to (e.g. the team whose leads this alias files under). Logical column, no FK."
+      alias_parent_thread_id:
+        type: uuid?
+        attributes: ["@exclude_from_foreign_key_check"]
+        description: "The parent record id (polymorphic, logical — no FK). Pairs with alias_parent_model_id."
+      alias_user_id:
+        type: uuid?
+        attributes: ["@foreign_key(sapiens.User.id)", "@exclude_from_foreign_key_check"]
+        description: "The user the created record is assigned to (defaults to the inbound sender if they are a user) # logical FK to sapiens.User.id"
+      alias_defaults:
+        type: string?
+        description: "Stringified dict of default field values applied to records created via this alias (safe_eval'd in Odoo — keep the eval surface in the gateway layer, Increment 2+)."
+      alias_force_thread_id:
+        type: uuid?
+        attributes: ["@exclude_from_foreign_key_check"]
+        description: "Force ALL inbound messages onto ONE thread (polymorphic record id, logical — no FK). Overrides reply-collation."
+      alias_reply_to_address:
+        type: string?
+        description: "Forced Reply-To for messages sent via this alias's threads."
+      metadata:
+        type: Metadata
+        attributes: ["@audit_metadata"]
+        description: "Audit metadata (created_at, updated_at, deleted_at, created_by, updated_by, deleted_by)"
+    indexes:
+      - type: index
+        fields: [alias_name, alias_domain_id]
+        name: mail_alias_name_domain_idx
+
+# =============================================================================
+# ENUMS (alias)
+# =============================================================================
+enums:
+  - name: MailAliasContact
+    description: "mail.alias.alias_contact — who may post via the alias (M33)."
+    variants:
+      - name: everyone
+        description: "Accept any sender"
+      - name: partners
+        description: "Only known partners"
+      - name: followers
+        description: "Only current followers of the target record"
+        default: true

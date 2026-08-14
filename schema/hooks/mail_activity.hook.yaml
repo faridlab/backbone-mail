@@ -1,0 +1,30 @@
+# =============================================================================
+# MailActivityHooks — write-path guards on mail.activity (M17).
+# No state machine: MailActivity.state is a PROJECTION (done = archived
+# row; overdue/today/planned from date_deadline vs today) — declared as a
+# projection lifecycle on the model field, not a machine.
+#
+# G-MAIL-3 / G-MAIL-4 are CHECK constraints (Odoo models.Constraint —
+# they fire on raw SQL in v19). The DSL expresses them as service-enforced
+# rules here; the CHECK itself is emitted by the generated migration
+# pipeline from these conditions.
+# =============================================================================
+
+name: MailActivityHooks
+model: MailActivity
+
+rules:
+  G-MAIL-3:
+    when: [create, update]
+    condition: "res_model is null or res_id is not null"
+    message: "An activity attached to a model MUST have a res_id (CHECK res_model IS NULL OR res_id IS NOT NULL — fires on raw SQL)."
+    code: mail_activity_res_id_required
+    severity: error
+    enforcement: both
+  G-MAIL-4:
+    when: [create, update]
+    condition: "res_model is null or user_id is not null"
+    message: "An activity attached to a model MUST have an assignee (CHECK res_model IS NULL OR user_id IS NOT NULL — fires on raw SQL)."
+    code: mail_activity_user_id_required
+    severity: error
+    enforcement: both

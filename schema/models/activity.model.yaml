@@ -1,0 +1,306 @@
+# =============================================================================
+# Module: backbone-mail — Area: ACTIVITY (M17/M19/M20/M21).
+# Ported from docs/odoo/messaging/mail: addons/mail/models/
+# {mail_activity,mail_activity_type,mail_activity_plan,mail_activity_plan_
+# template}.py (docs/odoo/messaging/mail/schema/models/thread-activity.model.yaml).
+#
+# PORT DECISIONS:
+#  - MailActivity.state is a PROJECTION, not stored: done is computed from
+#    active=False (archive == done — Odoo's done marks the row archived, the
+#    kept row is 'the activity was done'), overdue/today/planned from
+#    date_deadline vs today. Declared lifecycle shape: projection (MAIL-M17).
+#  - The m2m template_ids on mail.activity.type (used_by) and plan-template
+#    composition are modeled structurally: plan → templates via
+#    MailActivityPlanTemplate.plan_id (the template rows ARE the join).
+#  - res_model/res_id polymorphic, logical columns (no FK).
+# =============================================================================
+
+models:
+
+  # ===========================================================================
+  # mail.activity — THE scheduled to-do on a record (M17).
+  # ===========================================================================
+  - name: MailActivity
+    collection: mail_activities
+    description: "mail.activity — THE scheduled to-do on a record: a dated user task attached to a (model,res_id) document with a user_id owner (M17). Activities are the calendar-backed work queue. state is NOT stored — done is the archived row (active=False set on done_action; the archived row IS the completion record) and overdue/today/planned derive from date_deadline vs today (a PROJECTION lifecycle). Chaining: on done, the next activity in the plan/template chain is created (or a suggested dialog offered)."
+    fields:
+      id:
+        type: uuid
+        attributes: ["@id", "@default(uuid)"]
+        description: "Primary key"
+      res_model:
+        type: string
+        attributes: ["@required", "@indexed"]
+        description: "The document model the activity is attached to (polymorphic, logical — no FK)."
+      res_id:
+        type: uuid
+        attributes: ["@required", "@exclude_from_foreign_key_check"]
+        description: "The document id the activity is attached to (polymorphic, logical — no FK). G-MAIL-3: CHECK (res_model IS NULL OR res_id IS NOT NULL) — an activity attached to a model MUST have a res_id."
+      res_model_id:
+        type: uuid?
+        attributes: ["@exclude_from_foreign_key_check"]
+        description: "Logical ref to the model-registry entry for res_model (ir.model in Odoo — framework, not ported) # no FK"
+      activity_type_id:
+        type: uuid?
+        attributes: ["@foreign_key(MailActivityType.activities)", "@exclude_from_foreign_key_check"]
+        description: "The activity type (category, default duration, chaining behavior) # logical FK to MailActivityType.id"
+      summary:
+        type: string?
+        description: "Short task summary (defaults to the type's summary)."
+      note:
+        type: string?
+        description: "Task detail / instructions (rich text in Odoo)."
+      date_deadline:
+        type: date
+        attributes: ["@indexed"]
+        description: "Due date — THE sort/filter key of the activity queue; drives the state projection (overdue/today/planned)."
+      user_id:
+        type: uuid
+        attributes: ["@required", "@foreign_key(sapiens.User.id)", "@exclude_from_foreign_key_check", "@indexed"]
+        description: "The assigned user (queue owner) # logical FK to sapiens.User.id. G-MAIL-4: CHECK (res_model IS NULL OR user_id IS NOT NULL) — an activity attached to a model MUST have an assignee."
+      requested_user_id:
+        type: uuid?
+        attributes: ["@foreign_key(sapiens.User.id)", "@exclude_from_foreign_key_check"]
+        description: "The user who requested the activity be assigned to user_id (delegation) # logical FK to sapiens.User.id"
+      state:
+        type: MailActivityState
+        attributes: ["@default(today)"]
+        lifecycle: projection
+        description: "PROJECTION (MAIL-M17) — NOT stored in Odoo. done is derived from active=False (the archived row IS the completion record: done_action archives); overdue = date_deadline < today; today = date_deadline == today; planned = date_deadline > today. Stored default kept only so the column exists for read-model materialization."
+      active:
+        type: boolean
+        attributes: ["@default(true)"]
+        description: "Archive flag — False means the activity WAS DONE (the projection's driver). Not a soft-delete: the archived row is the completion record."
+      has_recommended_activities:
+        type: boolean
+        attributes: ["@default(false)"]
+        description: "Whether this activity's type has recommended next activities (drives the done-dialog suggestions in Odoo)."
+      chained_next_activity:
+        type: json?
+        description: "Reserved for the chaining payload when done triggers the next template (trigger mode): snapshot of the template fields used to mint the successor activity."
+      calendar_event_id:
+        type: uuid?
+        attributes: ["@exclude_from_foreign_key_check"]
+        description: "The calendar event minted for meeting-category activities # logical FK to a calendar module's Event.id (cross-module, no FK)"
+      metadata:
+        type: Metadata
+        attributes: ["@audit_metadata"]
+        description: "Audit metadata (created_at, updated_at, deleted_at, created_by, updated_by, deleted_by)"
+    indexes:
+      - type: index
+        fields: [user_id, date_deadline]
+        name: mail_activity_user_deadline_idx
+      - type: index
+        fields: [res_model, res_id]
+        name: mail_activity_document_idx
+
+  # ===========================================================================
+  # mail.activity.type — the kind of to-do (M19). State-ish default-ish
+  # fields live here (chaining, delays) — the queue's vocabulary.
+  # ===========================================================================
+  - name: MailActivityType
+    collection: mail_activity_types
+    description: "mail.activity.type — the kind of to-do (M19): category (upload_invoice/phonecall/meeting/none), default summary/note, delay/count defaults, and chaining behavior (suggest/trigger). The initial delay (delay_count/delay_unit/delay_from) computes date_deadline when an activity of this type is created."
+    fields:
+      id:
+        type: uuid
+        attributes: ["@id", "@default(uuid)"]
+        description: "Primary key"
+      name:
+        type: string
+        attributes: ["@required"]
+        description: "Type name (e.g. Call, Todo, Meeting)."
+      summary:
+        type: string?
+        description: "Default summary copied onto new activities of this type."
+      note:
+        type: string?
+        description: "Default note/instructions copied onto new activities."
+      category:
+        type: MailActivityCategory?
+        description: "Uplift category: upload_invoice (asks for an upload), phonecall, meeting (mints a calendar event); null = plain todo."
+      chaining_type:
+        type: MailActivityChainingType
+        attributes: ["@required", "@default(suggest)"]
+        lifecycle:
+          shape: hand_set
+          state_machine: MailActivityTypeHooks
+          display_labels:
+            suggest: "Suggest next activities"
+            trigger: "Trigger next activity"
+        description: "What happens on done (M19): suggest = the done dialog offers recommended follow-ups; trigger = the next activity in the chain is created AUTOMATICALLY. Immutable in effect post-use (Odoo hides it once activities exist); hand-set."
+      delay_count:
+        type: integer
+        attributes: ["@default(0)"]
+        description: "Default delay before due (number of delay_units)."
+      delay_unit:
+        type: MailActivityDelayUnit
+        attributes: ["@default(days)"]
+        description: "Unit for delay_count (days/weeks/months)."
+      delay_from:
+        type: MailActivityDelayFrom
+        attributes: ["@default(previous_activity)"]
+        description: "Anchor for the delay computation (M20 chain semantics): plan_date = from the plan's date field; previous_activity = from the previous activity's deadline (sequential scheduling)."
+      default_user_id:
+        type: uuid?
+        attributes: ["@foreign_key(sapiens.User.id)", "@exclude_from_foreign_key_check"]
+        description: "Default assignee for activities of this type # logical FK to sapiens.User.id"
+      default_note:
+        type: string?
+        description: "Backwards-compat default note (older deployments write here)."
+      icon:
+        type: string?
+        description: "Icon identifier for the type (UI)."
+      res_model:
+        type: string?
+        description: "Model this type is specific to (null = available on all models)."
+      res_model_id:
+        type: uuid?
+        attributes: ["@exclude_from_foreign_key_check"]
+        description: "Logical ref to the model-registry entry for res_model # no FK"
+      active:
+        type: boolean
+        attributes: ["@default(true)"]
+        description: "Archive flag — archived types stop appearing in the schedule dialog."
+      metadata:
+        type: Metadata
+        attributes: ["@audit_metadata"]
+        description: "Audit metadata (created_at, updated_at, deleted_at, created_by, updated_by, deleted_by)"
+    indexes:
+      - type: index
+        fields: [res_model]
+        name: mail_activity_type_model_idx
+
+  # ===========================================================================
+  # mail.activity.plan — a bundle of activity templates to schedule at once
+  # (M20).
+  # ===========================================================================
+  - name: MailActivityPlan
+    collection: mail_activity_plans
+    description: "mail.activity.plan — a named bundle of activity templates (M20): 'Onboarding plan' = N templated activities scheduled in one action. A plan optionally applies to a specific res_model and can pull a date field (res_model_id.field_on_the_fly → the delay_from='plan_date' anchor). PORT NOTE: Odoo scopes plans by company; that column is DROPPED here (company_fence: none, ADR-0014)."
+    fields:
+      id:
+        type: uuid
+        attributes: ["@id", "@default(uuid)"]
+        description: "Primary key"
+      name:
+        type: string
+        attributes: ["@required"]
+        description: "Plan name (shown in the Schedule activity by plan dialog)."
+      res_model:
+        type: string?
+        description: "Model this plan applies to (null = all models)."
+      res_model_id:
+        type: uuid?
+        attributes: ["@exclude_from_foreign_key_check"]
+        description: "Logical ref to the model-registry entry for res_model # no FK"
+      active:
+        type: boolean
+        attributes: ["@default(true)"]
+        description: "Archive flag for plans."
+      metadata:
+        type: Metadata
+        attributes: ["@audit_metadata"]
+        description: "Audit metadata (created_at, updated_at, deleted_at, created_by, updated_by, deleted_by)"
+
+  # ===========================================================================
+  # mail.activity.plan.template — the plan's template rows (M21). The
+  # template rows ARE the plan→type join (with per-slot overrides).
+  # ===========================================================================
+  - name: MailActivityPlanTemplate
+    collection: mail_activity_plan_templates
+    description: "mail.activity.plan.template — one slot of a plan: the activity type to schedule, its default assignee/summary/note, and per-slot delay overrides (M21). The plan's rows ARE the plan→type composition (no separate m2m table); unique(plan_id, activity_type_id) keeps a type at most once per plan."
+    fields:
+      id:
+        type: uuid
+        attributes: ["@id", "@default(uuid)"]
+        description: "Primary key"
+      plan_id:
+        type: uuid
+        attributes: ["@required", "@foreign_key(MailActivityPlan.templates)", "@exclude_from_foreign_key_check", "@indexed"]
+        description: "The owning plan (cascade) # logical FK to MailActivityPlan.id"
+      activity_type_id:
+        type: uuid
+        attributes: ["@required", "@foreign_key(MailActivityType.plan_templates)", "@exclude_from_foreign_key_check"]
+        description: "The activity type this slot schedules (unique per plan) # logical FK to MailActivityType.id"
+      summary:
+        type: string?
+        description: "Slot summary override (falls back to the type's summary)."
+      note:
+        type: string?
+        description: "Slot note override (falls back to the type's note)."
+      delay_count:
+        type: integer?
+        description: "Slot delay override (falls back to the type's delay_count)."
+      delay_unit:
+        type: MailActivityDelayUnit?
+        description: "Slot delay-unit override."
+      user_id:
+        type: uuid?
+        attributes: ["@foreign_key(sapiens.User.id)", "@exclude_from_foreign_key_check"]
+        description: "Slot assignee override # logical FK to sapiens.User.id"
+      metadata:
+        type: Metadata
+        attributes: ["@audit_metadata"]
+        description: "Audit metadata (created_at, updated_at, deleted_at, created_by, updated_by, deleted_by)"
+    indexes:
+      - type: unique
+        fields: [plan_id, activity_type_id]
+        name: mail_activity_plan_template_uniq
+
+# =============================================================================
+# ENUMS (activity)
+# =============================================================================
+enums:
+  - name: MailActivityState
+    description: "mail.activity.state — PROJECTION (not stored in Odoo): done = archived row; overdue/today/planned from date_deadline vs today (M17)."
+    variants:
+      - name: overdue
+        description: "date_deadline < today"
+      - name: today
+        description: "date_deadline == today"
+        default: true
+      - name: planned
+        description: "date_deadline > today"
+      - name: done
+        description: "active=False — the archived row IS the completion record"
+
+  - name: MailActivityChainingType
+    description: "mail.activity.type.chaining_type — what happens on done (M19)."
+    variants:
+      - name: suggest
+        description: "The done dialog suggests recommended next activities"
+        default: true
+      - name: trigger
+        description: "The next activity in the chain is created automatically"
+
+  - name: MailActivityCategory
+    description: "mail.activity.type.category — the UI/behavioral uplift category."
+    variants:
+      - name: upload_invoice
+        description: "Asks the vendor to upload an invoice (vendor portal flow)"
+      - name: phonecall
+        description: "Phone call"
+      - name: meeting
+        description: "Meeting (mints a calendar event)"
+        default: true
+
+  - name: MailActivityDelayUnit
+    description: "Unit for activity delay_count (type default or plan-slot override)."
+    variants:
+      - name: days
+        description: "Delay in days"
+        default: true
+      - name: weeks
+        description: "Delay in weeks"
+      - name: months
+        description: "Delay in months"
+
+  - name: MailActivityDelayFrom
+    description: "Anchor for the delay computation (chain semantics, M20)."
+    variants:
+      - name: plan_date
+        description: "From the plan's date field"
+      - name: previous_activity
+        description: "From the previous activity's deadline (sequential)"
+        default: true

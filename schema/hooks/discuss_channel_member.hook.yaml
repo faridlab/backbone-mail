@@ -1,0 +1,30 @@
+# =============================================================================
+# DiscussChannelMemberHooks — write-path guards on
+# discuss.channel.member (M38).
+# G-MAIL-8: CHECK (partner_id IS NOT NULL OR guest_id IS NOT NULL) — a
+# member row must be a partner OR a guest — plus 2 partial unique indexes
+# ((channel_id,partner_id) WHERE partner_id IS NOT NULL;
+# (channel_id,guest_id) WHERE guest_id IS NOT NULL) so exactly one member
+# row per (channel, person). The partial uniques are declared on the
+# model (discuss_channel_member_partner_uniq / _guest_uniq); the XOR is a
+# service+db rule here.
+# =============================================================================
+
+name: DiscussChannelMemberHooks
+model: DiscussChannelMember
+
+rules:
+  G-MAIL-8-xor:
+    when: [create, update]
+    condition: "partner_id is not null or guest_id is not null"
+    message: "A channel member must be a partner or a guest (CHECK partner_id IS NOT NULL OR guest_id IS NOT NULL — fires on raw SQL)."
+    code: discuss_channel_member_persona_missing
+    severity: error
+    enforcement: both
+  G-MAIL-8-unique:
+    when: [create, update]
+    condition: "no two rows share (channel_id, partner_id), and no two rows share (channel_id, guest_id)"
+    message: "One member row per (channel, partner/guest) — enforced by the two partial unique indexes declared on the model."
+    code: discuss_channel_member_duplicate
+    severity: error
+    enforcement: db
