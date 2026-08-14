@@ -1,15 +1,40 @@
+# =============================================================================
 # messaging Module - Hooks Index
-# Odoo mail-core port (docs/odoo/messaging cycles 6-8).
+# Odoo mail-core port (docs/odoo/messaging cycles 6-8, mail + sms).
 #
-# Module-level configuration for hooks (lifecycle behaviors).
-# Hooks define: state machines, rules, permissions, triggers, computed fields.
+# Hook files (one per entity — the live DSL parses ONE hook per file):
+#   mail.hook.yaml                  MailHooks (state machine, MAIL-M2)
+#   mail_notification.hook.yaml     MailNotificationHooks (machine + G-MAIL-7)
+#   mail_activity.hook.yaml         G-MAIL-3 / G-MAIL-4 (no machine — projection)
+#   mail_activity_type.hook.yaml    MailActivityTypeHooks (chaining_type)
+#   mail_presence.hook.yaml         MailPresenceHooks (status)
+#   mail_followers.hook.yaml        G-MAIL-1
+#   mail_blacklist.hook.yaml        G-MAIL-2
+#   mail_alias_domain.hook.yaml     G-MAIL-5 (bounce + catchall)
+#   discuss_channel.hook.yaml       DiscussChannelHooks (immutable channel_type)
+#   discuss_channel_member.hook.yaml G-MAIL-8
+#   sms.hook.yaml                   SmsHooks (machine + G-SM1)
+#   sms_tracker.hook.yaml           G-SM2 + SM-B6 monotonic-trigger intent
+# =============================================================================
 
 module: messaging
 version: 1
 
-# Import all hook files.
+# Import all hook files (informational — discovery is a recursive glob,
+# but keeping the list accurate helps readers).
 imports:
-  - example.hook.yaml
+  - mail.hook.yaml
+  - mail_notification.hook.yaml
+  - mail_activity.hook.yaml
+  - mail_activity_type.hook.yaml
+  - mail_presence.hook.yaml
+  - mail_followers.hook.yaml
+  - mail_blacklist.hook.yaml
+  - mail_alias_domain.hook.yaml
+  - discuss_channel.hook.yaml
+  - discuss_channel_member.hook.yaml
+  - sms.hook.yaml
+  - sms_tracker.hook.yaml
 
 # =============================================================================
 # Module-level configuration
@@ -18,7 +43,10 @@ config:
   audit:
     retention_days: 365
     archive_after_days: 90
-    critical_events: []
+    critical_events:
+      - NotificationStatusChanged
+      - SmsEnqueued
+      - MailDispatchRequested
 
   notifications:
     email_enabled: false
@@ -28,9 +56,201 @@ config:
 # =============================================================================
 # Shared domain events
 # =============================================================================
-events: {}
+# Vocabulary note: the docs events catalog names the OUTBOUND facts
+# (MailDispatched, MailFailed, ActivityScheduled, BlacklistChanged, ...).
+# This port's Increment-1 event set is the QUEUE-ARMING vocabulary the
+# scheduled jobs subscribe to (self_arming triggers) plus the chatter
+# facts other modules consume. The docs names map 1:1 at Increment 2+
+# (routes/websocket layer).
+#
+# MailMessageScheduleCreated is declared ahead of its model: the
+# mail.message.schedule / mail.scheduled.message pair is deferred to a
+# later increment, but the mail-scheduled-notification job and the event
+# contract are pinned now so the emitter can land against them.
+events:
+
+  MessagePosted:
+    description: "A mail.message row was created and posted to a thread (chatter post, note, email reply or channel message). The chatter fan-out event: followers resolution and notification minting hang off it. (Docs: MessagePosted.)"
+    aggregate: MailMessage
+    version: 1
+    storage:
+      store: true
+      retention: "90_days"
+      pii_fields: [email_from]
+      index_fields: [message_id, model, res_id]
+    fields:
+      - { name: message_id, type: uuid, description: "The created MailMessage id" }
+      - { name: model, type: "string?", description: "The polymorphic parent model (null for channel messages)" }
+      - { name: res_id, type: "uuid?", description: "The polymorphic parent record id" }
+      - { name: message_type, type: string, description: "email | comment | notification | sms" }
+      - { name: subtype_id, type: "uuid?", description: "The chatter event subtype (null = plain comment)" }
+      - { name: author_party_id, type: "uuid?", description: "Author partner (identity source 1)" }
+      - { name: author_guest_id, type: "uuid?", description: "Author guest (identity source 2 — XOR with author_party_id)" }
+
+  NotificationStatusChanged:
+    description: "A mail.notification row's notification_status transitioned (ready→process→pending→sent | bounce/exception/canceled). The delivery-status pulse — drives failure badges, retry and the sms tracker write-back. (Docs: NotificationStatusChanged.)"
+    aggregate: MailNotification
+    version: 1
+    storage:
+      store: true
+      retention: "180_days"
+      index_fields: [notification_id, mail_message_id, recipient_party_id]
+    fields:
+      - { name: notification_id, type: uuid, description: "The MailNotification row id" }
+      - { name: mail_message_id, type: uuid, description: "The message the notification hangs off" }
+      - { name: recipient_party_id, type: "uuid?", description: "The recipient partner" }
+      - { name: notification_type, type: string, description: "inbox | email | sms" }
+      - { name: from_status, type: string, description: "Prior notification_status (LABEL-INVERTED field: pending displays 'Sent', sent displays 'Delivered')" }
+      - { name: to_status, type: string, description: "New notification_status" }
+
+  ActivityDone:
+    description: "A mail.activity was done (active=False set — the archived row IS the completion record). Carries whether chaining minted a successor activity (trigger mode) or only suggested one (suggest mode). (Docs: ActivityDone.)"
+    aggregate: MailActivity
+    version: 1
+    storage:
+      store: true
+      retention: "365_days"
+      index_fields: [activity_id, res_model, res_id]
+    fields:
+      - { name: activity_id, type: uuid, description: "The completed MailActivity id" }
+      - { name: res_model, type: "string?", description: "The document model the activity was attached to" }
+      - { name: res_id, type: "uuid?", description: "The document id" }
+      - { name: user_id, type: uuid, description: "The assignee who owned the activity" }
+      - { name: feedback, type: "string?", description: "Optional completion note" }
+      - { name: chained_next, type: boolean, description: "Whether a successor activity was auto-created (chaining_type=trigger)" }
+
+  FollowerChanged:
+    description: "A mail.followers row was created or removed — the subscription registry pulse (drives who gets notified). (Docs: FollowerChanged.)"
+    aggregate: MailFollowers
+    version: 1
+    storage:
+      store: true
+      retention: "180_days"
+      index_fields: [follower_id, res_model, res_id]
+    fields:
+      - { name: follower_id, type: uuid, description: "The MailFollowers row id" }
+      - { name: res_model, type: string, description: "The followed document's model" }
+      - { name: res_id, type: uuid, description: "The followed document's id" }
+      - { name: partner_id, type: "uuid?", description: "The following partner" }
+      - { name: change, type: string, description: "subscribed | unsubscribed" }
+
+  SmsEnqueued:
+    description: "An outgoing SMS entered the send queue (Sms row created in state outgoing). Arms the self-arming sms-process-queue job. Derived port vocabulary — the docs catalog has no sms queue event (the sms addon arms its cron by interval only); the self_arming posture requires an arming event. (Docs: none — port addition for SJ sms-process-queue.)"
+    aggregate: Sms
+    version: 1
+    storage:
+      store: true
+      retention: "90_days"
+      pii_fields: [number]
+      index_fields: [sms_id, uuid]
+    fields:
+      - { name: sms_id, type: uuid, description: "The Sms row id" }
+      - { name: uuid, type: string, description: "The Sms row's external uuid (the tracker's link target)" }
+      - { name: number, type: string, description: "The E.164 recipient number (PII)" }
+      - { name: mail_message_id, type: "uuid?", description: "The message the SMS was minted from" }
+
+  MailCreated:
+    description: "An outgoing email entered the send queue (Mail row created in state outgoing). Arms the self-arming mail-send-queue job. Derived port vocabulary — the docs' MailDispatched/MailFailed describe outcomes; this is the queue-entry arming fact. (Docs: none — port addition for SJ mail-send-queue.)"
+    aggregate: Mail
+    version: 1
+    storage:
+      store: true
+      retention: "90_days"
+      pii_fields: [email_to]
+      index_fields: [mail_id, mail_message_id, state]
+    fields:
+      - { name: mail_id, type: uuid, description: "The Mail row id" }
+      - { name: mail_message_id, type: uuid, description: "The delegated MailMessage id (the _inherits FK)" }
+      - { name: state, type: string, description: "Initial state (outgoing) — snapshot for audit" }
+      - { name: scheduled_date, type: "datetime?", description: "Deferred-send time (null = send ASAP)" }
+
+  MailDispatchRequested:
+    description: "A batch of notifications was handed to the mail dispatcher (the notify pump grouped per-message recipients into one Mail row). Marks the ready→process boundary. Derived port vocabulary. (Docs: MailDispatched is the outcome; this is the request that precedes it.)"
+    aggregate: MailNotification
+    version: 1
+    storage:
+      store: true
+      retention: "90_days"
+      pii_fields: [email_to]
+      index_fields: [mail_id, mail_message_id]
+    fields:
+      - { name: mail_id, type: uuid, description: "The Mail row minted for the dispatch" }
+      - { name: mail_message_id, type: uuid, description: "The message being dispatched" }
+      - { name: email_to, type: "string?", description: "Recipients (comma-separated; PII)" }
+      - { name: notification_ids, type: "array<uuid>", description: "The notification rows included in this dispatch" }
+
+  SmsCreated:
+    description: "Alias of SmsEnqueued kept as the canonical arming trigger name for the sms-process-queue job's triggers list (the job subscribes by this name). Same emission point as SmsEnqueued. Derived port vocabulary. (Docs: none.)"
+    aggregate: Sms
+    version: 1
+    storage:
+      store: false
+      pii_fields: [number]
+    fields:
+      - { name: sms_id, type: uuid, description: "The Sms row id" }
+      - { name: uuid, type: string, description: "The Sms row's external uuid" }
+      - { name: number, type: string, description: "The E.164 recipient number (PII)" }
+      - { name: state, type: string, description: "Initial state (outgoing)" }
+
+  MailMessageScheduleCreated:
+    description: "A scheduled notification was armed (a mail.message.schedule row minted — the model itself is DEFERRED to a later increment; the event and the mail-scheduled-notification job contract are pinned now so the emitter can land against them). Derived port vocabulary. (Docs: none — port addition for SJ mail-scheduled-notification.)"
+    aggregate: MailMessageSchedule
+    version: 1
+    storage:
+      store: true
+      retention: "365_days"
+      index_fields: [scheduled_datetime]
+    fields:
+      - { name: schedule_id, type: uuid, description: "The schedule row id (model deferred — see description)" }
+      - { name: mail_message_id, type: "uuid?", description: "The message to send when the schedule fires" }
+      - { name: notification_ids, type: "array<uuid>", description: "The notifications armed by this schedule" }
+      - { name: scheduled_datetime, type: datetime, description: "When the send should fire" }
 
 # =============================================================================
-# Scheduled jobs
+# Scheduled jobs (ADR-0020 postures)
 # =============================================================================
-scheduled_jobs: {}
+# Posture notes (from the docs job catalog SJ-MAIL-*):
+#  - queue drainers are self_arming (events re-arm; the cron interval is
+#    only a floor) with pickup_lock (FOR UPDATE SKIP LOCKED) and
+#    commit_per_batch (bounds the replay window);
+#  - GC reapers ride the shared autovacuum with a single_transaction (a
+#    partial GC then crash replays idempotently — delete is idempotent).
+scheduled_jobs:
+
+  sms-process-queue:
+    schedule: "*/5 * * * *"
+    handler: "sms::process_queue"
+    posture: self_arming
+    triggers: ["SmsCreated"]
+    commit_policy: commit_per_batch
+    pickup_lock: true
+
+  mail-send-queue:
+    schedule: "*/5 * * * *"
+    handler: "mail::send_queue"
+    posture: self_arming
+    triggers: ["MailCreated"]
+    commit_policy: commit_per_batch
+    pickup_lock: true
+
+  mail-notification-gc:
+    schedule: "0 3 * * *"
+    handler: "mail_notification::gc"
+    posture: autovacuum_ride
+    commit_policy: single_transaction
+    pickup_lock: true
+
+  sms-gc-device:
+    schedule: "0 3 * * *"
+    handler: "sms::gc"
+    posture: autovacuum_ride
+    commit_policy: single_transaction
+    pickup_lock: true
+
+  mail-scheduled-notification:
+    schedule: "*/5 * * * *"
+    handler: "mail_scheduled_notification::dispatch_due"
+    posture: self_arming
+    triggers: ["MailMessageScheduleCreated"]
+    commit_policy: commit_per_batch
+    pickup_lock: true

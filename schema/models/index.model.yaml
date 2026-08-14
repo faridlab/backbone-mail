@@ -69,6 +69,53 @@ shared_types:
 
   Metadata: [Timestamps, Actors]
 
-# Import each entity model. Replace `example` with your real entities.
+# Import each entity model (informational — discovery is a recursive glob,
+# but keeping the list accurate helps readers).
 imports:
-  - example.model.yaml
+  - core.model.yaml
+  - activity.model.yaml
+  - alias.model.yaml
+  - discuss.model.yaml
+  - sms.model.yaml
+
+# =============================================================================
+# FLAG-ID COVERAGE — docs/odoo/messaging port (this module closes):
+#
+# Mail core (docs/odoo/messaging/mail):
+#   MAIL-M1  MailMessage               core.model.yaml
+#   MAIL-M2  Mail                      core.model.yaml (+hooks/mail.hook.yaml)
+#   MAIL-M3  MailNotification          core.model.yaml (+hooks/mail_notification.hook.yaml, label inversion)
+#   M4       MailMessageSubtype        core.model.yaml
+#   M5       MailMessageReaction       core.model.yaml
+#   M10      MailFollowers             core.model.yaml (+hooks/mail_followers.hook.yaml, G-MAIL-1)
+#   M11      MailPresence              core.model.yaml (+hooks/mail_presence.hook.yaml)
+#   M16      polymorphic edge          message (model,res_id) columns — the edge lives HERE, hosts get no column
+#   M22      MailTrackingValue         core.model.yaml
+#   M24      MailBlacklist             core.model.yaml (+hooks/mail_blacklist.hook.yaml, G-MAIL-2)
+#   M33      MailAlias                 alias.model.yaml
+#   M34      MailAliasDomain           alias.model.yaml (+hooks/mail_alias_domain.hook.yaml, G-MAIL-5)
+#   M37      DiscussChannel            discuss.model.yaml (+hooks/discuss_channel.hook.yaml)
+#   M38      DiscussChannelMember      discuss.model.yaml (+hooks/discuss_channel_member.hook.yaml, G-MAIL-8)
+#   M43      MailGuest                 discuss.model.yaml
+#   MAIL-M17 MailActivity              activity.model.yaml (state = projection)
+#   M19      MailActivityType          activity.model.yaml (+hooks/mail_activity_type.hook.yaml)
+#   M20      MailActivityPlan          activity.model.yaml
+#   M21      MailActivityPlanTemplate  activity.model.yaml
+#   G-MAIL-3/4 activity CHECKs         hooks/mail_activity.hook.yaml
+#   MAIL-B6  inbound message_id dedup  core.model.yaml (message_id indexed; advisory-lock dedup is gateway-layer, Increment 2+)
+#   MAIL-B8  notification GC 180d      hooks/index.hook.yaml (mail-notification-gc job; portal-row carve-out NOT ported — a port should reap them)
+#
+# SMS (docs/odoo/messaging/sms):
+#   SM-M1/2  Sms (queue row)           sms.model.yaml (+hooks/sms.hook.yaml machine, G-SM1)
+#   SM-M3    SmsTemplate               sms.model.yaml
+#   SM-M1/4  SmsTracker                sms.model.yaml (+hooks/sms_tracker.hook.yaml, G-SM2, SM-B6 trigger intent)
+#   SM-M5    sms overlay folded        core.model.yaml (message_type/notification_type 'sms', NotificationFailureType vocab)
+#   SM-F19   label inversion           Sms.state + MailNotification.notification_status display_labels (pending='Sent', sent='Delivered')
+#
+# NOT ported (by design — see module brief): framework extensions (ir.*/res.*,
+# G-MAIL-6 lives on res.users), wizards, mixins, push devices, RTC/gif/voice/
+# previews/translations/MailMessageSchedule+MailScheduledMessage MODELS
+# (their event/job contracts ARE pinned in hooks/index.hook.yaml),
+# fetchmail/ir.mail_server (gateway layer, Increment 2+), mail.template
+# (lives in backbone-notification).
+# =============================================================================
