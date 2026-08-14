@@ -1,0 +1,19 @@
+-- Down: drop enum types for messaging module
+DROP TYPE IF EXISTS sms_failure_type CASCADE;
+DROP TYPE IF EXISTS sms_state CASCADE;
+DROP TYPE IF EXISTS sidebar_fold_state CASCADE;
+DROP TYPE IF EXISTS discuss_channel_type CASCADE;
+DROP TYPE IF EXISTS mail_presence_status CASCADE;
+DROP TYPE IF EXISTS mail_moderation_status CASCADE;
+DROP TYPE IF EXISTS mail_notification_status CASCADE;
+DROP TYPE IF EXISTS mail_notification_type CASCADE;
+DROP TYPE IF EXISTS notification_failure_type CASCADE;
+DROP TYPE IF EXISTS mail_failure_type CASCADE;
+DROP TYPE IF EXISTS mail_state CASCADE;
+DROP TYPE IF EXISTS mail_message_type CASCADE;
+DROP TYPE IF EXISTS mail_alias_contact CASCADE;
+DROP TYPE IF EXISTS mail_activity_delay_from CASCADE;
+DROP TYPE IF EXISTS mail_activity_delay_unit CASCADE;
+DROP TYPE IF EXISTS mail_activity_category CASCADE;
+DROP TYPE IF EXISTS mail_activity_chaining_type CASCADE;
+DROP TYPE IF EXISTS mail_activity_state CASCADE;
