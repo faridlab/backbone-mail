@@ -1,0 +1,52 @@
+# =============================================================================
+# Domain: Skeleton
+# Entity: Example
+# Description: Minimal reference entity for the Backbone module skeleton.
+#              Copy this file and rename to your own entity to get started.
+# =============================================================================
+
+models:
+  - name: Example
+    collection: examples
+    description: "Reference entity demonstrating the minimal Backbone module skeleton"
+
+    fields:
+      id:
+        type: uuid
+        attributes: ["@id", "@default(uuid)"]
+        description: "Unique identifier"
+
+      name:
+        type: string
+        attributes: ["@required", "@length(max=200)"]
+        description: "Human-readable name"
+
+      description:
+        type: string?
+        description: "Optional long-form description"
+
+      status:
+        type: ExampleStatus
+        attributes: ["@default(active)"]
+        description: "Lifecycle status"
+
+      metadata:
+        type: Metadata
+        attributes: ["@audit_metadata"]
+        description: "Audit metadata (created_at, updated_at, deleted_at, created_by, updated_by, deleted_by)"
+
+    indexes:
+      - type: index
+        fields: [status]
+      - type: index
+        fields: [name]
+
+enums:
+  - name: ExampleStatus
+    description: "Lifecycle status for Example entities"
+    variants:
+      - name: active
+        description: "Active and usable"
+        default: true
+      - name: inactive
+        description: "Retired / hidden"

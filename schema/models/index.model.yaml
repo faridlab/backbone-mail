@@ -1,0 +1,74 @@
+# =============================================================================
+# mail Module - Schema Index
+# =============================================================================
+# Version: 2.0
+# Description: Module schema index. `module:` and `schema:` are stamped from the
+# module name by `metaphor module create`. `schema:` gives this module its OWN
+# Postgres schema (migrations emit `CREATE SCHEMA mail` and qualify tables
+# as `mail.<table>`) — the convention every backbone module follows
+# (see backbone-sapiens, backbone-bucket). Do not remove it.
+# =============================================================================
+
+module: messaging
+version: 1
+schema: messaging
+description: "Odoo mail core — message/notification/followers/activity/alias/sms queue (single-tenant, fence none)"
+
+company_fence: none
+
+# ADR-0014 posture 4: the Odoo messaging stack is single-tenant — no company
+# dimension anywhere (theme C2: zero ir.rules, no company_id). Declaring
+# `none` emits no RLS migration; synthesizing company columns would change
+# behavior, not just enforcement. Dir/cargo say `backbone-mail` (the framework
+# crate `backbone-messaging` took that name); schema keys stay `messaging`.
+
+config:
+  database: postgresql
+  soft_delete: true
+  audit: true
+  default_timestamps: true
+  generators:
+    disabled:
+      - graphql
+      - grpc
+      - proto
+
+# Reuse sapiens for user identity (actors) — logical refs, no DB constraint.
+external_imports:
+  - module: sapiens
+    types: [User]
+
+# Shared value-object types available to all models in this module.
+shared_types:
+  Timestamps:
+    created_at:
+      type: datetime
+      attributes: ["@default(now)"]
+      description: "Record creation timestamp"
+    updated_at:
+      type: datetime
+      attributes: ["@updated_at"]
+      description: "Last update timestamp"
+    deleted_at:
+      type: datetime?
+      description: "Soft delete timestamp"
+
+  Actors:
+    created_by:
+      type: uuid?
+      attributes: ["@foreign_key(sapiens.User.id)"]
+      description: "User who created this record"
+    updated_by:
+      type: uuid?
+      attributes: ["@foreign_key(sapiens.User.id)"]
+      description: "User who last updated this record"
+    deleted_by:
+      type: uuid?
+      attributes: ["@foreign_key(sapiens.User.id)"]
+      description: "User who deleted this record"
+
+  Metadata: [Timestamps, Actors]
+
+# Import each entity model. Replace `example` with your real entities.
+imports:
+  - example.model.yaml
