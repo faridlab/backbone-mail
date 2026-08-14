@@ -1,0 +1,57 @@
+# =============================================================================
+# SmsHooks — sms.sms.state (SM-M1/SM-M2, SM-F19).
+# HAND-SET send-queue state with the SAME label inversion as
+# MailNotification.notification_status (display_labels on the model field
+# preserve it: pending='Sent', sent='Delivered'). Picked by the
+# self-arming sms-process-queue job (pickup_lock, commit_per_batch).
+# Rows are unlinked once terminal + tracker-written; the SmsTracker row
+# survives (decoupled by uuid).
+#
+# Rule G-SM1 documents Sms.uuid @unique (declared on the model).
+# =============================================================================
+
+name: SmsHooks
+model: Sms
+
+states:
+  field: state
+  values:
+    outgoing:
+      initial: true
+    process: {}
+    pending: {}
+    sent:
+      final: true
+    error: {}
+    canceled:
+      final: true
+  transitions:
+    pickup:
+      from: outgoing
+      to: process
+      message: "Claimed by sms-process-queue (FOR UPDATE SKIP LOCKED)"
+    iap_accepted:
+      from: process
+      to: pending
+      message: "LABEL 'Sent' — accepted by IAP, awaiting delivery report"
+    delivery_confirmed:
+      from: pending
+      to: sent
+      message: "LABEL 'Delivered' — confirmed by the delivery report (tracker-written)"
+    send_failed:
+      from: [process, pending]
+      to: error
+      message: "Failed — failure_type set (number/credit/gateway/blacklist/...)"
+    canceled:
+      from: [outgoing, process, pending]
+      to: canceled
+      message: "Cancelled before/at send"
+
+rules:
+  G-SM1:
+    when: [create, update]
+    condition: "uuid is unique across sms rows"
+    message: "sms.sms _uuid_unique — the uuid is the IAP correlation key and the tracker's link target; duplicates are rejected (fires on raw SQL in v19). Enforced by @unique on Sms.uuid."
+    code: sms_uuid_duplicate
+    severity: error
+    enforcement: db

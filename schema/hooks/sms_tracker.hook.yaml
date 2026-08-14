@@ -1,0 +1,38 @@
+# =============================================================================
+# SmsTrackerHooks — rules on sms.tracker (SM-M1/SM-M4).
+# No state machine here: tracker state reuses MailNotificationStatus and is
+# declared hand_set on the model field.
+#
+# SM-B6 INTENT (NOT DSL-EXPRESSIBLE — hand-written DB trigger lands
+# separately): tracker status must only move FORWARD (process/pending →
+# sent | bounce/exception/canceled; an ignored/error report may NOT
+# downgrade a sent/bounced row). Odoo enforces this in Python via a
+# filtered() BEFORE the write with NO SELECT FOR UPDATE — a TOCTOU window
+# exists between the read and the write (a late delivery report can race a
+# bounce update). The port must close this with a DB trigger of the shape:
+#
+#   CREATE FUNCTION sms_tracker_monotonic() RETURNS trigger AS $$
+#   BEGIN
+#     IF NEW.state <> OLD.state AND (
+#          (OLD.state IN ('sent','bounce') AND NEW.state NOT IN ('sent','bounce'))
+#       OR (OLD.state = 'pending' AND NEW.state IN ('process','ready'))
+#     ) THEN
+#       RAISE EXCEPTION 'sms.tracker state is monotonic: % -> %', OLD.state, NEW.state;
+#     END IF;
+#     RETURN NEW;
+#   END $$ LANGUAGE plpgsql;
+#
+# Rule G-SM2 documents the unique(sms_uuid) declared on the model.
+# =============================================================================
+
+name: SmsTrackerHooks
+model: SmsTracker
+
+rules:
+  G-SM2:
+    when: [create, update]
+    condition: "sms_uuid is unique across tracker rows"
+    message: "sms.tracker _sms_uuid_unique — the 1:1 uuid↔tracker guarantee. Because the tracker is decoupled from sms.id by design (sent rows are GC'd), this unique is what enforces the correspondence. Enforced by @unique on SmsTracker.sms_uuid (fires on raw SQL)."
+    code: sms_tracker_uuid_duplicate
+    severity: error
+    enforcement: db

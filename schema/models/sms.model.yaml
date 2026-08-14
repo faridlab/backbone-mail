@@ -1,0 +1,212 @@
+# =============================================================================
+# Module: backbone-mail — Area: SMS QUEUE (SM-M1..SM-M4).
+# Ported from docs/odoo/messaging/sms: addons/sms/models/
+# {sms_sms,sms_template,sms_tracker}.py.
+#
+# PORT DECISIONS:
+#  - sms_sms.state is HAND-SET with the SAME label inversion as
+#    MailNotification.notification_status (SM-F19: pending='Sent',
+#    sent='Delivered') — the copied pattern, preserved verbatim.
+#  - SmsTracker is DECOUPLED from Sms by uuid (no FK): the tracker row
+#    outlives the sms row it tracks (the sms row is deleted once
+#    terminal; the tracker carries status home to MailNotification).
+#    This is the same GC seam as MailNotification.mail_mail_id_int.
+#  - SMS send goes through the IAP gateway; the provider surface is NOT
+#    ported (Increment 2+) — only the queue data layer.
+# =============================================================================
+
+models:
+
+  # ===========================================================================
+  # sms.sms — THE outgoing-SMS send-queue row (SM-M1/SM-M2).
+  # ===========================================================================
+  - name: Sms
+    collection: sms
+    description: "sms.sms — THE outgoing-SMS send-queue row (SM-M1/SM-M2): one recipient, one body, a state, a failure slot. Picked by the self-arming sms-process-queue job in batches. state is HAND-SET and LABEL-INVERTED exactly like MailNotification.notification_status (SM-F19): pending displays 'Sent' (handed to IAP), sent displays 'Delivered' (delivery-report confirmed). Rows are unlinked once terminal + tracker-written; the tracker row survives."
+    fields:
+      id:
+        type: uuid
+        attributes: ["@id", "@default(uuid)"]
+        description: "Primary key"
+      uuid:
+        type: string
+        attributes: ["@required", "@unique"]
+        description: "The queue row's external identity — the value the SmsTracker holds (the tracker does NOT hold the row id; it survives the row's deletion). Generated at create."
+      number:
+        type: string
+        attributes: ["@required", "@indexed"]
+        description: "The E.164 recipient number (sanitized on write; unsanitizable → error/sms_number_format without a queue row)."
+      body:
+        type: string
+        attributes: ["@required"]
+        description: "The SMS plaintext (built from the template/sanitize; the HTML-ized copy lives on the mail.message body)."
+      state:
+        type: SmsState
+        attributes: ["@required", "@default(outgoing)", "@indexed"]
+        lifecycle:
+          shape: hand_set
+          state_machine: SmsHooks
+          display_labels:
+            outgoing: "In Queue"
+            process: "Processing"
+            pending: "Sent"
+            sent: "Delivered"
+            error: "Error"
+            canceled: "Cancelled"
+        description: "HAND-SET send-queue state with the SAME label inversion as MailNotification.notification_status (SM-F19 — preserved VERBATIM): outgoing='In Queue' (picked by sms-process-queue); process='Processing'; pending='Sent' (accepted by IAP, awaiting delivery report); sent='Delivered' (confirmed by delivery report); error (failure_type set); canceled."
+      failure_type:
+        type: SmsFailureType?
+        description: "Failure code (the sms send-side vocabulary: number_missing/number_format/country_not_supported/registration_needed/credit/server/acc/blacklist/duplicate/optout)."
+      error_message:
+        type: string?
+        description: "Human-readable failure detail."
+      mail_message_id:
+        type: uuid?
+        attributes: ["@foreign_key(MailMessage.sms)", "@exclude_from_foreign_key_check", "@indexed"]
+        description: "The message this SMS was minted from (the sms channel writes message_type='sms') # logical FK to MailMessage.id"
+      iap_status_code:
+        type: integer?
+        description: "The raw IAP gateway status code (kept for diagnostics alongside the normalized failure_type)."
+      metadata:
+        type: Metadata
+        attributes: ["@audit_metadata"]
+        description: "Audit metadata (created_at, updated_at, deleted_at, created_by, updated_by, deleted_by)"
+    indexes:
+      - type: index
+        fields: [state]
+        name: sms_state_idx
+
+  # ===========================================================================
+  # sms.template — the SMS template (SM-M3). Rendered with the same EVM2
+  # engine as mail templates; the engine itself lives in
+  # backbone-notification (NOT ported here).
+  # ===========================================================================
+  - name: SmsTemplate
+    collection: sms_templates
+    description: "sms.template — the SMS template (SM-M3): body + model + optional language condition, rendered through the same EVM2 engine as mail templates (the engine lives in backbone-notification, not here). Templates are picked per-recipient by condition/language with first-match-wins semantics."
+    fields:
+      id:
+        type: uuid
+        attributes: ["@id", "@default(uuid)"]
+        description: "Primary key"
+      name:
+        type: string
+        attributes: ["@required"]
+        description: "Template name."
+      body:
+        type: string
+        attributes: ["@required"]
+        description: "Template body with {{ placeholders }} (EVM2; 160-char segments after render — the render layer warns on overflow)."
+      model_id:
+        type: uuid?
+        attributes: ["@exclude_from_foreign_key_check"]
+        description: "Registry ref: the model this template renders against (ir.model — framework, not ported). Logical column, no FK."
+      lang:
+        type: string?
+        description: "Language condition (rendered expression or fixed code) — template selection input."
+      condition:
+        type: string?
+        description: "Domain/expression restricting when this template is eligible."
+      active:
+        type: boolean
+        attributes: ["@default(true)"]
+        description: "Archive flag for templates."
+      metadata:
+        type: Metadata
+        attributes: ["@audit_metadata"]
+        description: "Audit metadata (created_at, updated_at, deleted_at, created_by, updated_by, deleted_by)"
+
+  # ===========================================================================
+  # sms.tracker — the delivery-report relay (SM-M1/SM-M4). DECOUPLED from
+  # Sms by uuid (no FK) — the tracker OUTLIVES the sms row.
+  # ===========================================================================
+  - name: SmsTracker
+    collection: sms_trackers
+    description: "sms.tracker — the delivery-report relay (SM-M1/SM-M4): one row per (sms uuid, recipient) written when an SMS is queued; the IAP delivery report is matched back onto this row, which then carries status home to MailNotification (failure_type notification update) and MailMessage (the sms status slot). DECOUPLED from the Sms row by uuid — G-SM2 unique(sms_uuid): the tracker survives the sms row's deletion (the queue row is unlinked once terminal). SM-B6: tracker status must only move FORWARD (ignored/error → sent/bounced); Odoo enforces this in Python via a filtered() BEFORE the write with NO SELECT FOR UPDATE — a TOCTOU window. A hand-written DB trigger is needed; the DSL cannot express monotonic transitions (declared as intent in sms_tracker.hook.yaml)."
+    fields:
+      id:
+        type: uuid
+        attributes: ["@id", "@default(uuid)"]
+        description: "Primary key"
+      sms_uuid:
+        type: string
+        attributes: ["@required", "@unique"]
+        description: "G-SM2 unique — the Sms row's uuid (NOT its id; the tracker outlives the row)."
+      message_id:
+        type: uuid?
+        attributes: ["@foreign_key(MailMessage.sms_trackers)", "@exclude_from_foreign_key_check", "@indexed"]
+        description: "The MailMessage the SMS hangs off (status rides home to its notification) # logical FK to MailMessage.id"
+      notification_id:
+        type: uuid?
+        attributes: ["@foreign_key(MailNotification.sms_trackers)", "@exclude_from_foreign_key_check"]
+        description: "The MailNotification whose failure_type this tracker writes (the sms channel status sink) # logical FK to MailNotification.id"
+      state:
+        type: MailNotificationStatus
+        attributes: ["@required", "@default(process)", "@indexed"]
+        lifecycle: hand_set
+        description: "Tracker state — reuses MailNotificationStatus (process → pending → sent | bounce/exception/canceled; same label inversion). SM-B6: monotonic (no backward transitions; see the DB-trigger intent note)."
+      failure_type:
+        type: NotificationFailureType?
+        description: "The delivery-report failure code (sms_expired/sms_invalid_destination/sms_not_allowed/sms_not_delivered/sms_rejected + the send-side codes) — copied onto MailNotification.failure_type."
+      failure_reason:
+        type: string?
+        description: "Human-readable failure detail."
+      recipient:
+        type: string?
+        description: "The recipient number as sent (the tracker is per-recipient when a send fans out)."
+      metadata:
+        type: Metadata
+        attributes: ["@audit_metadata"]
+        description: "Audit metadata (created_at, updated_at, deleted_at, created_by, updated_by, deleted_by)"
+    indexes:
+      - type: index
+        fields: [message_id]
+        name: sms_tracker_message_idx
+
+# =============================================================================
+# ENUMS (sms)
+# =============================================================================
+enums:
+  - name: SmsState
+    description: "sms.sms.state — HAND-SET send-queue state with the SAME label inversion as MailNotification.notification_status (SM-F19): pending='Sent', sent='Delivered'."
+    variants:
+      - name: outgoing
+        description: "In queue — picked by sms-process-queue"
+        default: true
+      - name: process
+        description: "Being sent (picked up by the queue job)"
+      - name: pending
+        description: "LABEL 'Sent' — accepted by IAP, awaiting delivery report"
+      - name: sent
+        description: "LABEL 'Delivered' — confirmed by delivery report"
+      - name: error
+        description: "Failed (failure_type set)"
+      - name: canceled
+        description: "Cancelled"
+
+  - name: SmsFailureType
+    description: "sms.sms.failure_type — the send-side sms vocabulary (the 5 delivery-report codes live in NotificationFailureType for tracker writes)."
+    variants:
+      - name: sms_number_missing
+        description: "No phone number"
+      - name: sms_number_format
+        description: "Unsanitizable number format"
+      - name: sms_country_not_supported
+        description: "Country not covered by the gateway"
+      - name: sms_registration_needed
+        description: "Sender registration required"
+      - name: sms_credit
+        description: "Insufficient IAP credit"
+        default: true
+      - name: sms_server
+        description: "IAP server error"
+      - name: sms_acc
+        description: "IAP account error"
+      - name: sms_blacklist
+        description: "Number blacklisted / STOP reply"
+      - name: sms_duplicate
+        description: "Duplicate send suppressed"
+      - name: sms_optout
+        description: "Recipient opted out"
+      - name: unknown
+        description: "Unclassified failure"
