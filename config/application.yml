@@ -78,3 +78,8 @@ jobs:
   # SM-B13: an sms row stuck in `process` longer than this is swept
   # (alert event + bounded re-queue).
   sms_process_stuck_threshold_minutes: 30
+  # MAIL-B8: mail_notification reap-all age bound (Odoo's cleanup default).
+  mail_notification_retention_days: 30
+  # M43: a guest whose last_connection_dt is older than this is soft-deleted
+  # by mail-guest-gc (possession of the dgid cookie was its only identity).
+  guest_stale_minutes: 60
