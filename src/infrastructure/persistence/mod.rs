@@ -102,6 +102,7 @@ pub mod attachment_repository;
 pub mod chatter_repository;
 
 // Increment-3 gateway SQL (user-owned): the SMTP selection ladder
-// (_find_mail_server).
+// (_find_mail_server) and the inbound pipeline reads/writes.
 pub mod smtp_selection_repository;
+pub mod inbound_repository;
 // END CUSTOM

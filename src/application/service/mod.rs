@@ -139,10 +139,15 @@ pub use recipient_query_service::{
 pub use thread_chatter_service::{ChatterError, ThreadChatterService};
 
 // Increment-3 gateway core (user-owned): the outbound transport port and the
-// server-selection ladder query service (MAIL-M26).
+// server-selection ladder query service (MAIL-M26), plus the inbound webhook
+// pipeline (MAIL-M27/M28; MAIL-B2/B6; token consteq).
 pub mod mail_ports;
 pub mod mail_server_query_service;
+pub mod mail_inbound_service;
 
 pub use mail_ports::{MailApiPort, MailSendFailure, MailSendOutcome, MailSendRequest, NoopMailApi};
 pub use mail_server_query_service::{MailServerQueryError, MailServerQueryService};
+pub use mail_inbound_service::{
+    InboundMessage, InboundOutcome, MailInboundError, MailInboundService,
+};
 // END CUSTOM

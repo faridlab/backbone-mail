@@ -395,6 +395,15 @@ impl MessagingModule {
         presentation::http::webhook_routes::composer().with_state(self.clone())
     }
 
+    /// The inbound email webhook (`POST /mail/inbound/:server_id`, MAIL-M27
+    /// webhook mode). BARE mount — no auth middleware; the per-server bearer
+    /// token IS the auth (SHA-256 consteq against the stored hash; unknown
+    /// server / inactive server / bad token all answer the same 401 — no
+    /// oracle). Throttled 120/60s.
+    pub fn inbound_routes(self: &Arc<Self>) -> Router {
+        presentation::http::inbound_routes::composer().with_state(self.clone())
+    }
+
     /// The realtime SSE stream (`GET /mail/realtime/stream`). Requires the
     /// `guest_context` middleware AND the `realtime::SessionSecret` router
     /// extension — the same contract as the presence group. The host app

@@ -44,6 +44,8 @@ pub mod presence_routes;
 pub mod attachment_routes;
 pub mod webhook_routes;
 pub mod public_routes;
+// Increment 3 — the inbound email webhook (MAIL-M27; token consteq, bare mount).
+pub mod inbound_routes;
 // END CUSTOM
 
 // Re-exports
