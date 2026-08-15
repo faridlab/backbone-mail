@@ -81,4 +81,17 @@ pub mod activity_repository;
 pub mod sms_queue_repository;
 pub mod mail_queue_repository;
 pub mod alias_resolution_repository;
+
+// Increment-2 SQL (user-owned): channel/member ops, reactions, edits, stars,
+// presence, guests, schedules, GC/sweeps, attachments, and the chatter reads.
+pub mod channel_repository;
+pub mod channel_member_repository;
+pub mod reaction_repository;
+pub mod message_edit_repository;
+pub mod presence_repository;
+pub mod guest_repository;
+pub mod schedule_repository;
+pub mod gc_repository;
+pub mod attachment_repository;
+pub mod chatter_repository;
 // END CUSTOM

@@ -71,8 +71,12 @@ use sqlx::PgPool;
 
 // <<< CUSTOM
 use crate::application::service::{
-    ActivityWriteService, AliasWriteService, FollowerWriteService, MailQueueWriteService,
-    MessageWriteService, SmsWriteService,
+    ActivityWriteService, AliasWriteService, AttachmentWriteService, ChannelMemberWriteService,
+    ChannelQueryService, ChannelWriteService, FollowerWriteService, GuestWriteService,
+    MailQueueWriteService, MessageEditService, MessageQueryService, MessageWriteService,
+    PresenceWriteService, ReactionWriteService, RecipientQueryService, ScheduleWriteService,
+    SmsWriteService, StaticThreadAccess, ThreadAclSlot, ThreadAccessResolver,
+    ThreadChatterService, TypingService,
 };
 // END CUSTOM
 /// Messaging module configuration
@@ -126,6 +130,26 @@ pub struct MessagingModule {
     pub sms_write_service: Arc<SmsWriteService>,
     pub mail_queue_write_service: Arc<MailQueueWriteService>,
     pub alias_write_service: Arc<AliasWriteService>,
+
+    /// The swappable MAIL-B1 resolver slot — install a host's thread ACL with
+    /// [`MessagingModule::set_thread_acl`]. Defaults to DenyHostDocs.
+    pub thread_acl: ThreadAclSlot,
+    /// The host-facing chatter edge (post/read/follow/schedule, all gated).
+    pub thread_chatter_service: Arc<ThreadChatterService>,
+    /// Increment-2 write services (user-owned; see each file's header).
+    pub channel_write_service: Arc<ChannelWriteService>,
+    pub channel_member_write_service: Arc<ChannelMemberWriteService>,
+    pub typing_service: Arc<TypingService>,
+    pub reaction_write_service: Arc<ReactionWriteService>,
+    pub message_edit_service: Arc<MessageEditService>,
+    pub guest_write_service: Arc<GuestWriteService>,
+    pub presence_write_service: Arc<PresenceWriteService>,
+    pub schedule_write_service: Arc<ScheduleWriteService>,
+    pub attachment_write_service: Arc<AttachmentWriteService>,
+    /// Increment-2 query services (MAIL-B1 procedural gates live here).
+    pub message_query_service: Arc<MessageQueryService>,
+    pub channel_query_service: Arc<ChannelQueryService>,
+    pub recipient_query_service: Arc<RecipientQueryService>,
     // END CUSTOM
 }
 
@@ -274,6 +298,19 @@ impl MessagingModule {
     }
 
     // <<< CUSTOM METHODS
+    /// Register the host's thread ACL (MAIL-B1). Installs into the shared
+    /// slot — every gated service (chatter facade, queries, schedules) sees
+    /// the resolver from the next call. Idempotent (last install wins).
+    pub fn set_thread_acl(&self, resolver: std::sync::Arc<dyn ThreadAccessResolver>) {
+        self.thread_acl.install(resolver);
+    }
+
+    /// Convenience: open a static set of document models to every
+    /// authenticated partner — the config-driven resolver an app service can
+    /// build without writing its own trait impl.
+    pub fn set_static_thread_access(&self, open_models: Vec<String>) {
+        self.thread_acl.install(std::sync::Arc::new(StaticThreadAccess { open_models }));
+    }
     // END CUSTOM
 }
 
@@ -415,6 +452,29 @@ impl MessagingModuleBuilder {
         let sms_write_service = Arc::new(SmsWriteService::new(db_pool.clone()));
         let mail_queue_write_service = Arc::new(MailQueueWriteService::new(db_pool.clone()));
         let alias_write_service = Arc::new(AliasWriteService::new(db_pool.clone()));
+
+        // The shared MAIL-B1 slot (default DenyHostDocs — hosts install via
+        // set_thread_acl post-build). Every gated service resolves through it.
+        let thread_acl = ThreadAclSlot::default();
+        let acl: Arc<dyn ThreadAccessResolver> = Arc::new(thread_acl.clone());
+        let thread_chatter_service =
+            Arc::new(ThreadChatterService::new(db_pool.clone(), Arc::clone(&acl)));
+        let schedule_write_service =
+            Arc::new(ScheduleWriteService::new(db_pool.clone(), Arc::clone(&acl)));
+        let message_query_service =
+            Arc::new(MessageQueryService::new(db_pool.clone(), Arc::clone(&acl)));
+        let recipient_query_service =
+            Arc::new(RecipientQueryService::new(db_pool.clone(), Arc::clone(&acl)));
+        let channel_write_service = Arc::new(ChannelWriteService::new(db_pool.clone()));
+        let channel_member_write_service =
+            Arc::new(ChannelMemberWriteService::new(db_pool.clone()));
+        let channel_query_service = Arc::new(ChannelQueryService::new(db_pool.clone()));
+        let typing_service = Arc::new(TypingService::new(db_pool.clone()));
+        let reaction_write_service = Arc::new(ReactionWriteService::new(db_pool.clone()));
+        let message_edit_service = Arc::new(MessageEditService::new(db_pool.clone()));
+        let guest_write_service = Arc::new(GuestWriteService::new(db_pool.clone()));
+        let presence_write_service = Arc::new(PresenceWriteService::new(db_pool.clone()));
+        let attachment_write_service = Arc::new(AttachmentWriteService::new(db_pool.clone()));
         // END CUSTOM
 
         Ok(MessagingModule {
@@ -451,6 +511,20 @@ impl MessagingModuleBuilder {
             sms_write_service,
             mail_queue_write_service,
             alias_write_service,
+            thread_acl,
+            thread_chatter_service,
+            channel_write_service,
+            channel_member_write_service,
+            typing_service,
+            reaction_write_service,
+            message_edit_service,
+            guest_write_service,
+            presence_write_service,
+            schedule_write_service,
+            attachment_write_service,
+            message_query_service,
+            channel_query_service,
+            recipient_query_service,
             // END CUSTOM
         })
     }

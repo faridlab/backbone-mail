@@ -88,4 +88,47 @@ pub use sms_ports::{
 pub use sms_write_service::{DrainOutcome, SmsError, SmsWriteService};
 pub use crate::infrastructure::persistence::follower_repository::ExistingPolicy;
 pub use crate::infrastructure::persistence::follower_repository::SubscribeOutcome;
+
+// Increment-2 surface (user-owned): channel/member ops, typing, reactions,
+// presence, guests, schedules, webhook, GC, attachments, query services,
+// and the chatter ACL seam + host facade.
+pub mod chatter_acl;
+pub mod channel_write_service;
+pub mod channel_member_write_service;
+pub mod channel_query_service;
+pub mod typing_service;
+pub mod reaction_write_service;
+pub mod message_edit_service;
+pub mod guest_write_service;
+pub mod presence_write_service;
+pub mod schedule_write_service;
+pub mod sms_status_webhook_service;
+pub mod gc_service;
+pub mod attachment_write_service;
+pub mod message_query_service;
+pub mod recipient_query_service;
+pub mod thread_chatter_service;
+
+pub use chatter_acl::{
+    DenyHostDocs, MessagingIdentity, StaticThreadAccess, ThreadAclSlot, ThreadAccessResolver,
+};
+pub use channel_write_service::{ChannelError, ChannelWriteService};
+pub use channel_member_write_service::{ChannelMemberWriteService, MemberError};
+pub use channel_query_service::{ChannelQueryError, ChannelQueryService, ChannelSearchHit};
+pub use typing_service::{TypingError, TypingService};
+pub use reaction_write_service::{ReactionError, ReactionWriteService};
+pub use message_edit_service::{MessageEditError, MessageEditService};
+pub use guest_write_service::{GuestError, GuestWriteService};
+pub use presence_write_service::{PresenceError, PresenceWriteService};
+pub use schedule_write_service::{ScheduleError, ScheduleWriteService};
+pub use sms_status_webhook_service::{
+    SmsStatusWebhookService, WebhookError, WebhookOutcome, WEBHOOK_SCHEME,
+};
+pub use gc_service::{GcError, GcService};
+pub use attachment_write_service::{AttachmentError, AttachmentWriteService};
+pub use message_query_service::{MessageQueryError, MessageQueryService};
+pub use recipient_query_service::{
+    RecipientQueryError, RecipientQueryService, SuggestedRecipient,
+};
+pub use thread_chatter_service::{ChatterError, ThreadChatterService};
 // END CUSTOM
