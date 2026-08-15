@@ -213,3 +213,46 @@ user-scope verifier (backbone-auth ships no user-scope verifier; the app adds a 
 the partner id from the Bearer JWT sub), guest middleware, bare-mounted webhook, 7 job runners,
 outbox relay (logging publish seam — increment-3 transport), per-replica SSE tailer. Increment-3
 seams documented in the app README: noop sms provider, relay publish seam, missing `sms::gc`.
+
+---
+
+## 8. Increment-3 scope register (the gateway core)
+
+**Locked owner decisions (2026-08-15):** scope = **gateway core only** (outbound SMTP over the
+existing framework `backbone-email` crate, inbound email, MAIL-B7, relay→backbone-notification
+transport wiring, `sms::gc`); inbound shape = **webhook** (`POST /mail/inbound/:server_id`, token
+consteq — the proven `/sms/status` ADR-0021 playbook; SES/SendGrid-style inbound parse; an
+IMAP/POP poller can later land behind the same `MailInboundService`); SMS provider = **generic
+HTTP JSON adapter** mirroring Odoo's IAP batch shape (endpoint + token env refs), noop retained.
+
+### In scope (flag IDs)
+
+| Surface | Flags | Notes |
+|---|---|---|
+| `MailServer` (ir.mail_server) + `MailApiPort` + queue send path | MAIL-M26 | Server-selection ladder (exact from_filter address → domain → no-filter → first by sequence); failure vocabulary = mail.mail's (`mail_smtp`, `mail_email_invalid`, `mail_email_missing`, `mail_from_invalid`, `mail_from_missing`, `mail_spam`, `unknown`). Transport lives in the APP over `backbone-email` — the module holds the port. |
+| `FetchmailServer` (webhook mode) + `MailGatewayAllowed` + inbound pipeline | MAIL-M27, MAIL-M28, **MAIL-B2**, **MAIL-B6** | MAIL-B2 fix: one transaction per message, dedup-guarded. MAIL-B6 fix: the advisory-lock-on-hashtext is replaced by a UNIQUE partial index on `mail_message.message_id WHERE message_id IS NOT NULL`. IMAP/POP transport fields deliberately absent — 3b adds them with the poller. |
+| MAIL-B7 previous-address security email | **MAIL-B7** | `UserEmailChanged` contract `{user_id, previous_email, new_email, changed_at}` — staged by the sapiens User host; the APP's relay consumer sends the warning to the PREVIOUS address through the mail queue. Load-bearing: never "fix" by sending to the new address. |
+| relay → backbone-notification transport wiring | app seam | The app implements notification's `CommunicationPort` over the SAME gateway adapters (one gateway, two producers) + mounts its routes and `dispatch_pending` job. |
+| `sms::gc` | job roster | Bounded reap of `to_delete` + terminal-state Sms rows (the MAIL-B8-age analog for sms). |
+| Generic HTTP SMS adapter | SM group | IAP batch shape `{content, numbers:[{uuid, number}]}`; state map `processing→process`, `success/sent→pending`, `delivered→sent`; error codes → `sms_credit`, `sms_number_format`, `sms_country_not_supported`, `sms_server`, `sms_acc`. |
+
+### Credential posture (ADR-0024 interim, one documented deviation)
+
+- SMTP **passwords**: env-var REFERENCES (`smtp_pass_ref` = env var name; the app resolves at send
+  time). Never a literal in DB or config.
+- Inbound webhook **token** (per-row, unsuited to env vars): the `FetchmailServer` row stores only
+  its **SHA-256 hash** (`token_hash`); the route hashes the presented token and consteq's. No
+  plaintext secret in DB, no per-row env sprawl. This is a deliberate, documented deviation from
+  the env-ref-only interim posture — strictly stronger than Odoo's plaintext column.
+
+### Deferred to 3b (obligations travel)
+
+| Item | Flags | Traveling obligations |
+|---|---|---|
+| Push devices | MAIL-M13, MAIL-M14 | **MAIL-B3** (bare-except masks push errors) and **MAIL-B4 (🔴)**: missing VAPID key DELETES ALL devices in Odoo — port treats missing/unreadable key as hard config error, never delete-all. Community v19 is WebPush-only (VAPID in config params); FCM/APNs are Enterprise. |
+| Link previews | MAIL-M7, MAIL-M12 | **MAIL-B5**: `_is_domain_thottled` typo kills rate limiting — rewrite properly. URL fetcher is an SSRF surface (cap 5 previews/message, UniqueIndex source_url, domain throttle 10s). |
+| Canned responses | MAIL-M15 | Rides the Discuss UI increment; `::`-prefix substitution is frontend. |
+| Translations | MAIL-M6 | UniqueIndex (message_id, target_lang), 2-week GC; needs a translate-provider decision. |
+| Wizards (compose/message, sms) | MAIL-M67..M74, SM-M16..SM-M21 | **SM-B1** (sender-name regex missing `$` anchor) + **MMB-4-class** duplicate-mint risk on mass mode. Re-express as command endpoints, not transient models. |
+| RTC / call history / GIF / voice / ICE | MAIL-M39..M42, MAIL-M65 | Waits on the websocket-surface decision (SFU ≥3, 75s reaper, JWT HS256 sessions). |
+| IMAP/POP poller | MAIL-M27 adjunct | Webhook chose first; poller lands behind the same service if a customer needs mailbox polling. |
