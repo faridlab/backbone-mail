@@ -58,6 +58,10 @@ validator = { version = "0.16", features = ["derive"] }
 anyhow = "1.0"
 thiserror = "1.0"
 
+# Webhook MAC (ADR-0021: raw-body HMAC-SHA256 + constant-time compare)
+hmac = "0.12"
+sha2 = "0.10"
+
 # Configuration
 config = "0.14"
 serde_yaml = "0.9"
