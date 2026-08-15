@@ -9,3 +9,4 @@ pub mod mail_queue;
 pub mod alias;
 pub mod proofs;
 pub mod increment2;
+pub mod routes;

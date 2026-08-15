@@ -970,6 +970,8 @@ dependencies = [
  "backbone-messaging",
  "backbone-orm",
  "backbone-outbox",
+ "backbone-rate-limit",
+ "base64 0.22.1",
  "chrono",
  "config",
  "hmac 0.12.1",
@@ -1069,6 +1071,26 @@ dependencies = [
  "serde_json",
  "thiserror 1.0.69",
  "tokio",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
+name = "backbone-rate-limit"
+version = "2.0.0"
+source = "git+https://github.com/faridlab/backbone-framework?tag=v2.7.7#f9f46d70dfd8118a1199157424b34d457b06b641"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "axum",
+ "chrono",
+ "futures",
+ "serde",
+ "serde_json",
+ "thiserror 1.0.69",
+ "tokio",
+ "tower 0.4.13",
+ "tower-http 0.5.2",
  "tracing",
  "uuid",
 ]
@@ -2194,6 +2216,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7382cf6263419f2d8df38c55d7da83da5c18aef87fc7a7fc1fb1e344edfe14c1"
 dependencies = [
  "hashbrown 0.15.5",
+]
+
+[[package]]
+name = "hdrhistogram"
+version = "7.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f49d1053f4708f0af3cf9fc5bffc7e68a914a3c45becb231c80068c9c3f78bea"
+dependencies = [
+ "byteorder",
+ "num-traits",
 ]
 
 [[package]]
@@ -5367,6 +5399,7 @@ checksum = "b8fa9be0de6cf49e536ce1851f987bd21a43b771b09473c3549a6c853db37c1c"
 dependencies = [
  "futures-core",
  "futures-util",
+ "hdrhistogram",
  "indexmap 1.9.3",
  "pin-project",
  "pin-project-lite",

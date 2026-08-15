@@ -6,4 +6,5 @@ pub mod dto;
 pub mod http;
 
 // <<< CUSTOM
+pub mod middleware;
 // END CUSTOM

@@ -296,6 +296,30 @@ impl ChannelRepository {
             .map(|r| (r.get("id"), r.get("name"), r.get("channel_type"), r.get("is_member")))
             .collect())
     }
+
+    /// Public-channel lookup for the unauthenticated bootstrap: (id, name,
+    /// channel_type) when the invitation uuid matches a LIVE channel whose
+    /// `default_access_mode` is 'public'. Non-public and soft-deleted
+    /// channels are indistinguishable from "no such channel" — the bootstrap
+    /// must not leak private channel existence.
+    pub async fn find_public_by_uuid(
+        executor: impl sqlx::Executor<'_, Database = sqlx::Postgres>,
+        uuid: &str,
+    ) -> Result<Option<(Uuid, Option<String>, String)>, sqlx::Error> {
+        let row = sqlx::query(
+            r#"
+            SELECT id, name, channel_type::text AS channel_type
+            FROM messaging.discuss_channels
+            WHERE uuid = $1
+              AND default_access_mode = 'public'
+              AND (metadata->>'deleted_at') IS NULL
+            "#,
+        )
+        .bind(uuid)
+        .fetch_optional(executor)
+        .await?;
+        Ok(row.map(|r| (r.get("id"), r.get("name"), r.get("channel_type"))))
+    }
 }
 
 impl Default for ChannelRepository {

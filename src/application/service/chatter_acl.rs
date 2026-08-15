@@ -54,6 +54,14 @@ impl MessagingIdentity {
             MessagingIdentity::Guest { .. } => None,
         }
     }
+
+    /// The guest id, when the identity is a guest (users aren't).
+    pub fn guest_id(&self) -> Option<Uuid> {
+        match self {
+            MessagingIdentity::Guest { guest_id } => Some(*guest_id),
+            MessagingIdentity::User { .. } => None,
+        }
+    }
 }
 
 /// The MAIL-B1 seam. Host services implement this and register it on the

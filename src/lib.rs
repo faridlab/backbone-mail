@@ -75,9 +75,13 @@ use crate::application::service::{
     ChannelQueryService, ChannelWriteService, FollowerWriteService, GuestWriteService,
     MailQueueWriteService, MessageEditService, MessageQueryService, MessageWriteService,
     PresenceWriteService, ReactionWriteService, RecipientQueryService, ScheduleWriteService,
-    SmsWriteService, StaticThreadAccess, ThreadAclSlot, ThreadAccessResolver,
-    ThreadChatterService, TypingService,
+    SmsStatusWebhookService, SmsWriteService, StaticThreadAccess, ThreadAclSlot,
+    ThreadAccessResolver, ThreadChatterService, TypingService,
 };
+
+/// The realtime surface (SSE session proofs; tailer + stream land in Stage 4).
+/// Declared inside the CUSTOM block so regeneration preserves it.
+pub mod realtime;
 // END CUSTOM
 /// Messaging module configuration
 ///
@@ -150,6 +154,9 @@ pub struct MessagingModule {
     pub message_query_service: Arc<MessageQueryService>,
     pub channel_query_service: Arc<ChannelQueryService>,
     pub recipient_query_service: Arc<RecipientQueryService>,
+    /// The shared pool (route composers build one-off services — e.g. the
+    /// sms webhook — without re-threading a pool through every caller).
+    pub pool: sqlx::PgPool,
     // END CUSTOM
 }
 
@@ -310,6 +317,60 @@ impl MessagingModule {
     /// build without writing its own trait impl.
     pub fn set_static_thread_access(&self, open_models: Vec<String>) {
         self.thread_acl.install(std::sync::Arc::new(StaticThreadAccess { open_models }));
+    }
+
+    /// The shared pool (for app-level wiring: jobs, relay, one-off services).
+    pub fn db_pool(&self) -> sqlx::PgPool {
+        self.pool.clone()
+    }
+
+    // Route composers (increment 2 — the guarded wire surface). Kept inside
+    // the CUSTOM METHODS block so regeneration preserves them.
+    /// The guarded discuss/channel group: create, chat dedup, member verbs,
+    /// typing, search, reactions, edits, stars. Mount behind app user auth +
+    /// the `guest_context` middleware. Search is throttled (30/60s).
+    pub fn discuss_routes(self: &Arc<Self>) -> Router {
+        presentation::http::channel_routes::composer().with_state(self.clone())
+    }
+
+    /// The guarded thread/chatter group: fetches, counters, recipients,
+    /// post/follow/schedule. Mount behind app user auth + `guest_context`.
+    /// Recipient suggestions are throttled (30/60s).
+    pub fn messaging_routes(self: &Arc<Self>) -> Router {
+        presentation::http::thread_routes::composer().with_state(self.clone())
+    }
+
+    /// Guest self-service (mint + rename) — public surface behind
+    /// `guest_context` only.
+    pub fn guest_routes(self: &Arc<Self>) -> Router {
+        presentation::http::guest_routes::composer().with_state(self.clone())
+    }
+
+    /// Presence (manual im_status + proof-gated bus liveness). Requires the
+    /// `realtime::SessionSecret` router extension for the proof check.
+    pub fn presence_routes(self: &Arc<Self>) -> Router {
+        presentation::http::presence_routes::composer().with_state(self.clone())
+    }
+
+    /// Attachment register/attach/detach/token verbs (owner-gated,
+    /// throttled 30/60s).
+    pub fn attachment_routes(self: &Arc<Self>) -> Router {
+        presentation::http::attachment_routes::composer().with_state(self.clone())
+    }
+
+    /// The public bootstrap — anonymous/guest entry to a public channel.
+    /// Throttled hard (10/60s): unauthenticated by construction.
+    pub fn public_routes(self: &Arc<Self>) -> Router {
+        presentation::http::public_routes::composer().with_state(self.clone())
+    }
+
+    /// The sms provider callback (`POST /sms/status`, scheme `hmac_raw_body`
+    /// per ADR-0021). BARE mount — no auth middleware; the HMAC IS the auth.
+    /// Reads `SMS_WEBHOOK_SECRET` (env-var reference, ADR-0024); when unset
+    /// the route answers 503 — fail closed, never forge-able with an empty key.
+    /// Throttled 120/60s.
+    pub fn webhook_routes(self: &Arc<Self>) -> Router {
+        presentation::http::webhook_routes::composer().with_state(self.clone())
     }
     // END CUSTOM
 }
@@ -525,6 +586,7 @@ impl MessagingModuleBuilder {
             message_query_service,
             channel_query_service,
             recipient_query_service,
+            pool: db_pool.clone(),
             // END CUSTOM
         })
     }
