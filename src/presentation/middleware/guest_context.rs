@@ -62,6 +62,12 @@ impl WireIdentity {
 /// anonymous. A malformed dgid value degrades to anonymous (never a 500 —
 /// hostile cookies are noise, not events).
 pub async fn guest_context(mut req: Request, next: Next) -> Response {
+    // The admin flag defaults to false when the app auth layer didn't set
+    // one — routes extracting `Extension<IsAdmin>` must never 500 just
+    // because a guest/anonymous caller reached them without app auth.
+    if req.extensions().get::<IsAdmin>().is_none() {
+        req.extensions_mut().insert(IsAdmin(false));
+    }
     if let Some(AuthPartnerId(partner_id)) = req.extensions().get::<AuthPartnerId>().copied() {
         req.extensions_mut().insert(WireIdentity::Identified(MessagingIdentity::User { partner_id }));
         return next.run(req).await;
