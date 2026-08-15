@@ -2,7 +2,7 @@
 //! machine, the drainer stages `MailDispatchRequested` (NO SMTP here), and the
 //! crash-safety pre-write puts `exception` on the row BEFORE dispatch.
 
-use backbone_mail::application::service::MailQueueWriteService;
+use backbone_mail::application::service::{MailQueueWriteService, NoopMailApi};
 use sqlx::Row;
 use uuid::Uuid;
 
@@ -51,8 +51,15 @@ async fn drain_pre_writes_exception_and_stages_dispatch_request() {
         .await
         .ok();
 
-    let out = svc.process_queue(10, 1).await.expect("drain");
+    // A FAILING port keeps the row on 'exception' — proving the MAIL-M2
+    // pre-write survives a transport failure (increment 3 put the port inside
+    // the drain loop; the crash-safety shape is unchanged).
+    let out = svc
+        .process_queue(&NoopMailApi::failing("mail_smtp", "drain probe"), 10, 1)
+        .await
+        .expect("drain");
     assert_eq!(out.claimed, 1);
+    assert_eq!(out.failed, 1);
 
     // MAIL-M2 crash-safety: the claim pre-writes 'exception' BEFORE any dispatch.
     assert_eq!(mail_row_state(&pool, mail_id).await, "exception");
@@ -99,9 +106,10 @@ async fn mark_failed_then_requeue_reenters_queue() {
         .await
         .unwrap();
 
-    // Claim → exception, then the consumer reports an SMTP failure (no-op on
-    // an already-exception row is fine; the failure reason is what matters).
-    svc.process_queue(10, 1).await.unwrap();
+    // Claim → exception (pre-write), the port fails, the verdict applies.
+    svc.process_queue(&NoopMailApi::failing("mail_smtp", "550 probe"), 10, 1)
+        .await
+        .unwrap();
     assert!(svc
         .mark_failed(mail_id, "mail_smtp", Some("550 no such user"))
         .await
@@ -124,7 +132,10 @@ async fn mark_failed_then_requeue_reenters_queue() {
     assert_eq!(mail_row_state(&pool, mail_id).await, "outgoing");
 
     // And it is claimable again.
-    let out = svc.process_queue(10, 1).await.unwrap();
+    let out = svc
+        .process_queue(&NoopMailApi::failing("mail_smtp", "550 probe"), 10, 1)
+        .await
+        .unwrap();
     assert_eq!(out.claimed, 1);
 
     sqlx::query("DELETE FROM messaging.mails WHERE id = $1").bind(mail_id).execute(&pool).await.ok();

@@ -137,4 +137,12 @@ pub use recipient_query_service::{
     RecipientQueryError, RecipientQueryService, SuggestedRecipient,
 };
 pub use thread_chatter_service::{ChatterError, ThreadChatterService};
+
+// Increment-3 gateway core (user-owned): the outbound transport port and the
+// server-selection ladder query service (MAIL-M26).
+pub mod mail_ports;
+pub mod mail_server_query_service;
+
+pub use mail_ports::{MailApiPort, MailSendFailure, MailSendOutcome, MailSendRequest, NoopMailApi};
+pub use mail_server_query_service::{MailServerQueryError, MailServerQueryService};
 // END CUSTOM

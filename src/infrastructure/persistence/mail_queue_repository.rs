@@ -11,13 +11,26 @@ use chrono::{DateTime, Utc};
 use sqlx::{PgConnection, Row};
 use uuid::Uuid;
 
-/// A claimed mail row, as the drainer dispatches it.
+/// A claimed mail row, as the drainer dispatches it. Increment 3 enriched the
+/// claim with the message content + sender (the [`crate::application::service::mail_ports::MailApiPort`]
+/// request is built straight from this row — no second read between claim and
+/// send).
 pub struct MailQueueRow {
     pub id: Uuid,
     pub mail_message_id: Uuid,
     pub email_to: Option<String>,
     pub email_cc: Option<String>,
     pub reply_to: Option<String>,
+    /// mail.message.subject (nullable — Odoo sends subject-less mail).
+    pub subject: Option<String>,
+    /// mail.message.body — the rendered html.
+    pub body: Option<String>,
+    /// mail.message.email_from — the envelope sender the selection ladder
+    /// matches against (and the reply-collation seed).
+    pub email_from: Option<String>,
+    /// mail.message.message_id — the RFC id of THIS message (becomes the
+    /// child's References header).
+    pub message_id: Option<String>,
 }
 
 /// Hand-written mail queue SQL.
@@ -78,17 +91,26 @@ impl MailQueueRepository {
         now: DateTime<Utc>,
     ) -> Result<Vec<MailQueueRow>, sqlx::Error> {
         let rows = sqlx::query(
-            r#"UPDATE messaging.mails AS m
-               SET state = 'exception'::mail_state, failure_type = 'unknown'::mail_failure_type
-               WHERE m.id IN (
-                   SELECT id FROM messaging.mails
+            r#"WITH claimed AS (
+                   SELECT id, mail_message_id FROM messaging.mails
                    WHERE state = 'outgoing'::mail_state
                      AND (scheduled_date IS NULL OR scheduled_date <= $2)
                    ORDER BY id
                    LIMIT $1
                    FOR UPDATE SKIP LOCKED
                )
-               RETURNING m.id, m.mail_message_id, m.email_to, m.email_cc, m.reply_to"#,
+               UPDATE messaging.mails AS m
+               SET state = 'exception'::mail_state, failure_type = 'unknown'::mail_failure_type
+               FROM claimed c
+               -- Increment 3: the claim carries the message content so the
+               -- drainer builds the MailApiPort request with no second read.
+               -- LEFT JOIN on purpose — a queue row whose message is missing is
+               -- claimed (and fails like any other bad row), never left
+               -- re-claimable 'outgoing' forever.
+               LEFT JOIN messaging.mail_messages msg ON msg.id = c.mail_message_id
+               WHERE m.id = c.id
+               RETURNING m.id, m.mail_message_id, m.email_to, m.email_cc, m.reply_to,
+                         msg.subject, msg.body, msg.email_from, msg.message_id"#,
         )
         .bind(batch)
         .bind(now)
@@ -102,6 +124,10 @@ impl MailQueueRepository {
                 email_to: r.get("email_to"),
                 email_cc: r.get("email_cc"),
                 reply_to: r.get("reply_to"),
+                subject: r.get("subject"),
+                body: r.get("body"),
+                email_from: r.get("email_from"),
+                message_id: r.get("message_id"),
             })
             .collect())
     }

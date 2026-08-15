@@ -100,4 +100,8 @@ pub mod schedule_repository;
 pub mod gc_repository;
 pub mod attachment_repository;
 pub mod chatter_repository;
+
+// Increment-3 gateway SQL (user-owned): the SMTP selection ladder
+// (_find_mail_server).
+pub mod smtp_selection_repository;
 // END CUSTOM
