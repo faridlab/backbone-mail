@@ -30,3 +30,10 @@
 - mail_alias_domain_seed
 - mail_message_seed
 - mail_presence_seed
+
+# Newly added seeds (preserve manual order above):
+- mail_attachment_seed
+- mail_message_attachment_seed
+- mail_scheduled_message_seed
+- mail_message_schedule_seed
+- mail_message_star_seed

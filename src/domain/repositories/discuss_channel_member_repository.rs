@@ -9,7 +9,7 @@ use async_trait::async_trait;
 use anyhow::Result;
 use uuid::Uuid;
 
-use crate::domain::entity::{DiscussChannelMember, SidebarFoldState};
+use crate::domain::entity::{DiscussChannelMember, MemberCustomNotifications, SidebarFoldState};
 
 /// Pagination parameters for list queries
 #[derive(Debug, Clone, Default)]
@@ -48,6 +48,9 @@ pub struct DiscussChannelMemberFilter {
     pub partner_id: Option<Uuid>,
     pub guest_id: Option<Uuid>,
     pub fold_state: Option<SidebarFoldState>,
+    pub fetched_message_id: Option<Uuid>,
+    pub new_message_separator: Option<Uuid>,
+    pub custom_notifications: Option<MemberCustomNotifications>,
     pub seen_message_id: Option<Uuid>,
     pub is_pinned: Option<bool>,
 }
@@ -55,7 +58,7 @@ pub struct DiscussChannelMemberFilter {
 impl DiscussChannelMemberFilter {
     /// Check if any filter is set
     pub fn has_filters(&self) -> bool {
-        self.channel_id.is_some() || self.partner_id.is_some() || self.guest_id.is_some() || self.fold_state.is_some() || self.seen_message_id.is_some() || self.is_pinned.is_some()
+        self.channel_id.is_some() || self.partner_id.is_some() || self.guest_id.is_some() || self.fold_state.is_some() || self.fetched_message_id.is_some() || self.new_message_separator.is_some() || self.custom_notifications.is_some() || self.seen_message_id.is_some() || self.is_pinned.is_some()
     }
 }
 

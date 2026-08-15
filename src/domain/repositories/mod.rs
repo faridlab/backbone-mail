@@ -12,6 +12,9 @@ pub mod mail_activity_plan_repository;
 pub mod mail_activity_plan_template_repository;
 pub mod mail_alias_domain_repository;
 pub mod mail_alias_repository;
+pub mod mail_attachment_repository;
+pub mod mail_message_attachment_repository;
+pub mod mail_message_star_repository;
 pub mod mail_message_repository;
 pub mod mail_repository;
 pub mod mail_notification_repository;
@@ -24,6 +27,8 @@ pub mod mail_tracking_value_repository;
 pub mod discuss_channel_repository;
 pub mod discuss_channel_member_repository;
 pub mod mail_guest_repository;
+pub mod mail_message_schedule_repository;
+pub mod mail_scheduled_message_repository;
 pub mod sms_repository;
 pub mod sms_template_repository;
 pub mod sms_tracker_repository;
@@ -64,6 +69,24 @@ pub use mail_alias_repository::{
     MailAliasPaginationParams,
     MailAliasPaginatedResult,
     MailAliasFilter,
+};
+pub use mail_attachment_repository::{
+    MailAttachmentRepository,
+    MailAttachmentPaginationParams,
+    MailAttachmentPaginatedResult,
+    MailAttachmentFilter,
+};
+pub use mail_message_attachment_repository::{
+    MailMessageAttachmentRepository,
+    MailMessageAttachmentPaginationParams,
+    MailMessageAttachmentPaginatedResult,
+    MailMessageAttachmentFilter,
+};
+pub use mail_message_star_repository::{
+    MailMessageStarRepository,
+    MailMessageStarPaginationParams,
+    MailMessageStarPaginatedResult,
+    MailMessageStarFilter,
 };
 pub use mail_message_repository::{
     MailMessageRepository,
@@ -136,6 +159,18 @@ pub use mail_guest_repository::{
     MailGuestPaginationParams,
     MailGuestPaginatedResult,
     MailGuestFilter,
+};
+pub use mail_message_schedule_repository::{
+    MailMessageScheduleRepository,
+    MailMessageSchedulePaginationParams,
+    MailMessageSchedulePaginatedResult,
+    MailMessageScheduleFilter,
+};
+pub use mail_scheduled_message_repository::{
+    MailScheduledMessageRepository,
+    MailScheduledMessagePaginationParams,
+    MailScheduledMessagePaginatedResult,
+    MailScheduledMessageFilter,
 };
 pub use sms_repository::{
     SmsRepository,

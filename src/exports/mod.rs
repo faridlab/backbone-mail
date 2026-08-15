@@ -45,6 +45,15 @@ pub use events::*;
 /// - `MailAliasDto` - Data transfer object for MailAlias
 /// - `MailAliasSummary` - Summary view of MailAlias
 /// - `MailAliasId` - Type-safe ID wrapper
+/// - `MailAttachmentDto` - Data transfer object for MailAttachment
+/// - `MailAttachmentSummary` - Summary view of MailAttachment
+/// - `MailAttachmentId` - Type-safe ID wrapper
+/// - `MailMessageAttachmentDto` - Data transfer object for MailMessageAttachment
+/// - `MailMessageAttachmentSummary` - Summary view of MailMessageAttachment
+/// - `MailMessageAttachmentId` - Type-safe ID wrapper
+/// - `MailMessageStarDto` - Data transfer object for MailMessageStar
+/// - `MailMessageStarSummary` - Summary view of MailMessageStar
+/// - `MailMessageStarId` - Type-safe ID wrapper
 /// - `MailMessageDto` - Data transfer object for MailMessage
 /// - `MailMessageSummary` - Summary view of MailMessage
 /// - `MailMessageId` - Type-safe ID wrapper
@@ -81,6 +90,12 @@ pub use events::*;
 /// - `MailGuestDto` - Data transfer object for MailGuest
 /// - `MailGuestSummary` - Summary view of MailGuest
 /// - `MailGuestId` - Type-safe ID wrapper
+/// - `MailMessageScheduleDto` - Data transfer object for MailMessageSchedule
+/// - `MailMessageScheduleSummary` - Summary view of MailMessageSchedule
+/// - `MailMessageScheduleId` - Type-safe ID wrapper
+/// - `MailScheduledMessageDto` - Data transfer object for MailScheduledMessage
+/// - `MailScheduledMessageSummary` - Summary view of MailScheduledMessage
+/// - `MailScheduledMessageId` - Type-safe ID wrapper
 /// - `SmsDto` - Data transfer object for Sms
 /// - `SmsSummary` - Summary view of Sms
 /// - `SmsId` - Type-safe ID wrapper
@@ -110,6 +125,15 @@ pub use events::*;
 /// - `MailAliasCreatedEvent` - Published when MailAlias is created
 /// - `MailAliasUpdatedEvent` - Published when MailAlias is updated
 /// - `MailAliasDeletedEvent` - Published when MailAlias is deleted
+/// - `MailAttachmentCreatedEvent` - Published when MailAttachment is created
+/// - `MailAttachmentUpdatedEvent` - Published when MailAttachment is updated
+/// - `MailAttachmentDeletedEvent` - Published when MailAttachment is deleted
+/// - `MailMessageAttachmentCreatedEvent` - Published when MailMessageAttachment is created
+/// - `MailMessageAttachmentUpdatedEvent` - Published when MailMessageAttachment is updated
+/// - `MailMessageAttachmentDeletedEvent` - Published when MailMessageAttachment is deleted
+/// - `MailMessageStarCreatedEvent` - Published when MailMessageStar is created
+/// - `MailMessageStarUpdatedEvent` - Published when MailMessageStar is updated
+/// - `MailMessageStarDeletedEvent` - Published when MailMessageStar is deleted
 /// - `MailMessageCreatedEvent` - Published when MailMessage is created
 /// - `MailMessageUpdatedEvent` - Published when MailMessage is updated
 /// - `MailMessageDeletedEvent` - Published when MailMessage is deleted
@@ -146,6 +170,12 @@ pub use events::*;
 /// - `MailGuestCreatedEvent` - Published when MailGuest is created
 /// - `MailGuestUpdatedEvent` - Published when MailGuest is updated
 /// - `MailGuestDeletedEvent` - Published when MailGuest is deleted
+/// - `MailMessageScheduleCreatedEvent` - Published when MailMessageSchedule is created
+/// - `MailMessageScheduleUpdatedEvent` - Published when MailMessageSchedule is updated
+/// - `MailMessageScheduleDeletedEvent` - Published when MailMessageSchedule is deleted
+/// - `MailScheduledMessageCreatedEvent` - Published when MailScheduledMessage is created
+/// - `MailScheduledMessageUpdatedEvent` - Published when MailScheduledMessage is updated
+/// - `MailScheduledMessageDeletedEvent` - Published when MailScheduledMessage is deleted
 /// - `SmsCreatedEvent` - Published when Sms is created
 /// - `SmsUpdatedEvent` - Published when Sms is updated
 /// - `SmsDeletedEvent` - Published when Sms is deleted

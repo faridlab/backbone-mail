@@ -173,6 +173,87 @@ pub struct MailAliasDeletedEvent {
 }
 
 // ============================================================================
+// MAILATTACHMENT EVENTS
+// ============================================================================
+
+/// Event published when a MailAttachment is created
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailAttachmentCreatedEvent {
+    pub id: MailAttachmentId,
+    pub data: MailAttachmentDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a MailAttachment is updated
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailAttachmentUpdatedEvent {
+    pub id: MailAttachmentId,
+    pub data: MailAttachmentDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a MailAttachment is deleted
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailAttachmentDeletedEvent {
+    pub id: MailAttachmentId,
+    pub occurred_at: DateTime<Utc>,
+}
+
+// ============================================================================
+// MAILMESSAGEATTACHMENT EVENTS
+// ============================================================================
+
+/// Event published when a MailMessageAttachment is created
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailMessageAttachmentCreatedEvent {
+    pub id: MailMessageAttachmentId,
+    pub data: MailMessageAttachmentDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a MailMessageAttachment is updated
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailMessageAttachmentUpdatedEvent {
+    pub id: MailMessageAttachmentId,
+    pub data: MailMessageAttachmentDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a MailMessageAttachment is deleted
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailMessageAttachmentDeletedEvent {
+    pub id: MailMessageAttachmentId,
+    pub occurred_at: DateTime<Utc>,
+}
+
+// ============================================================================
+// MAILMESSAGESTAR EVENTS
+// ============================================================================
+
+/// Event published when a MailMessageStar is created
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailMessageStarCreatedEvent {
+    pub id: MailMessageStarId,
+    pub data: MailMessageStarDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a MailMessageStar is updated
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailMessageStarUpdatedEvent {
+    pub id: MailMessageStarId,
+    pub data: MailMessageStarDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a MailMessageStar is deleted
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailMessageStarDeletedEvent {
+    pub id: MailMessageStarId,
+    pub occurred_at: DateTime<Utc>,
+}
+
+// ============================================================================
 // MAILMESSAGE EVENTS
 // ============================================================================
 
@@ -497,6 +578,60 @@ pub struct MailGuestDeletedEvent {
 }
 
 // ============================================================================
+// MAILMESSAGESCHEDULE EVENTS
+// ============================================================================
+
+/// Event published when a MailMessageSchedule is created
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailMessageScheduleCreatedEvent {
+    pub id: MailMessageScheduleId,
+    pub data: MailMessageScheduleDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a MailMessageSchedule is updated
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailMessageScheduleUpdatedEvent {
+    pub id: MailMessageScheduleId,
+    pub data: MailMessageScheduleDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a MailMessageSchedule is deleted
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailMessageScheduleDeletedEvent {
+    pub id: MailMessageScheduleId,
+    pub occurred_at: DateTime<Utc>,
+}
+
+// ============================================================================
+// MAILSCHEDULEDMESSAGE EVENTS
+// ============================================================================
+
+/// Event published when a MailScheduledMessage is created
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailScheduledMessageCreatedEvent {
+    pub id: MailScheduledMessageId,
+    pub data: MailScheduledMessageDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a MailScheduledMessage is updated
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailScheduledMessageUpdatedEvent {
+    pub id: MailScheduledMessageId,
+    pub data: MailScheduledMessageDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a MailScheduledMessage is deleted
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailScheduledMessageDeletedEvent {
+    pub id: MailScheduledMessageId,
+    pub occurred_at: DateTime<Utc>,
+}
+
+// ============================================================================
 // SMS EVENTS
 // ============================================================================
 
@@ -603,6 +738,15 @@ pub enum MessagingEvent {
     MailAliasCreated(MailAliasCreatedEvent),
     MailAliasUpdated(MailAliasUpdatedEvent),
     MailAliasDeleted(MailAliasDeletedEvent),
+    MailAttachmentCreated(MailAttachmentCreatedEvent),
+    MailAttachmentUpdated(MailAttachmentUpdatedEvent),
+    MailAttachmentDeleted(MailAttachmentDeletedEvent),
+    MailMessageAttachmentCreated(MailMessageAttachmentCreatedEvent),
+    MailMessageAttachmentUpdated(MailMessageAttachmentUpdatedEvent),
+    MailMessageAttachmentDeleted(MailMessageAttachmentDeletedEvent),
+    MailMessageStarCreated(MailMessageStarCreatedEvent),
+    MailMessageStarUpdated(MailMessageStarUpdatedEvent),
+    MailMessageStarDeleted(MailMessageStarDeletedEvent),
     MailMessageCreated(MailMessageCreatedEvent),
     MailMessageUpdated(MailMessageUpdatedEvent),
     MailMessageDeleted(MailMessageDeletedEvent),
@@ -639,6 +783,12 @@ pub enum MessagingEvent {
     MailGuestCreated(MailGuestCreatedEvent),
     MailGuestUpdated(MailGuestUpdatedEvent),
     MailGuestDeleted(MailGuestDeletedEvent),
+    MailMessageScheduleCreated(MailMessageScheduleCreatedEvent),
+    MailMessageScheduleUpdated(MailMessageScheduleUpdatedEvent),
+    MailMessageScheduleDeleted(MailMessageScheduleDeletedEvent),
+    MailScheduledMessageCreated(MailScheduledMessageCreatedEvent),
+    MailScheduledMessageUpdated(MailScheduledMessageUpdatedEvent),
+    MailScheduledMessageDeleted(MailScheduledMessageDeletedEvent),
     SmsCreated(SmsCreatedEvent),
     SmsUpdated(SmsUpdatedEvent),
     SmsDeleted(SmsDeletedEvent),

@@ -15,6 +15,9 @@ use crate::application::service::MailActivityPlanService;
 use crate::application::service::MailActivityPlanTemplateService;
 use crate::application::service::MailAliasDomainService;
 use crate::application::service::MailAliasService;
+use crate::application::service::MailAttachmentService;
+use crate::application::service::MailMessageAttachmentService;
+use crate::application::service::MailMessageStarService;
 use crate::application::service::MailMessageService;
 use crate::application::service::MailService;
 use crate::application::service::MailNotificationService;
@@ -27,6 +30,8 @@ use crate::application::service::MailTrackingValueService;
 use crate::application::service::DiscussChannelService;
 use crate::application::service::DiscussChannelMemberService;
 use crate::application::service::MailGuestService;
+use crate::application::service::MailMessageScheduleService;
+use crate::application::service::MailScheduledMessageService;
 use crate::application::service::SmsService;
 use crate::application::service::SmsTemplateService;
 use crate::application::service::SmsTrackerService;
@@ -61,6 +66,12 @@ pub struct AppState {
     pub mail_alias_domain_service: Arc<MailAliasDomainService>,
     /// MailAlias service
     pub mail_alias_service: Arc<MailAliasService>,
+    /// MailAttachment service
+    pub mail_attachment_service: Arc<MailAttachmentService>,
+    /// MailMessageAttachment service
+    pub mail_message_attachment_service: Arc<MailMessageAttachmentService>,
+    /// MailMessageStar service
+    pub mail_message_star_service: Arc<MailMessageStarService>,
     /// MailMessage service
     pub mail_message_service: Arc<MailMessageService>,
     /// Mail service
@@ -85,6 +96,10 @@ pub struct AppState {
     pub discuss_channel_member_service: Arc<DiscussChannelMemberService>,
     /// MailGuest service
     pub mail_guest_service: Arc<MailGuestService>,
+    /// MailMessageSchedule service
+    pub mail_message_schedule_service: Arc<MailMessageScheduleService>,
+    /// MailScheduledMessage service
+    pub mail_scheduled_message_service: Arc<MailScheduledMessageService>,
     /// Sms service
     pub sms_service: Arc<SmsService>,
     /// SmsTemplate service
@@ -102,6 +117,9 @@ impl AppState {
         mail_activity_plan_template_service: Arc<MailActivityPlanTemplateService>,
         mail_alias_domain_service: Arc<MailAliasDomainService>,
         mail_alias_service: Arc<MailAliasService>,
+        mail_attachment_service: Arc<MailAttachmentService>,
+        mail_message_attachment_service: Arc<MailMessageAttachmentService>,
+        mail_message_star_service: Arc<MailMessageStarService>,
         mail_message_service: Arc<MailMessageService>,
         mail_service: Arc<MailService>,
         mail_notification_service: Arc<MailNotificationService>,
@@ -114,6 +132,8 @@ impl AppState {
         discuss_channel_service: Arc<DiscussChannelService>,
         discuss_channel_member_service: Arc<DiscussChannelMemberService>,
         mail_guest_service: Arc<MailGuestService>,
+        mail_message_schedule_service: Arc<MailMessageScheduleService>,
+        mail_scheduled_message_service: Arc<MailScheduledMessageService>,
         sms_service: Arc<SmsService>,
         sms_template_service: Arc<SmsTemplateService>,
         sms_tracker_service: Arc<SmsTrackerService>
@@ -125,6 +145,9 @@ impl AppState {
             mail_activity_plan_template_service,
             mail_alias_domain_service,
             mail_alias_service,
+            mail_attachment_service,
+            mail_message_attachment_service,
+            mail_message_star_service,
             mail_message_service,
             mail_service,
             mail_notification_service,
@@ -137,6 +160,8 @@ impl AppState {
             discuss_channel_service,
             discuss_channel_member_service,
             mail_guest_service,
+            mail_message_schedule_service,
+            mail_scheduled_message_service,
             sms_service,
             sms_template_service,
             sms_tracker_service,
@@ -152,6 +177,9 @@ impl AppState {
             mail_activity_plan_template_service: module.mail_activity_plan_template_service.clone(),
             mail_alias_domain_service: module.mail_alias_domain_service.clone(),
             mail_alias_service: module.mail_alias_service.clone(),
+            mail_attachment_service: module.mail_attachment_service.clone(),
+            mail_message_attachment_service: module.mail_message_attachment_service.clone(),
+            mail_message_star_service: module.mail_message_star_service.clone(),
             mail_message_service: module.mail_message_service.clone(),
             mail_service: module.mail_service.clone(),
             mail_notification_service: module.mail_notification_service.clone(),
@@ -164,6 +192,8 @@ impl AppState {
             discuss_channel_service: module.discuss_channel_service.clone(),
             discuss_channel_member_service: module.discuss_channel_member_service.clone(),
             mail_guest_service: module.mail_guest_service.clone(),
+            mail_message_schedule_service: module.mail_message_schedule_service.clone(),
+            mail_scheduled_message_service: module.mail_scheduled_message_service.clone(),
             sms_service: module.sms_service.clone(),
             sms_template_service: module.sms_template_service.clone(),
             sms_tracker_service: module.sms_tracker_service.clone(),
@@ -182,6 +212,9 @@ pub struct AppStateBuilder {
     mail_activity_plan_template_service: Option<Arc<MailActivityPlanTemplateService>>,
     mail_alias_domain_service: Option<Arc<MailAliasDomainService>>,
     mail_alias_service: Option<Arc<MailAliasService>>,
+    mail_attachment_service: Option<Arc<MailAttachmentService>>,
+    mail_message_attachment_service: Option<Arc<MailMessageAttachmentService>>,
+    mail_message_star_service: Option<Arc<MailMessageStarService>>,
     mail_message_service: Option<Arc<MailMessageService>>,
     mail_service: Option<Arc<MailService>>,
     mail_notification_service: Option<Arc<MailNotificationService>>,
@@ -194,6 +227,8 @@ pub struct AppStateBuilder {
     discuss_channel_service: Option<Arc<DiscussChannelService>>,
     discuss_channel_member_service: Option<Arc<DiscussChannelMemberService>>,
     mail_guest_service: Option<Arc<MailGuestService>>,
+    mail_message_schedule_service: Option<Arc<MailMessageScheduleService>>,
+    mail_scheduled_message_service: Option<Arc<MailScheduledMessageService>>,
     sms_service: Option<Arc<SmsService>>,
     sms_template_service: Option<Arc<SmsTemplateService>>,
     sms_tracker_service: Option<Arc<SmsTrackerService>>,
@@ -238,6 +273,24 @@ impl AppStateBuilder {
     /// Set the MailAlias service.
     pub fn with_mail_alias_service(mut self, service: Arc<MailAliasService>) -> Self {
         self.mail_alias_service = Some(service);
+        self
+    }
+
+    /// Set the MailAttachment service.
+    pub fn with_mail_attachment_service(mut self, service: Arc<MailAttachmentService>) -> Self {
+        self.mail_attachment_service = Some(service);
+        self
+    }
+
+    /// Set the MailMessageAttachment service.
+    pub fn with_mail_message_attachment_service(mut self, service: Arc<MailMessageAttachmentService>) -> Self {
+        self.mail_message_attachment_service = Some(service);
+        self
+    }
+
+    /// Set the MailMessageStar service.
+    pub fn with_mail_message_star_service(mut self, service: Arc<MailMessageStarService>) -> Self {
+        self.mail_message_star_service = Some(service);
         self
     }
 
@@ -313,6 +366,18 @@ impl AppStateBuilder {
         self
     }
 
+    /// Set the MailMessageSchedule service.
+    pub fn with_mail_message_schedule_service(mut self, service: Arc<MailMessageScheduleService>) -> Self {
+        self.mail_message_schedule_service = Some(service);
+        self
+    }
+
+    /// Set the MailScheduledMessage service.
+    pub fn with_mail_scheduled_message_service(mut self, service: Arc<MailScheduledMessageService>) -> Self {
+        self.mail_scheduled_message_service = Some(service);
+        self
+    }
+
     /// Set the Sms service.
     pub fn with_sms_service(mut self, service: Arc<SmsService>) -> Self {
         self.sms_service = Some(service);
@@ -344,6 +409,9 @@ impl AppStateBuilder {
             mail_activity_plan_template_service: self.mail_activity_plan_template_service.expect("mail_activity_plan_template_service is required"),
             mail_alias_domain_service: self.mail_alias_domain_service.expect("mail_alias_domain_service is required"),
             mail_alias_service: self.mail_alias_service.expect("mail_alias_service is required"),
+            mail_attachment_service: self.mail_attachment_service.expect("mail_attachment_service is required"),
+            mail_message_attachment_service: self.mail_message_attachment_service.expect("mail_message_attachment_service is required"),
+            mail_message_star_service: self.mail_message_star_service.expect("mail_message_star_service is required"),
             mail_message_service: self.mail_message_service.expect("mail_message_service is required"),
             mail_service: self.mail_service.expect("mail_service is required"),
             mail_notification_service: self.mail_notification_service.expect("mail_notification_service is required"),
@@ -356,6 +424,8 @@ impl AppStateBuilder {
             discuss_channel_service: self.discuss_channel_service.expect("discuss_channel_service is required"),
             discuss_channel_member_service: self.discuss_channel_member_service.expect("discuss_channel_member_service is required"),
             mail_guest_service: self.mail_guest_service.expect("mail_guest_service is required"),
+            mail_message_schedule_service: self.mail_message_schedule_service.expect("mail_message_schedule_service is required"),
+            mail_scheduled_message_service: self.mail_scheduled_message_service.expect("mail_scheduled_message_service is required"),
             sms_service: self.sms_service.expect("sms_service is required"),
             sms_template_service: self.sms_template_service.expect("sms_template_service is required"),
             sms_tracker_service: self.sms_tracker_service.expect("sms_tracker_service is required"),

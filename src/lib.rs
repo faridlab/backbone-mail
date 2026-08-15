@@ -41,6 +41,9 @@ pub use application::service::MailActivityPlanService;
 pub use application::service::MailActivityPlanTemplateService;
 pub use application::service::MailAliasDomainService;
 pub use application::service::MailAliasService;
+pub use application::service::MailAttachmentService;
+pub use application::service::MailMessageAttachmentService;
+pub use application::service::MailMessageStarService;
 pub use application::service::MailMessageService;
 pub use application::service::MailService;
 pub use application::service::MailNotificationService;
@@ -53,6 +56,8 @@ pub use application::service::MailTrackingValueService;
 pub use application::service::DiscussChannelService;
 pub use application::service::DiscussChannelMemberService;
 pub use application::service::MailGuestService;
+pub use application::service::MailMessageScheduleService;
+pub use application::service::MailScheduledMessageService;
 pub use application::service::SmsService;
 pub use application::service::SmsTemplateService;
 pub use application::service::SmsTrackerService;
@@ -89,6 +94,9 @@ pub struct MessagingModule {
     pub(crate) mail_activity_plan_template_service: Arc<MailActivityPlanTemplateService>,
     pub(crate) mail_alias_domain_service: Arc<MailAliasDomainService>,
     pub(crate) mail_alias_service: Arc<MailAliasService>,
+    pub(crate) mail_attachment_service: Arc<MailAttachmentService>,
+    pub(crate) mail_message_attachment_service: Arc<MailMessageAttachmentService>,
+    pub(crate) mail_message_star_service: Arc<MailMessageStarService>,
     pub(crate) mail_message_service: Arc<MailMessageService>,
     pub(crate) mail_service: Arc<MailService>,
     pub(crate) mail_notification_service: Arc<MailNotificationService>,
@@ -101,6 +109,8 @@ pub struct MessagingModule {
     pub(crate) discuss_channel_service: Arc<DiscussChannelService>,
     pub(crate) discuss_channel_member_service: Arc<DiscussChannelMemberService>,
     pub(crate) mail_guest_service: Arc<MailGuestService>,
+    pub(crate) mail_message_schedule_service: Arc<MailMessageScheduleService>,
+    pub(crate) mail_scheduled_message_service: Arc<MailScheduledMessageService>,
     pub(crate) sms_service: Arc<SmsService>,
     pub(crate) sms_template_service: Arc<SmsTemplateService>,
     pub(crate) sms_tracker_service: Arc<SmsTrackerService>,
@@ -138,6 +148,9 @@ impl MessagingModule {
             create_mail_activity_plan_template_routes,
             create_mail_alias_domain_routes,
             create_mail_alias_routes,
+            create_mail_attachment_routes,
+            create_mail_message_attachment_routes,
+            create_mail_message_star_routes,
             create_mail_message_routes,
             create_mail_routes,
             create_mail_notification_routes,
@@ -150,6 +163,8 @@ impl MessagingModule {
             create_discuss_channel_routes,
             create_discuss_channel_member_routes,
             create_mail_guest_routes,
+            create_mail_message_schedule_routes,
+            create_mail_scheduled_message_routes,
             create_sms_routes,
             create_sms_template_routes,
             create_sms_tracker_routes,
@@ -162,6 +177,9 @@ impl MessagingModule {
             .merge(create_mail_activity_plan_template_routes(self.mail_activity_plan_template_service.clone()))
             .merge(create_mail_alias_domain_routes(self.mail_alias_domain_service.clone()))
             .merge(create_mail_alias_routes(self.mail_alias_service.clone()))
+            .merge(create_mail_attachment_routes(self.mail_attachment_service.clone()))
+            .merge(create_mail_message_attachment_routes(self.mail_message_attachment_service.clone()))
+            .merge(create_mail_message_star_routes(self.mail_message_star_service.clone()))
             .merge(create_mail_message_routes(self.mail_message_service.clone()))
             .merge(create_mail_routes(self.mail_service.clone()))
             .merge(create_mail_notification_routes(self.mail_notification_service.clone()))
@@ -174,6 +192,8 @@ impl MessagingModule {
             .merge(create_discuss_channel_routes(self.discuss_channel_service.clone()))
             .merge(create_discuss_channel_member_routes(self.discuss_channel_member_service.clone()))
             .merge(create_mail_guest_routes(self.mail_guest_service.clone()))
+            .merge(create_mail_message_schedule_routes(self.mail_message_schedule_service.clone()))
+            .merge(create_mail_scheduled_message_routes(self.mail_scheduled_message_service.clone()))
             .merge(create_sms_routes(self.sms_service.clone()))
             .merge(create_sms_template_routes(self.sms_template_service.clone()))
             .merge(create_sms_tracker_routes(self.sms_tracker_service.clone()))
@@ -202,6 +222,9 @@ impl MessagingModule {
             create_mail_activity_plan_template_read_routes,
             create_mail_alias_domain_read_routes,
             create_mail_alias_read_routes,
+            create_mail_attachment_read_routes,
+            create_mail_message_attachment_read_routes,
+            create_mail_message_star_read_routes,
             create_mail_message_read_routes,
             create_mail_read_routes,
             create_mail_notification_read_routes,
@@ -214,6 +237,8 @@ impl MessagingModule {
             create_discuss_channel_read_routes,
             create_discuss_channel_member_read_routes,
             create_mail_guest_read_routes,
+            create_mail_message_schedule_read_routes,
+            create_mail_scheduled_message_read_routes,
             create_sms_read_routes,
             create_sms_template_read_routes,
             create_sms_tracker_read_routes,
@@ -226,6 +251,9 @@ impl MessagingModule {
             .merge(create_mail_activity_plan_template_read_routes(self.mail_activity_plan_template_service.clone()))
             .merge(create_mail_alias_domain_read_routes(self.mail_alias_domain_service.clone()))
             .merge(create_mail_alias_read_routes(self.mail_alias_service.clone()))
+            .merge(create_mail_attachment_read_routes(self.mail_attachment_service.clone()))
+            .merge(create_mail_message_attachment_read_routes(self.mail_message_attachment_service.clone()))
+            .merge(create_mail_message_star_read_routes(self.mail_message_star_service.clone()))
             .merge(create_mail_message_read_routes(self.mail_message_service.clone()))
             .merge(create_mail_read_routes(self.mail_service.clone()))
             .merge(create_mail_notification_read_routes(self.mail_notification_service.clone()))
@@ -238,6 +266,8 @@ impl MessagingModule {
             .merge(create_discuss_channel_read_routes(self.discuss_channel_service.clone()))
             .merge(create_discuss_channel_member_read_routes(self.discuss_channel_member_service.clone()))
             .merge(create_mail_guest_read_routes(self.mail_guest_service.clone()))
+            .merge(create_mail_message_schedule_read_routes(self.mail_message_schedule_service.clone()))
+            .merge(create_mail_scheduled_message_read_routes(self.mail_scheduled_message_service.clone()))
             .merge(create_sms_read_routes(self.sms_service.clone()))
             .merge(create_sms_template_read_routes(self.sms_template_service.clone()))
             .merge(create_sms_tracker_read_routes(self.sms_tracker_service.clone()))
@@ -298,6 +328,18 @@ impl MessagingModuleBuilder {
         let mail_alias_repository = Arc::new(MailAliasRepository::new(db_pool.clone()));
         let mail_alias_service = Arc::new(MailAliasService::with_repository(mail_alias_repository.clone()));
 
+        // MailAttachment service
+        let mail_attachment_repository = Arc::new(MailAttachmentRepository::new(db_pool.clone()));
+        let mail_attachment_service = Arc::new(MailAttachmentService::with_repository(mail_attachment_repository.clone()));
+
+        // MailMessageAttachment service
+        let mail_message_attachment_repository = Arc::new(MailMessageAttachmentRepository::new(db_pool.clone()));
+        let mail_message_attachment_service = Arc::new(MailMessageAttachmentService::with_repository(mail_message_attachment_repository.clone()));
+
+        // MailMessageStar service
+        let mail_message_star_repository = Arc::new(MailMessageStarRepository::new(db_pool.clone()));
+        let mail_message_star_service = Arc::new(MailMessageStarService::with_repository(mail_message_star_repository.clone()));
+
         // MailMessage service
         let mail_message_repository = Arc::new(MailMessageRepository::new(db_pool.clone()));
         let mail_message_service = Arc::new(MailMessageService::with_repository(mail_message_repository.clone()));
@@ -346,6 +388,14 @@ impl MessagingModuleBuilder {
         let mail_guest_repository = Arc::new(MailGuestRepository::new(db_pool.clone()));
         let mail_guest_service = Arc::new(MailGuestService::with_repository(mail_guest_repository.clone()));
 
+        // MailMessageSchedule service
+        let mail_message_schedule_repository = Arc::new(MailMessageScheduleRepository::new(db_pool.clone()));
+        let mail_message_schedule_service = Arc::new(MailMessageScheduleService::with_repository(mail_message_schedule_repository.clone()));
+
+        // MailScheduledMessage service
+        let mail_scheduled_message_repository = Arc::new(MailScheduledMessageRepository::new(db_pool.clone()));
+        let mail_scheduled_message_service = Arc::new(MailScheduledMessageService::with_repository(mail_scheduled_message_repository.clone()));
+
         // Sms service
         let sms_repository = Arc::new(SmsRepository::new(db_pool.clone()));
         let sms_service = Arc::new(SmsService::with_repository(sms_repository.clone()));
@@ -374,6 +424,9 @@ impl MessagingModuleBuilder {
             mail_activity_plan_template_service,
             mail_alias_domain_service,
             mail_alias_service,
+            mail_attachment_service,
+            mail_message_attachment_service,
+            mail_message_star_service,
             mail_message_service,
             mail_service,
             mail_notification_service,
@@ -386,6 +439,8 @@ impl MessagingModuleBuilder {
             discuss_channel_service,
             discuss_channel_member_service,
             mail_guest_service,
+            mail_message_schedule_service,
+            mail_scheduled_message_service,
             sms_service,
             sms_template_service,
             sms_tracker_service,

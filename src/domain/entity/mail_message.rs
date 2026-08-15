@@ -70,6 +70,7 @@ pub struct MailMessage {
     pub has_error: bool,
     pub failure_reason: Option<String>,
     pub rating_value: Option<f64>,
+    pub pinned_at: Option<DateTime<Utc>>,
     #[serde(default)]
     #[sqlx(json)]
     pub metadata: AuditMetadata,
@@ -104,6 +105,7 @@ impl MailMessage {
             has_error,
             failure_reason: None,
             rating_value: None,
+            pinned_at: None,
             metadata: AuditMetadata::default(),
         }
     }
@@ -241,6 +243,12 @@ impl MailMessage {
         self
     }
 
+    /// Set the pinned_at field (chainable)
+    pub fn with_pinned_at(mut self, value: DateTime<Utc>) -> Self {
+        self.pinned_at = Some(value);
+        self
+    }
+
     // ==========================================================
     // Partial Update
     // ==========================================================
@@ -305,6 +313,9 @@ impl MailMessage {
                 }
                 "rating_value" => {
                     if let Ok(v) = serde_json::from_value(value) { self.rating_value = v; }
+                }
+                "pinned_at" => {
+                    if let Ok(v) = serde_json::from_value(value) { self.pinned_at = v; }
                 }
                 _ => {} // ignore unknown fields
             }
@@ -398,6 +409,7 @@ pub struct MailMessageBuilder {
     has_error: Option<bool>,
     failure_reason: Option<String>,
     rating_value: Option<f64>,
+    pinned_at: Option<DateTime<Utc>>,
 }
 
 impl MailMessageBuilder {
@@ -515,6 +527,12 @@ impl MailMessageBuilder {
         self
     }
 
+    /// Set the pinned_at field (optional)
+    pub fn pinned_at(mut self, value: DateTime<Utc>) -> Self {
+        self.pinned_at = Some(value);
+        self
+    }
+
     /// Build the MailMessage entity
     ///
     /// Returns Err if any required field without a default is missing.
@@ -542,6 +560,7 @@ impl MailMessageBuilder {
             has_error: self.has_error.unwrap_or(false),
             failure_reason: self.failure_reason,
             rating_value: self.rating_value,
+            pinned_at: self.pinned_at,
             metadata: AuditMetadata::default(),
         })
     }

@@ -18,6 +18,7 @@ use validator::Validate;
 
 use crate::domain::entity::DiscussChannelMember;
 use crate::domain::entity::AuditMetadata;
+use crate::domain::entity::MemberCustomNotifications;
 use crate::domain::entity::SidebarFoldState;
 
 // =============================================================================
@@ -42,6 +43,18 @@ pub struct CreateDiscussChannelMemberDto {
     pub guest_id: Option<Uuid>,
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "fold_state")]
     pub fold_state: Option<SidebarFoldState>,
+    #[serde(default, skip_serializing_if = "Option::is_none", alias = "fetched_message_id")]
+    pub fetched_message_id: Option<Uuid>,
+    #[serde(default, skip_serializing_if = "Option::is_none", alias = "new_message_separator")]
+    pub new_message_separator: Option<Uuid>,
+    #[serde(default, skip_serializing_if = "Option::is_none", alias = "custom_notifications")]
+    pub custom_notifications: Option<MemberCustomNotifications>,
+    #[serde(default, skip_serializing_if = "Option::is_none", alias = "mute_until_dt")]
+    pub mute_until_dt: Option<DateTime<Utc>>,
+    #[serde(default, skip_serializing_if = "Option::is_none", alias = "unpin_dt")]
+    pub unpin_dt: Option<DateTime<Utc>>,
+    #[serde(default, skip_serializing_if = "Option::is_none", alias = "last_seen_dt")]
+    pub last_seen_dt: Option<DateTime<Utc>>,
     #[cfg_attr(feature = "openapi", schema(example = 42))]
     #[serde(alias = "message_unread_counter")]
     pub message_unread_counter: i32,
@@ -82,6 +95,18 @@ pub struct UpdateDiscussChannelMemberDto {
     pub guest_id: Option<Uuid>,
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "fold_state")]
     pub fold_state: Option<SidebarFoldState>,
+    #[serde(default, skip_serializing_if = "Option::is_none", alias = "fetched_message_id")]
+    pub fetched_message_id: Option<Uuid>,
+    #[serde(default, skip_serializing_if = "Option::is_none", alias = "new_message_separator")]
+    pub new_message_separator: Option<Uuid>,
+    #[serde(default, skip_serializing_if = "Option::is_none", alias = "custom_notifications")]
+    pub custom_notifications: Option<MemberCustomNotifications>,
+    #[serde(default, skip_serializing_if = "Option::is_none", alias = "mute_until_dt")]
+    pub mute_until_dt: Option<DateTime<Utc>>,
+    #[serde(default, skip_serializing_if = "Option::is_none", alias = "unpin_dt")]
+    pub unpin_dt: Option<DateTime<Utc>>,
+    #[serde(default, skip_serializing_if = "Option::is_none", alias = "last_seen_dt")]
+    pub last_seen_dt: Option<DateTime<Utc>>,
     #[cfg_attr(feature = "openapi", schema(example = 42))]
     #[serde(alias = "message_unread_counter")]
     pub message_unread_counter: i32,
@@ -122,6 +147,18 @@ pub struct PatchDiscussChannelMemberDto {
     pub guest_id: Option<Uuid>,
     #[serde(skip_serializing_if = "Option::is_none", alias = "fold_state")]
     pub fold_state: Option<SidebarFoldState>,
+    #[serde(skip_serializing_if = "Option::is_none", alias = "fetched_message_id")]
+    pub fetched_message_id: Option<Uuid>,
+    #[serde(skip_serializing_if = "Option::is_none", alias = "new_message_separator")]
+    pub new_message_separator: Option<Uuid>,
+    #[serde(skip_serializing_if = "Option::is_none", alias = "custom_notifications")]
+    pub custom_notifications: Option<MemberCustomNotifications>,
+    #[serde(skip_serializing_if = "Option::is_none", alias = "mute_until_dt")]
+    pub mute_until_dt: Option<DateTime<Utc>>,
+    #[serde(skip_serializing_if = "Option::is_none", alias = "unpin_dt")]
+    pub unpin_dt: Option<DateTime<Utc>>,
+    #[serde(skip_serializing_if = "Option::is_none", alias = "last_seen_dt")]
+    pub last_seen_dt: Option<DateTime<Utc>>,
     #[cfg_attr(feature = "openapi", schema(example = 42))]
     #[serde(skip_serializing_if = "Option::is_none", alias = "message_unread_counter")]
     pub message_unread_counter: Option<i32>,
@@ -143,7 +180,7 @@ pub struct PatchDiscussChannelMemberDto {
 impl PatchDiscussChannelMemberDto {
     /// Check if any field is set
     pub fn has_changes(&self) -> bool {
-        self.channel_id.is_some() || self.partner_id.is_some() || self.guest_id.is_some() || self.fold_state.is_some() || self.message_unread_counter.is_some() || self.unread_counter.is_some() || self.message_follower_counter.is_some() || self.seen_message_id.is_some() || self.last_interest_dt.is_some() || self.is_pinned.is_some()
+        self.channel_id.is_some() || self.partner_id.is_some() || self.guest_id.is_some() || self.fold_state.is_some() || self.fetched_message_id.is_some() || self.new_message_separator.is_some() || self.custom_notifications.is_some() || self.mute_until_dt.is_some() || self.unpin_dt.is_some() || self.last_seen_dt.is_some() || self.message_unread_counter.is_some() || self.unread_counter.is_some() || self.message_follower_counter.is_some() || self.seen_message_id.is_some() || self.last_interest_dt.is_some() || self.is_pinned.is_some()
     }
 }
 
@@ -166,6 +203,12 @@ pub struct DiscussChannelMemberResponseDto {
     pub partner_id: Option<Uuid>,
     pub guest_id: Option<Uuid>,
     pub fold_state: Option<SidebarFoldState>,
+    pub fetched_message_id: Option<Uuid>,
+    pub new_message_separator: Option<Uuid>,
+    pub custom_notifications: Option<MemberCustomNotifications>,
+    pub mute_until_dt: Option<DateTime<Utc>>,
+    pub unpin_dt: Option<DateTime<Utc>>,
+    pub last_seen_dt: Option<DateTime<Utc>>,
     #[cfg_attr(feature = "openapi", schema(example = 42))]
     pub message_unread_counter: i32,
     #[cfg_attr(feature = "openapi", schema(example = 42))]
@@ -251,6 +294,12 @@ impl From<DiscussChannelMember> for DiscussChannelMemberResponseDto {
             partner_id: entity.partner_id,
             guest_id: entity.guest_id,
             fold_state: entity.fold_state,
+            fetched_message_id: entity.fetched_message_id,
+            new_message_separator: entity.new_message_separator,
+            custom_notifications: entity.custom_notifications,
+            mute_until_dt: entity.mute_until_dt,
+            unpin_dt: entity.unpin_dt,
+            last_seen_dt: entity.last_seen_dt,
             message_unread_counter: entity.message_unread_counter,
             unread_counter: entity.unread_counter,
             message_follower_counter: entity.message_follower_counter,
@@ -283,6 +332,12 @@ impl From<CreateDiscussChannelMemberDto> for DiscussChannelMember {
             partner_id: dto.partner_id,
             guest_id: dto.guest_id,
             fold_state: dto.fold_state,
+            fetched_message_id: dto.fetched_message_id,
+            new_message_separator: dto.new_message_separator,
+            custom_notifications: dto.custom_notifications,
+            mute_until_dt: dto.mute_until_dt,
+            unpin_dt: dto.unpin_dt,
+            last_seen_dt: dto.last_seen_dt,
             message_unread_counter: dto.message_unread_counter,
             unread_counter: dto.unread_counter,
             message_follower_counter: dto.message_follower_counter,
@@ -302,6 +357,12 @@ impl From<&DiscussChannelMember> for DiscussChannelMemberResponseDto {
             partner_id: entity.partner_id.clone(),
             guest_id: entity.guest_id.clone(),
             fold_state: entity.fold_state.clone(),
+            fetched_message_id: entity.fetched_message_id.clone(),
+            new_message_separator: entity.new_message_separator.clone(),
+            custom_notifications: entity.custom_notifications.clone(),
+            mute_until_dt: entity.mute_until_dt.clone(),
+            unpin_dt: entity.unpin_dt.clone(),
+            last_seen_dt: entity.last_seen_dt.clone(),
             message_unread_counter: entity.message_unread_counter.clone(),
             unread_counter: entity.unread_counter.clone(),
             message_follower_counter: entity.message_follower_counter.clone(),
@@ -325,6 +386,12 @@ impl backbone_core::ApplyUpdateDto<UpdateDiscussChannelMemberDto> for DiscussCha
         self.partner_id = dto.partner_id;
         self.guest_id = dto.guest_id;
         self.fold_state = dto.fold_state;
+        self.fetched_message_id = dto.fetched_message_id;
+        self.new_message_separator = dto.new_message_separator;
+        self.custom_notifications = dto.custom_notifications;
+        self.mute_until_dt = dto.mute_until_dt;
+        self.unpin_dt = dto.unpin_dt;
+        self.last_seen_dt = dto.last_seen_dt;
         self.message_unread_counter = dto.message_unread_counter;
         self.unread_counter = dto.unread_counter;
         self.message_follower_counter = dto.message_follower_counter;

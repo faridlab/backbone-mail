@@ -4,6 +4,7 @@ use sqlx::FromRow;
 use uuid::Uuid;
 
 use super::SidebarFoldState;
+use super::MemberCustomNotifications;
 use super::AuditMetadata;
 
 /// Strongly-typed ID for DiscussChannelMember
@@ -54,6 +55,12 @@ pub struct DiscussChannelMember {
     pub partner_id: Option<Uuid>,
     pub guest_id: Option<Uuid>,
     pub fold_state: Option<SidebarFoldState>,
+    pub fetched_message_id: Option<Uuid>,
+    pub new_message_separator: Option<Uuid>,
+    pub custom_notifications: Option<MemberCustomNotifications>,
+    pub mute_until_dt: Option<DateTime<Utc>>,
+    pub unpin_dt: Option<DateTime<Utc>>,
+    pub last_seen_dt: Option<DateTime<Utc>>,
     pub message_unread_counter: i32,
     pub unread_counter: i32,
     pub message_follower_counter: i32,
@@ -79,6 +86,12 @@ impl DiscussChannelMember {
             partner_id: None,
             guest_id: None,
             fold_state: None,
+            fetched_message_id: None,
+            new_message_separator: None,
+            custom_notifications: None,
+            mute_until_dt: None,
+            unpin_dt: None,
+            last_seen_dt: None,
             message_unread_counter,
             unread_counter,
             message_follower_counter,
@@ -162,6 +175,42 @@ impl DiscussChannelMember {
         self
     }
 
+    /// Set the fetched_message_id field (chainable)
+    pub fn with_fetched_message_id(mut self, value: Uuid) -> Self {
+        self.fetched_message_id = Some(value);
+        self
+    }
+
+    /// Set the new_message_separator field (chainable)
+    pub fn with_new_message_separator(mut self, value: Uuid) -> Self {
+        self.new_message_separator = Some(value);
+        self
+    }
+
+    /// Set the custom_notifications field (chainable)
+    pub fn with_custom_notifications(mut self, value: MemberCustomNotifications) -> Self {
+        self.custom_notifications = Some(value);
+        self
+    }
+
+    /// Set the mute_until_dt field (chainable)
+    pub fn with_mute_until_dt(mut self, value: DateTime<Utc>) -> Self {
+        self.mute_until_dt = Some(value);
+        self
+    }
+
+    /// Set the unpin_dt field (chainable)
+    pub fn with_unpin_dt(mut self, value: DateTime<Utc>) -> Self {
+        self.unpin_dt = Some(value);
+        self
+    }
+
+    /// Set the last_seen_dt field (chainable)
+    pub fn with_last_seen_dt(mut self, value: DateTime<Utc>) -> Self {
+        self.last_seen_dt = Some(value);
+        self
+    }
+
     /// Set the seen_message_id field (chainable)
     pub fn with_seen_message_id(mut self, value: Uuid) -> Self {
         self.seen_message_id = Some(value);
@@ -193,6 +242,24 @@ impl DiscussChannelMember {
                 }
                 "fold_state" => {
                     if let Ok(v) = serde_json::from_value(value) { self.fold_state = v; }
+                }
+                "fetched_message_id" => {
+                    if let Ok(v) = serde_json::from_value(value) { self.fetched_message_id = v; }
+                }
+                "new_message_separator" => {
+                    if let Ok(v) = serde_json::from_value(value) { self.new_message_separator = v; }
+                }
+                "custom_notifications" => {
+                    if let Ok(v) = serde_json::from_value(value) { self.custom_notifications = v; }
+                }
+                "mute_until_dt" => {
+                    if let Ok(v) = serde_json::from_value(value) { self.mute_until_dt = v; }
+                }
+                "unpin_dt" => {
+                    if let Ok(v) = serde_json::from_value(value) { self.unpin_dt = v; }
+                }
+                "last_seen_dt" => {
+                    if let Ok(v) = serde_json::from_value(value) { self.last_seen_dt = v; }
                 }
                 "message_unread_counter" => {
                     if let Ok(v) = serde_json::from_value(value) { self.message_unread_counter = v; }
@@ -269,8 +336,10 @@ impl backbone_orm::EntityRepoMeta for DiscussChannelMember {
         m.insert("channel_id".to_string(), "uuid".to_string());
         m.insert("partner_id".to_string(), "uuid".to_string());
         m.insert("guest_id".to_string(), "uuid".to_string());
+        m.insert("fetched_message_id".to_string(), "uuid".to_string());
         m.insert("seen_message_id".to_string(), "uuid".to_string());
         m.insert("fold_state".to_string(), "sidebar_fold_state".to_string());
+        m.insert("custom_notifications".to_string(), "member_custom_notifications".to_string());
         m
     }
     fn search_fields() -> &'static [&'static str] {
@@ -288,6 +357,12 @@ pub struct DiscussChannelMemberBuilder {
     partner_id: Option<Uuid>,
     guest_id: Option<Uuid>,
     fold_state: Option<SidebarFoldState>,
+    fetched_message_id: Option<Uuid>,
+    new_message_separator: Option<Uuid>,
+    custom_notifications: Option<MemberCustomNotifications>,
+    mute_until_dt: Option<DateTime<Utc>>,
+    unpin_dt: Option<DateTime<Utc>>,
+    last_seen_dt: Option<DateTime<Utc>>,
     message_unread_counter: Option<i32>,
     unread_counter: Option<i32>,
     message_follower_counter: Option<i32>,
@@ -318,6 +393,42 @@ impl DiscussChannelMemberBuilder {
     /// Set the fold_state field (optional)
     pub fn fold_state(mut self, value: SidebarFoldState) -> Self {
         self.fold_state = Some(value);
+        self
+    }
+
+    /// Set the fetched_message_id field (optional)
+    pub fn fetched_message_id(mut self, value: Uuid) -> Self {
+        self.fetched_message_id = Some(value);
+        self
+    }
+
+    /// Set the new_message_separator field (optional)
+    pub fn new_message_separator(mut self, value: Uuid) -> Self {
+        self.new_message_separator = Some(value);
+        self
+    }
+
+    /// Set the custom_notifications field (optional)
+    pub fn custom_notifications(mut self, value: MemberCustomNotifications) -> Self {
+        self.custom_notifications = Some(value);
+        self
+    }
+
+    /// Set the mute_until_dt field (optional)
+    pub fn mute_until_dt(mut self, value: DateTime<Utc>) -> Self {
+        self.mute_until_dt = Some(value);
+        self
+    }
+
+    /// Set the unpin_dt field (optional)
+    pub fn unpin_dt(mut self, value: DateTime<Utc>) -> Self {
+        self.unpin_dt = Some(value);
+        self
+    }
+
+    /// Set the last_seen_dt field (optional)
+    pub fn last_seen_dt(mut self, value: DateTime<Utc>) -> Self {
+        self.last_seen_dt = Some(value);
         self
     }
 
@@ -369,6 +480,12 @@ impl DiscussChannelMemberBuilder {
             partner_id: self.partner_id,
             guest_id: self.guest_id,
             fold_state: self.fold_state,
+            fetched_message_id: self.fetched_message_id,
+            new_message_separator: self.new_message_separator,
+            custom_notifications: self.custom_notifications,
+            mute_until_dt: self.mute_until_dt,
+            unpin_dt: self.unpin_dt,
+            last_seen_dt: self.last_seen_dt,
             message_unread_counter: self.message_unread_counter.unwrap_or(0),
             unread_counter: self.unread_counter.unwrap_or(0),
             message_follower_counter: self.message_follower_counter.unwrap_or(0),

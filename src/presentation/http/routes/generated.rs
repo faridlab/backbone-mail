@@ -15,6 +15,9 @@ use super::{
     mail_activity_plan_template_handler::create_mail_activity_plan_template_routes,
     mail_alias_domain_handler::create_mail_alias_domain_routes,
     mail_alias_handler::create_mail_alias_routes,
+    mail_attachment_handler::create_mail_attachment_routes,
+    mail_message_attachment_handler::create_mail_message_attachment_routes,
+    mail_message_star_handler::create_mail_message_star_routes,
     mail_message_handler::create_mail_message_routes,
     mail_handler::create_mail_routes,
     mail_notification_handler::create_mail_notification_routes,
@@ -27,6 +30,8 @@ use super::{
     discuss_channel_handler::create_discuss_channel_routes,
     discuss_channel_member_handler::create_discuss_channel_member_routes,
     mail_guest_handler::create_mail_guest_routes,
+    mail_message_schedule_handler::create_mail_message_schedule_routes,
+    mail_scheduled_message_handler::create_mail_scheduled_message_routes,
     sms_handler::create_sms_routes,
     sms_template_handler::create_sms_template_routes,
     sms_tracker_handler::create_sms_tracker_routes,
@@ -39,6 +44,9 @@ use crate::application::service::{
     MailActivityPlanTemplateService,
     MailAliasDomainService,
     MailAliasService,
+    MailAttachmentService,
+    MailMessageAttachmentService,
+    MailMessageStarService,
     MailMessageService,
     MailService,
     MailNotificationService,
@@ -51,6 +59,8 @@ use crate::application::service::{
     DiscussChannelService,
     DiscussChannelMemberService,
     MailGuestService,
+    MailMessageScheduleService,
+    MailScheduledMessageService,
     SmsService,
     SmsTemplateService,
     SmsTrackerService,
@@ -64,6 +74,9 @@ pub struct HttpServices {
     pub mail_activity_plan_template: Arc<MailActivityPlanTemplateService>,
     pub mail_alias_domain: Arc<MailAliasDomainService>,
     pub mail_alias: Arc<MailAliasService>,
+    pub mail_attachment: Arc<MailAttachmentService>,
+    pub mail_message_attachment: Arc<MailMessageAttachmentService>,
+    pub mail_message_star: Arc<MailMessageStarService>,
     pub mail_message: Arc<MailMessageService>,
     pub mail: Arc<MailService>,
     pub mail_notification: Arc<MailNotificationService>,
@@ -76,6 +89,8 @@ pub struct HttpServices {
     pub discuss_channel: Arc<DiscussChannelService>,
     pub discuss_channel_member: Arc<DiscussChannelMemberService>,
     pub mail_guest: Arc<MailGuestService>,
+    pub mail_message_schedule: Arc<MailMessageScheduleService>,
+    pub mail_scheduled_message: Arc<MailScheduledMessageService>,
     pub sms: Arc<SmsService>,
     pub sms_template: Arc<SmsTemplateService>,
     pub sms_tracker: Arc<SmsTrackerService>,
@@ -110,6 +125,12 @@ pub fn configure_routes(services: HttpServices) -> Router {
         .merge(create_mail_alias_domain_routes(services.mail_alias_domain))
         // MailAlias routes (12 Backbone endpoints)
         .merge(create_mail_alias_routes(services.mail_alias))
+        // MailAttachment routes (12 Backbone endpoints)
+        .merge(create_mail_attachment_routes(services.mail_attachment))
+        // MailMessageAttachment routes (12 Backbone endpoints)
+        .merge(create_mail_message_attachment_routes(services.mail_message_attachment))
+        // MailMessageStar routes (12 Backbone endpoints)
+        .merge(create_mail_message_star_routes(services.mail_message_star))
         // MailMessage routes (12 Backbone endpoints)
         .merge(create_mail_message_routes(services.mail_message))
         // Mail routes (12 Backbone endpoints)
@@ -134,6 +155,10 @@ pub fn configure_routes(services: HttpServices) -> Router {
         .merge(create_discuss_channel_member_routes(services.discuss_channel_member))
         // MailGuest routes (12 Backbone endpoints)
         .merge(create_mail_guest_routes(services.mail_guest))
+        // MailMessageSchedule routes (12 Backbone endpoints)
+        .merge(create_mail_message_schedule_routes(services.mail_message_schedule))
+        // MailScheduledMessage routes (12 Backbone endpoints)
+        .merge(create_mail_scheduled_message_routes(services.mail_scheduled_message))
         // Sms routes (12 Backbone endpoints)
         .merge(create_sms_routes(services.sms))
         // SmsTemplate routes (12 Backbone endpoints)
@@ -168,6 +193,18 @@ pub mod individual {
 
     pub fn mail_alias_routes(service: Arc<MailAliasService>) -> Router {
         create_mail_alias_routes(service)
+    }
+
+    pub fn mail_attachment_routes(service: Arc<MailAttachmentService>) -> Router {
+        create_mail_attachment_routes(service)
+    }
+
+    pub fn mail_message_attachment_routes(service: Arc<MailMessageAttachmentService>) -> Router {
+        create_mail_message_attachment_routes(service)
+    }
+
+    pub fn mail_message_star_routes(service: Arc<MailMessageStarService>) -> Router {
+        create_mail_message_star_routes(service)
     }
 
     pub fn mail_message_routes(service: Arc<MailMessageService>) -> Router {
@@ -216,6 +253,14 @@ pub mod individual {
 
     pub fn mail_guest_routes(service: Arc<MailGuestService>) -> Router {
         create_mail_guest_routes(service)
+    }
+
+    pub fn mail_message_schedule_routes(service: Arc<MailMessageScheduleService>) -> Router {
+        create_mail_message_schedule_routes(service)
+    }
+
+    pub fn mail_scheduled_message_routes(service: Arc<MailScheduledMessageService>) -> Router {
+        create_mail_scheduled_message_routes(service)
     }
 
     pub fn sms_routes(service: Arc<SmsService>) -> Router {

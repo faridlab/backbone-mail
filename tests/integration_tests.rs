@@ -95,6 +95,48 @@ async fn test_mail_alias_api() {
 }
 
 #[tokio::test]
+async fn test_mail_attachment_api() {
+    let mut test = MailAttachmentApiTest::new();
+    let results = test.run_all().await;
+
+    let failed: Vec<_> = results.iter().filter(|r| !r.success).collect();
+    if !failed.is_empty() {
+        for f in &failed {
+            eprintln!("FAILED: {} - {}", f.test_name, f.details);
+        }
+        panic!("{} tests failed", failed.len());
+    }
+}
+
+#[tokio::test]
+async fn test_mail_message_attachment_api() {
+    let mut test = MailMessageAttachmentApiTest::new();
+    let results = test.run_all().await;
+
+    let failed: Vec<_> = results.iter().filter(|r| !r.success).collect();
+    if !failed.is_empty() {
+        for f in &failed {
+            eprintln!("FAILED: {} - {}", f.test_name, f.details);
+        }
+        panic!("{} tests failed", failed.len());
+    }
+}
+
+#[tokio::test]
+async fn test_mail_message_star_api() {
+    let mut test = MailMessageStarApiTest::new();
+    let results = test.run_all().await;
+
+    let failed: Vec<_> = results.iter().filter(|r| !r.success).collect();
+    if !failed.is_empty() {
+        for f in &failed {
+            eprintln!("FAILED: {} - {}", f.test_name, f.details);
+        }
+        panic!("{} tests failed", failed.len());
+    }
+}
+
+#[tokio::test]
 async fn test_mail_message_api() {
     let mut test = MailMessageApiTest::new();
     let results = test.run_all().await;
@@ -251,6 +293,34 @@ async fn test_discuss_channel_member_api() {
 #[tokio::test]
 async fn test_mail_guest_api() {
     let mut test = MailGuestApiTest::new();
+    let results = test.run_all().await;
+
+    let failed: Vec<_> = results.iter().filter(|r| !r.success).collect();
+    if !failed.is_empty() {
+        for f in &failed {
+            eprintln!("FAILED: {} - {}", f.test_name, f.details);
+        }
+        panic!("{} tests failed", failed.len());
+    }
+}
+
+#[tokio::test]
+async fn test_mail_message_schedule_api() {
+    let mut test = MailMessageScheduleApiTest::new();
+    let results = test.run_all().await;
+
+    let failed: Vec<_> = results.iter().filter(|r| !r.success).collect();
+    if !failed.is_empty() {
+        for f in &failed {
+            eprintln!("FAILED: {} - {}", f.test_name, f.details);
+        }
+        panic!("{} tests failed", failed.len());
+    }
+}
+
+#[tokio::test]
+async fn test_mail_scheduled_message_api() {
+    let mut test = MailScheduledMessageApiTest::new();
     let results = test.run_all().await;
 
     let failed: Vec<_> = results.iter().filter(|r| !r.success).collect();

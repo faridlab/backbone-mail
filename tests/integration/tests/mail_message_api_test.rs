@@ -43,6 +43,7 @@ impl TestDataGenerator for MailMessageTestData {
             "has_error": false,
             "failure_reason": null,
             "rating_value": null,
+            "pinned_at": now,
             "metadata": json!({}),
         })
     }
@@ -70,6 +71,7 @@ impl TestDataGenerator for MailMessageTestData {
             "has_error": false,
             "failure_reason": null,
             "rating_value": null,
+            "pinned_at": now,
             "metadata": json!({}),
         })
     }

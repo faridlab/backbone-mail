@@ -11,6 +11,9 @@ pub mod mail_activity_plan_dto;
 pub mod mail_activity_plan_template_dto;
 pub mod mail_alias_domain_dto;
 pub mod mail_alias_dto;
+pub mod mail_attachment_dto;
+pub mod mail_message_attachment_dto;
+pub mod mail_message_star_dto;
 pub mod mail_message_dto;
 pub mod mail_dto;
 pub mod mail_notification_dto;
@@ -23,6 +26,8 @@ pub mod mail_tracking_value_dto;
 pub mod discuss_channel_dto;
 pub mod discuss_channel_member_dto;
 pub mod mail_guest_dto;
+pub mod mail_message_schedule_dto;
+pub mod mail_scheduled_message_dto;
 pub mod sms_dto;
 pub mod sms_template_dto;
 pub mod sms_tracker_dto;
@@ -75,6 +80,30 @@ pub use mail_alias_dto::{
     MailAliasResponseDto,
     MailAliasListResponseDto,
     MailAliasSummaryDto,
+};
+pub use mail_attachment_dto::{
+    CreateMailAttachmentDto,
+    UpdateMailAttachmentDto,
+    PatchMailAttachmentDto,
+    MailAttachmentResponseDto,
+    MailAttachmentListResponseDto,
+    MailAttachmentSummaryDto,
+};
+pub use mail_message_attachment_dto::{
+    CreateMailMessageAttachmentDto,
+    UpdateMailMessageAttachmentDto,
+    PatchMailMessageAttachmentDto,
+    MailMessageAttachmentResponseDto,
+    MailMessageAttachmentListResponseDto,
+    MailMessageAttachmentSummaryDto,
+};
+pub use mail_message_star_dto::{
+    CreateMailMessageStarDto,
+    UpdateMailMessageStarDto,
+    PatchMailMessageStarDto,
+    MailMessageStarResponseDto,
+    MailMessageStarListResponseDto,
+    MailMessageStarSummaryDto,
 };
 pub use mail_message_dto::{
     CreateMailMessageDto,
@@ -171,6 +200,22 @@ pub use mail_guest_dto::{
     MailGuestResponseDto,
     MailGuestListResponseDto,
     MailGuestSummaryDto,
+};
+pub use mail_message_schedule_dto::{
+    CreateMailMessageScheduleDto,
+    UpdateMailMessageScheduleDto,
+    PatchMailMessageScheduleDto,
+    MailMessageScheduleResponseDto,
+    MailMessageScheduleListResponseDto,
+    MailMessageScheduleSummaryDto,
+};
+pub use mail_scheduled_message_dto::{
+    CreateMailScheduledMessageDto,
+    UpdateMailScheduledMessageDto,
+    PatchMailScheduledMessageDto,
+    MailScheduledMessageResponseDto,
+    MailScheduledMessageListResponseDto,
+    MailScheduledMessageSummaryDto,
 };
 pub use sms_dto::{
     CreateSmsDto,

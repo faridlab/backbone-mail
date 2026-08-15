@@ -74,6 +74,8 @@ pub struct CreateMailMessageDto {
     pub failure_reason: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "rating_value")]
     pub rating_value: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none", alias = "pinned_at")]
+    pub pinned_at: Option<DateTime<Utc>>,
 }
 
 // =============================================================================
@@ -129,6 +131,8 @@ pub struct UpdateMailMessageDto {
     pub failure_reason: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "rating_value")]
     pub rating_value: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none", alias = "pinned_at")]
+    pub pinned_at: Option<DateTime<Utc>>,
 }
 
 // =============================================================================
@@ -187,12 +191,14 @@ pub struct PatchMailMessageDto {
     pub failure_reason: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none", alias = "rating_value")]
     pub rating_value: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none", alias = "pinned_at")]
+    pub pinned_at: Option<DateTime<Utc>>,
 }
 
 impl PatchMailMessageDto {
     /// Check if any field is set
     pub fn has_changes(&self) -> bool {
-        self.subject.is_some() || self.date.is_some() || self.body.is_some() || self.message_type.is_some() || self.subtype_id.is_some() || self.is_internal.is_some() || self.author_id.is_some() || self.author_guest_id.is_some() || self.email_from.is_some() || self.message_id.is_some() || self.reply_to.is_some() || self.model.is_some() || self.res_id.is_some() || self.record_name.is_some() || self.moderation_status.is_some() || self.needaction.is_some() || self.has_error.is_some() || self.failure_reason.is_some() || self.rating_value.is_some()
+        self.subject.is_some() || self.date.is_some() || self.body.is_some() || self.message_type.is_some() || self.subtype_id.is_some() || self.is_internal.is_some() || self.author_id.is_some() || self.author_guest_id.is_some() || self.email_from.is_some() || self.message_id.is_some() || self.reply_to.is_some() || self.model.is_some() || self.res_id.is_some() || self.record_name.is_some() || self.moderation_status.is_some() || self.needaction.is_some() || self.has_error.is_some() || self.failure_reason.is_some() || self.rating_value.is_some() || self.pinned_at.is_some()
     }
 }
 
@@ -234,6 +240,7 @@ pub struct MailMessageResponseDto {
     pub has_error: bool,
     pub failure_reason: Option<String>,
     pub rating_value: Option<f64>,
+    pub pinned_at: Option<DateTime<Utc>>,
     pub metadata: AuditMetadata,
 }
 
@@ -324,6 +331,7 @@ impl From<MailMessage> for MailMessageResponseDto {
             has_error: entity.has_error,
             failure_reason: entity.failure_reason,
             rating_value: entity.rating_value,
+            pinned_at: entity.pinned_at,
             metadata: entity.metadata,
         }
     }
@@ -365,6 +373,7 @@ impl From<CreateMailMessageDto> for MailMessage {
             has_error: dto.has_error,
             failure_reason: dto.failure_reason,
             rating_value: dto.rating_value,
+            pinned_at: dto.pinned_at,
             metadata: AuditMetadata::default(),
         }
     }
@@ -393,6 +402,7 @@ impl From<&MailMessage> for MailMessageResponseDto {
             has_error: entity.has_error.clone(),
             failure_reason: entity.failure_reason.clone(),
             rating_value: entity.rating_value.clone(),
+            pinned_at: entity.pinned_at.clone(),
             metadata: entity.metadata.clone(),
         }
     }
@@ -425,6 +435,7 @@ impl backbone_core::ApplyUpdateDto<UpdateMailMessageDto> for MailMessage {
         self.has_error = dto.has_error;
         self.failure_reason = dto.failure_reason;
         self.rating_value = dto.rating_value;
+        self.pinned_at = dto.pinned_at;
         Ok(self)
     }
 }
