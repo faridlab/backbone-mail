@@ -87,7 +87,7 @@ impl NoopSmsApi {
     /// Every request the double has seen (test assertions / the duplicate-send
     /// proof).
     pub fn requests(&self) -> Vec<SmsSendRequest> {
-        self.requests.lock().unwrap().clone()
+        self.requests.lock().unwrap_or_else(|e| e.into_inner()).clone()
     }
 }
 
@@ -97,7 +97,7 @@ impl SmsApiPort for NoopSmsApi {
         if !self.delay.is_zero() {
             tokio::time::sleep(self.delay).await;
         }
-        self.requests.lock().unwrap().push(req.clone());
+        self.requests.lock().unwrap_or_else(|e| e.into_inner()).push(req.clone());
         if let Some(f) = &self.failure {
             return Err(f.clone());
         }

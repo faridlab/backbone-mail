@@ -8,7 +8,7 @@
 //! ## Usage from other modules
 //!
 //! ```text
-//! use messaging::exports::{ExampleDto};
+//! use messaging::exports::{MailActivityDto};
 //! ```
 
 mod types;
@@ -27,12 +27,132 @@ pub use events::*;
 /// Summary of what this module exports
 ///
 /// ## Public Types
-/// - `ExampleDto` - Data transfer object for Example
-/// - `ExampleSummary` - Summary view of Example
-/// - `ExampleId` - Type-safe ID wrapper
+/// - `MailActivityDto` - Data transfer object for MailActivity
+/// - `MailActivitySummary` - Summary view of MailActivity
+/// - `MailActivityId` - Type-safe ID wrapper
+/// - `MailActivityTypeDto` - Data transfer object for MailActivityType
+/// - `MailActivityTypeSummary` - Summary view of MailActivityType
+/// - `MailActivityTypeId` - Type-safe ID wrapper
+/// - `MailActivityPlanDto` - Data transfer object for MailActivityPlan
+/// - `MailActivityPlanSummary` - Summary view of MailActivityPlan
+/// - `MailActivityPlanId` - Type-safe ID wrapper
+/// - `MailActivityPlanTemplateDto` - Data transfer object for MailActivityPlanTemplate
+/// - `MailActivityPlanTemplateSummary` - Summary view of MailActivityPlanTemplate
+/// - `MailActivityPlanTemplateId` - Type-safe ID wrapper
+/// - `MailAliasDomainDto` - Data transfer object for MailAliasDomain
+/// - `MailAliasDomainSummary` - Summary view of MailAliasDomain
+/// - `MailAliasDomainId` - Type-safe ID wrapper
+/// - `MailAliasDto` - Data transfer object for MailAlias
+/// - `MailAliasSummary` - Summary view of MailAlias
+/// - `MailAliasId` - Type-safe ID wrapper
+/// - `MailMessageDto` - Data transfer object for MailMessage
+/// - `MailMessageSummary` - Summary view of MailMessage
+/// - `MailMessageId` - Type-safe ID wrapper
+/// - `MailDto` - Data transfer object for Mail
+/// - `MailSummary` - Summary view of Mail
+/// - `MailId` - Type-safe ID wrapper
+/// - `MailNotificationDto` - Data transfer object for MailNotification
+/// - `MailNotificationSummary` - Summary view of MailNotification
+/// - `MailNotificationId` - Type-safe ID wrapper
+/// - `MailMessageSubtypeDto` - Data transfer object for MailMessageSubtype
+/// - `MailMessageSubtypeSummary` - Summary view of MailMessageSubtype
+/// - `MailMessageSubtypeId` - Type-safe ID wrapper
+/// - `MailMessageReactionDto` - Data transfer object for MailMessageReaction
+/// - `MailMessageReactionSummary` - Summary view of MailMessageReaction
+/// - `MailMessageReactionId` - Type-safe ID wrapper
+/// - `MailFollowersDto` - Data transfer object for MailFollowers
+/// - `MailFollowersSummary` - Summary view of MailFollowers
+/// - `MailFollowersId` - Type-safe ID wrapper
+/// - `MailPresenceDto` - Data transfer object for MailPresence
+/// - `MailPresenceSummary` - Summary view of MailPresence
+/// - `MailPresenceId` - Type-safe ID wrapper
+/// - `MailBlacklistDto` - Data transfer object for MailBlacklist
+/// - `MailBlacklistSummary` - Summary view of MailBlacklist
+/// - `MailBlacklistId` - Type-safe ID wrapper
+/// - `MailTrackingValueDto` - Data transfer object for MailTrackingValue
+/// - `MailTrackingValueSummary` - Summary view of MailTrackingValue
+/// - `MailTrackingValueId` - Type-safe ID wrapper
+/// - `DiscussChannelDto` - Data transfer object for DiscussChannel
+/// - `DiscussChannelSummary` - Summary view of DiscussChannel
+/// - `DiscussChannelId` - Type-safe ID wrapper
+/// - `DiscussChannelMemberDto` - Data transfer object for DiscussChannelMember
+/// - `DiscussChannelMemberSummary` - Summary view of DiscussChannelMember
+/// - `DiscussChannelMemberId` - Type-safe ID wrapper
+/// - `MailGuestDto` - Data transfer object for MailGuest
+/// - `MailGuestSummary` - Summary view of MailGuest
+/// - `MailGuestId` - Type-safe ID wrapper
+/// - `SmsDto` - Data transfer object for Sms
+/// - `SmsSummary` - Summary view of Sms
+/// - `SmsId` - Type-safe ID wrapper
+/// - `SmsTemplateDto` - Data transfer object for SmsTemplate
+/// - `SmsTemplateSummary` - Summary view of SmsTemplate
+/// - `SmsTemplateId` - Type-safe ID wrapper
+/// - `SmsTrackerDto` - Data transfer object for SmsTracker
+/// - `SmsTrackerSummary` - Summary view of SmsTracker
+/// - `SmsTrackerId` - Type-safe ID wrapper
 ///
 /// ## Public Events
-/// - `ExampleCreatedEvent` - Published when Example is created
-/// - `ExampleUpdatedEvent` - Published when Example is updated
-/// - `ExampleDeletedEvent` - Published when Example is deleted
+/// - `MailActivityCreatedEvent` - Published when MailActivity is created
+/// - `MailActivityUpdatedEvent` - Published when MailActivity is updated
+/// - `MailActivityDeletedEvent` - Published when MailActivity is deleted
+/// - `MailActivityTypeCreatedEvent` - Published when MailActivityType is created
+/// - `MailActivityTypeUpdatedEvent` - Published when MailActivityType is updated
+/// - `MailActivityTypeDeletedEvent` - Published when MailActivityType is deleted
+/// - `MailActivityPlanCreatedEvent` - Published when MailActivityPlan is created
+/// - `MailActivityPlanUpdatedEvent` - Published when MailActivityPlan is updated
+/// - `MailActivityPlanDeletedEvent` - Published when MailActivityPlan is deleted
+/// - `MailActivityPlanTemplateCreatedEvent` - Published when MailActivityPlanTemplate is created
+/// - `MailActivityPlanTemplateUpdatedEvent` - Published when MailActivityPlanTemplate is updated
+/// - `MailActivityPlanTemplateDeletedEvent` - Published when MailActivityPlanTemplate is deleted
+/// - `MailAliasDomainCreatedEvent` - Published when MailAliasDomain is created
+/// - `MailAliasDomainUpdatedEvent` - Published when MailAliasDomain is updated
+/// - `MailAliasDomainDeletedEvent` - Published when MailAliasDomain is deleted
+/// - `MailAliasCreatedEvent` - Published when MailAlias is created
+/// - `MailAliasUpdatedEvent` - Published when MailAlias is updated
+/// - `MailAliasDeletedEvent` - Published when MailAlias is deleted
+/// - `MailMessageCreatedEvent` - Published when MailMessage is created
+/// - `MailMessageUpdatedEvent` - Published when MailMessage is updated
+/// - `MailMessageDeletedEvent` - Published when MailMessage is deleted
+/// - `MailCreatedEvent` - Published when Mail is created
+/// - `MailUpdatedEvent` - Published when Mail is updated
+/// - `MailDeletedEvent` - Published when Mail is deleted
+/// - `MailNotificationCreatedEvent` - Published when MailNotification is created
+/// - `MailNotificationUpdatedEvent` - Published when MailNotification is updated
+/// - `MailNotificationDeletedEvent` - Published when MailNotification is deleted
+/// - `MailMessageSubtypeCreatedEvent` - Published when MailMessageSubtype is created
+/// - `MailMessageSubtypeUpdatedEvent` - Published when MailMessageSubtype is updated
+/// - `MailMessageSubtypeDeletedEvent` - Published when MailMessageSubtype is deleted
+/// - `MailMessageReactionCreatedEvent` - Published when MailMessageReaction is created
+/// - `MailMessageReactionUpdatedEvent` - Published when MailMessageReaction is updated
+/// - `MailMessageReactionDeletedEvent` - Published when MailMessageReaction is deleted
+/// - `MailFollowersCreatedEvent` - Published when MailFollowers is created
+/// - `MailFollowersUpdatedEvent` - Published when MailFollowers is updated
+/// - `MailFollowersDeletedEvent` - Published when MailFollowers is deleted
+/// - `MailPresenceCreatedEvent` - Published when MailPresence is created
+/// - `MailPresenceUpdatedEvent` - Published when MailPresence is updated
+/// - `MailPresenceDeletedEvent` - Published when MailPresence is deleted
+/// - `MailBlacklistCreatedEvent` - Published when MailBlacklist is created
+/// - `MailBlacklistUpdatedEvent` - Published when MailBlacklist is updated
+/// - `MailBlacklistDeletedEvent` - Published when MailBlacklist is deleted
+/// - `MailTrackingValueCreatedEvent` - Published when MailTrackingValue is created
+/// - `MailTrackingValueUpdatedEvent` - Published when MailTrackingValue is updated
+/// - `MailTrackingValueDeletedEvent` - Published when MailTrackingValue is deleted
+/// - `DiscussChannelCreatedEvent` - Published when DiscussChannel is created
+/// - `DiscussChannelUpdatedEvent` - Published when DiscussChannel is updated
+/// - `DiscussChannelDeletedEvent` - Published when DiscussChannel is deleted
+/// - `DiscussChannelMemberCreatedEvent` - Published when DiscussChannelMember is created
+/// - `DiscussChannelMemberUpdatedEvent` - Published when DiscussChannelMember is updated
+/// - `DiscussChannelMemberDeletedEvent` - Published when DiscussChannelMember is deleted
+/// - `MailGuestCreatedEvent` - Published when MailGuest is created
+/// - `MailGuestUpdatedEvent` - Published when MailGuest is updated
+/// - `MailGuestDeletedEvent` - Published when MailGuest is deleted
+/// - `SmsCreatedEvent` - Published when Sms is created
+/// - `SmsUpdatedEvent` - Published when Sms is updated
+/// - `SmsDeletedEvent` - Published when Sms is deleted
+/// - `SmsTemplateCreatedEvent` - Published when SmsTemplate is created
+/// - `SmsTemplateUpdatedEvent` - Published when SmsTemplate is updated
+/// - `SmsTemplateDeletedEvent` - Published when SmsTemplate is deleted
+/// - `SmsTrackerCreatedEvent` - Published when SmsTracker is created
+/// - `SmsTrackerUpdatedEvent` - Published when SmsTracker is updated
+/// - `SmsTrackerDeletedEvent` - Published when SmsTracker is deleted
 pub struct ExportSummary;

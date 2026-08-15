@@ -65,7 +65,7 @@ pub struct MailMessageSubtype {
 impl MailMessageSubtype {
     /// Create a builder for MailMessageSubtype
     pub fn builder() -> MailMessageSubtypeBuilder {
-        MailMessageSubtypeBuilder::default()
+        <MailMessageSubtypeBuilder as Default>::default()
     }
 
     /// Create a new MailMessageSubtype with required fields

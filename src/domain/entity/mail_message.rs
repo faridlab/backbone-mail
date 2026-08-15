@@ -78,7 +78,7 @@ pub struct MailMessage {
 impl MailMessage {
     /// Create a builder for MailMessage
     pub fn builder() -> MailMessageBuilder {
-        MailMessageBuilder::default()
+        <MailMessageBuilder as Default>::default()
     }
 
     /// Create a new MailMessage with required fields
@@ -526,7 +526,7 @@ impl MailMessageBuilder {
             subject: self.subject,
             date: self.date.unwrap_or(Utc::now()),
             body,
-            message_type: self.message_type.unwrap_or(MailMessageType::default()),
+            message_type: self.message_type.unwrap_or_default(),
             subtype_id: self.subtype_id,
             is_internal: self.is_internal.unwrap_or(false),
             author_id: self.author_id,

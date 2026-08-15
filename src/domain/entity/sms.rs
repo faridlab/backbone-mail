@@ -7,7 +7,7 @@ use super::SmsState;
 use super::SmsFailureType;
 use super::AuditMetadata;
 
-use crate::domain::state_machine::{SmsStateMachine, SmsState, StateMachineError};
+use crate::domain::state_machine::{SmsHooksStateMachine, SmsHooksState, StateMachineError};
 
 /// Strongly-typed ID for Sms
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -69,7 +69,7 @@ pub struct Sms {
 impl Sms {
     /// Create a builder for Sms
     pub fn builder() -> SmsBuilder {
-        SmsBuilder::default()
+        <SmsBuilder as Default>::default()
     }
 
     /// Create a new Sms with required fields
@@ -175,9 +175,9 @@ impl Sms {
     ///
     /// Returns `Err` if the transition is not permitted from the current state.
     /// Use this method instead of assigning `self.state` directly.
-    pub fn transition_to(&mut self, new_state: SmsState) -> Result<(), StateMachineError> {
-        let current = self.state.to_string().parse::<SmsState>()?;
-        let mut sm = SmsStateMachine::from_state(current);
+    pub fn transition_to(&mut self, new_state: SmsHooksState) -> Result<(), StateMachineError> {
+        let current = self.state.to_string().parse::<SmsHooksState>()?;
+        let mut sm = SmsHooksStateMachine::from_state(current);
         sm.transition_to_state(new_state)?;
         self.state = new_state.to_string().parse::<SmsState>()
             .map_err(|e| StateMachineError::InvalidState(e.to_string()))?;
@@ -355,7 +355,7 @@ impl SmsBuilder {
             uuid,
             number,
             body,
-            state: self.state.unwrap_or(SmsState::default()),
+            state: self.state.unwrap_or_default(),
             failure_type: self.failure_type,
             error_message: self.error_message,
             mail_message_id: self.mail_message_id,

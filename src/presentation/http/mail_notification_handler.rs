@@ -27,7 +27,7 @@ use crate::application::service::{MailNotificationService, ServiceError};
 // DTO imports
 use crate::presentation::dto::{CreateMailNotificationDto, UpdateMailNotificationDto, PatchMailNotificationDto, MailNotificationResponseDto};
 
-use crate::domain::state_machine::{MailNotificationState, MailNotificationStateMachine, MailNotificationTransition};
+use crate::domain::state_machine::{MailNotificationHooksState, MailNotificationHooksStateMachine, MailNotificationHooksTransition};
 
 /// Application error type
 #[derive(Debug, thiserror::Error)]
@@ -220,7 +220,7 @@ pub async fn dispatch_started_transition(
     // Check permission (if auth enabled)
     #[cfg(feature = "auth")]
     {
-        let allowed_roles = MailNotificationTransition::DispatchStarted.allowed_roles();
+        let allowed_roles = MailNotificationHooksTransition::DispatchStarted.allowed_roles();
         let has_specific_perm = auth.permissions.iter().any(|p| p == "mail_notification:transition:dispatch_started");
         let has_update_perm = auth.permissions.iter().any(|p| p == "mail_notification:update");
         if !has_specific_perm && !has_update_perm {
@@ -229,10 +229,10 @@ pub async fn dispatch_started_transition(
     }
 
     // Create state machine from entity's actual status and validate transition
-    let current_state: MailNotificationState = entity.notification_status.to_string().parse()
-        .unwrap_or(MailNotificationState::default());
-    let sm = MailNotificationStateMachine::from_state(current_state);
-    if !sm.can_transition(MailNotificationTransition::DispatchStarted) {
+    let current_state: MailNotificationHooksState = entity.notification_status.to_string().parse()
+        .unwrap_or(MailNotificationHooksState::default());
+    let sm = MailNotificationHooksStateMachine::from_state(current_state);
+    if !sm.can_transition(MailNotificationHooksTransition::DispatchStarted) {
         return (StatusCode::BAD_REQUEST, Json(ApiResponse::<MailNotificationResponseDto>::error("Transition not allowed from current state")));
     }
 
@@ -270,7 +270,7 @@ pub async fn smtp_accepted_transition(
     // Check permission (if auth enabled)
     #[cfg(feature = "auth")]
     {
-        let allowed_roles = MailNotificationTransition::SmtpAccepted.allowed_roles();
+        let allowed_roles = MailNotificationHooksTransition::SmtpAccepted.allowed_roles();
         let has_specific_perm = auth.permissions.iter().any(|p| p == "mail_notification:transition:smtp_accepted");
         let has_update_perm = auth.permissions.iter().any(|p| p == "mail_notification:update");
         if !has_specific_perm && !has_update_perm {
@@ -279,10 +279,10 @@ pub async fn smtp_accepted_transition(
     }
 
     // Create state machine from entity's actual status and validate transition
-    let current_state: MailNotificationState = entity.notification_status.to_string().parse()
-        .unwrap_or(MailNotificationState::default());
-    let sm = MailNotificationStateMachine::from_state(current_state);
-    if !sm.can_transition(MailNotificationTransition::SmtpAccepted) {
+    let current_state: MailNotificationHooksState = entity.notification_status.to_string().parse()
+        .unwrap_or(MailNotificationHooksState::default());
+    let sm = MailNotificationHooksStateMachine::from_state(current_state);
+    if !sm.can_transition(MailNotificationHooksTransition::SmtpAccepted) {
         return (StatusCode::BAD_REQUEST, Json(ApiResponse::<MailNotificationResponseDto>::error("Transition not allowed from current state")));
     }
 
@@ -320,7 +320,7 @@ pub async fn delivery_confirmed_transition(
     // Check permission (if auth enabled)
     #[cfg(feature = "auth")]
     {
-        let allowed_roles = MailNotificationTransition::DeliveryConfirmed.allowed_roles();
+        let allowed_roles = MailNotificationHooksTransition::DeliveryConfirmed.allowed_roles();
         let has_specific_perm = auth.permissions.iter().any(|p| p == "mail_notification:transition:delivery_confirmed");
         let has_update_perm = auth.permissions.iter().any(|p| p == "mail_notification:update");
         if !has_specific_perm && !has_update_perm {
@@ -329,10 +329,10 @@ pub async fn delivery_confirmed_transition(
     }
 
     // Create state machine from entity's actual status and validate transition
-    let current_state: MailNotificationState = entity.notification_status.to_string().parse()
-        .unwrap_or(MailNotificationState::default());
-    let sm = MailNotificationStateMachine::from_state(current_state);
-    if !sm.can_transition(MailNotificationTransition::DeliveryConfirmed) {
+    let current_state: MailNotificationHooksState = entity.notification_status.to_string().parse()
+        .unwrap_or(MailNotificationHooksState::default());
+    let sm = MailNotificationHooksStateMachine::from_state(current_state);
+    if !sm.can_transition(MailNotificationHooksTransition::DeliveryConfirmed) {
         return (StatusCode::BAD_REQUEST, Json(ApiResponse::<MailNotificationResponseDto>::error("Transition not allowed from current state")));
     }
 
@@ -370,7 +370,7 @@ pub async fn instant_delivered_transition(
     // Check permission (if auth enabled)
     #[cfg(feature = "auth")]
     {
-        let allowed_roles = MailNotificationTransition::InstantDelivered.allowed_roles();
+        let allowed_roles = MailNotificationHooksTransition::InstantDelivered.allowed_roles();
         let has_specific_perm = auth.permissions.iter().any(|p| p == "mail_notification:transition:instant_delivered");
         let has_update_perm = auth.permissions.iter().any(|p| p == "mail_notification:update");
         if !has_specific_perm && !has_update_perm {
@@ -379,10 +379,10 @@ pub async fn instant_delivered_transition(
     }
 
     // Create state machine from entity's actual status and validate transition
-    let current_state: MailNotificationState = entity.notification_status.to_string().parse()
-        .unwrap_or(MailNotificationState::default());
-    let sm = MailNotificationStateMachine::from_state(current_state);
-    if !sm.can_transition(MailNotificationTransition::InstantDelivered) {
+    let current_state: MailNotificationHooksState = entity.notification_status.to_string().parse()
+        .unwrap_or(MailNotificationHooksState::default());
+    let sm = MailNotificationHooksStateMachine::from_state(current_state);
+    if !sm.can_transition(MailNotificationHooksTransition::InstantDelivered) {
         return (StatusCode::BAD_REQUEST, Json(ApiResponse::<MailNotificationResponseDto>::error("Transition not allowed from current state")));
     }
 
@@ -420,7 +420,7 @@ pub async fn bounced_transition(
     // Check permission (if auth enabled)
     #[cfg(feature = "auth")]
     {
-        let allowed_roles = MailNotificationTransition::Bounced.allowed_roles();
+        let allowed_roles = MailNotificationHooksTransition::Bounced.allowed_roles();
         let has_specific_perm = auth.permissions.iter().any(|p| p == "mail_notification:transition:bounced");
         let has_update_perm = auth.permissions.iter().any(|p| p == "mail_notification:update");
         if !has_specific_perm && !has_update_perm {
@@ -429,10 +429,10 @@ pub async fn bounced_transition(
     }
 
     // Create state machine from entity's actual status and validate transition
-    let current_state: MailNotificationState = entity.notification_status.to_string().parse()
-        .unwrap_or(MailNotificationState::default());
-    let sm = MailNotificationStateMachine::from_state(current_state);
-    if !sm.can_transition(MailNotificationTransition::Bounced) {
+    let current_state: MailNotificationHooksState = entity.notification_status.to_string().parse()
+        .unwrap_or(MailNotificationHooksState::default());
+    let sm = MailNotificationHooksStateMachine::from_state(current_state);
+    if !sm.can_transition(MailNotificationHooksTransition::Bounced) {
         return (StatusCode::BAD_REQUEST, Json(ApiResponse::<MailNotificationResponseDto>::error("Transition not allowed from current state")));
     }
 
@@ -470,7 +470,7 @@ pub async fn send_failed_transition(
     // Check permission (if auth enabled)
     #[cfg(feature = "auth")]
     {
-        let allowed_roles = MailNotificationTransition::SendFailed.allowed_roles();
+        let allowed_roles = MailNotificationHooksTransition::SendFailed.allowed_roles();
         let has_specific_perm = auth.permissions.iter().any(|p| p == "mail_notification:transition:send_failed");
         let has_update_perm = auth.permissions.iter().any(|p| p == "mail_notification:update");
         if !has_specific_perm && !has_update_perm {
@@ -479,10 +479,10 @@ pub async fn send_failed_transition(
     }
 
     // Create state machine from entity's actual status and validate transition
-    let current_state: MailNotificationState = entity.notification_status.to_string().parse()
-        .unwrap_or(MailNotificationState::default());
-    let sm = MailNotificationStateMachine::from_state(current_state);
-    if !sm.can_transition(MailNotificationTransition::SendFailed) {
+    let current_state: MailNotificationHooksState = entity.notification_status.to_string().parse()
+        .unwrap_or(MailNotificationHooksState::default());
+    let sm = MailNotificationHooksStateMachine::from_state(current_state);
+    if !sm.can_transition(MailNotificationHooksTransition::SendFailed) {
         return (StatusCode::BAD_REQUEST, Json(ApiResponse::<MailNotificationResponseDto>::error("Transition not allowed from current state")));
     }
 
@@ -520,7 +520,7 @@ pub async fn canceled_transition(
     // Check permission (if auth enabled)
     #[cfg(feature = "auth")]
     {
-        let allowed_roles = MailNotificationTransition::Canceled.allowed_roles();
+        let allowed_roles = MailNotificationHooksTransition::Canceled.allowed_roles();
         let has_specific_perm = auth.permissions.iter().any(|p| p == "mail_notification:transition:canceled");
         let has_update_perm = auth.permissions.iter().any(|p| p == "mail_notification:update");
         if !has_specific_perm && !has_update_perm {
@@ -529,10 +529,10 @@ pub async fn canceled_transition(
     }
 
     // Create state machine from entity's actual status and validate transition
-    let current_state: MailNotificationState = entity.notification_status.to_string().parse()
-        .unwrap_or(MailNotificationState::default());
-    let sm = MailNotificationStateMachine::from_state(current_state);
-    if !sm.can_transition(MailNotificationTransition::Canceled) {
+    let current_state: MailNotificationHooksState = entity.notification_status.to_string().parse()
+        .unwrap_or(MailNotificationHooksState::default());
+    let sm = MailNotificationHooksStateMachine::from_state(current_state);
+    if !sm.can_transition(MailNotificationHooksTransition::Canceled) {
         return (StatusCode::BAD_REQUEST, Json(ApiResponse::<MailNotificationResponseDto>::error("Transition not allowed from current state")));
     }
 

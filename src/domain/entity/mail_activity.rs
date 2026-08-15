@@ -72,7 +72,7 @@ pub struct MailActivity {
 impl MailActivity {
     /// Create a builder for MailActivity
     pub fn builder() -> MailActivityBuilder {
-        MailActivityBuilder::default()
+        <MailActivityBuilder as Default>::default()
     }
 
     /// Create a new MailActivity with required fields
@@ -439,7 +439,7 @@ impl MailActivityBuilder {
             date_deadline,
             user_id,
             requested_user_id: self.requested_user_id,
-            state: self.state.unwrap_or(MailActivityState::default()),
+            state: self.state.unwrap_or_default(),
             active: self.active.unwrap_or(true),
             has_recommended_activities: self.has_recommended_activities.unwrap_or(false),
             chained_next_activity: self.chained_next_activity,

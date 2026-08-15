@@ -5,9 +5,49 @@
 pub mod shared_types;
 pub use shared_types::{ValidationError, ValidationErrors, ValidationResult, EntityValidator};
 
-pub mod example_validator;
+pub mod mail_activity_validator;
+pub mod mail_activity_type_validator;
+pub mod mail_activity_plan_validator;
+pub mod mail_activity_plan_template_validator;
+pub mod mail_alias_domain_validator;
+pub mod mail_alias_validator;
+pub mod mail_message_validator;
+pub mod mail_validator;
+pub mod mail_notification_validator;
+pub mod mail_message_subtype_validator;
+pub mod mail_message_reaction_validator;
+pub mod mail_followers_validator;
+pub mod mail_presence_validator;
+pub mod mail_blacklist_validator;
+pub mod mail_tracking_value_validator;
+pub mod discuss_channel_validator;
+pub mod discuss_channel_member_validator;
+pub mod mail_guest_validator;
+pub mod sms_validator;
+pub mod sms_template_validator;
+pub mod sms_tracker_validator;
 
-pub use example_validator::{ExampleValidator, example_validator};
+pub use mail_activity_validator::{MailActivityValidator, mail_activity_validator};
+pub use mail_activity_type_validator::{MailActivityTypeValidator, mail_activity_type_validator};
+pub use mail_activity_plan_validator::{MailActivityPlanValidator, mail_activity_plan_validator};
+pub use mail_activity_plan_template_validator::{MailActivityPlanTemplateValidator, mail_activity_plan_template_validator};
+pub use mail_alias_domain_validator::{MailAliasDomainValidator, mail_alias_domain_validator};
+pub use mail_alias_validator::{MailAliasValidator, mail_alias_validator};
+pub use mail_message_validator::{MailMessageValidator, mail_message_validator};
+pub use mail_validator::{MailValidator, mail_validator};
+pub use mail_notification_validator::{MailNotificationValidator, mail_notification_validator};
+pub use mail_message_subtype_validator::{MailMessageSubtypeValidator, mail_message_subtype_validator};
+pub use mail_message_reaction_validator::{MailMessageReactionValidator, mail_message_reaction_validator};
+pub use mail_followers_validator::{MailFollowersValidator, mail_followers_validator};
+pub use mail_presence_validator::{MailPresenceValidator, mail_presence_validator};
+pub use mail_blacklist_validator::{MailBlacklistValidator, mail_blacklist_validator};
+pub use mail_tracking_value_validator::{MailTrackingValueValidator, mail_tracking_value_validator};
+pub use discuss_channel_validator::{DiscussChannelValidator, discuss_channel_validator};
+pub use discuss_channel_member_validator::{DiscussChannelMemberValidator, discuss_channel_member_validator};
+pub use mail_guest_validator::{MailGuestValidator, mail_guest_validator};
+pub use sms_validator::{SmsValidator, sms_validator};
+pub use sms_template_validator::{SmsTemplateValidator, sms_template_validator};
+pub use sms_tracker_validator::{SmsTrackerValidator, sms_tracker_validator};
 
 // <<< CUSTOM
 // END CUSTOM

@@ -7,7 +7,7 @@ use super::MailState;
 use super::MailFailureType;
 use super::AuditMetadata;
 
-use crate::domain::state_machine::{MailStateMachine, MailState, StateMachineError};
+use crate::domain::state_machine::{MailHooksStateMachine, MailHooksState, StateMachineError};
 
 /// Strongly-typed ID for Mail
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -70,7 +70,7 @@ pub struct Mail {
 impl Mail {
     /// Create a builder for Mail
     pub fn builder() -> MailBuilder {
-        MailBuilder::default()
+        <MailBuilder as Default>::default()
     }
 
     /// Create a new Mail with required fields
@@ -189,9 +189,9 @@ impl Mail {
     ///
     /// Returns `Err` if the transition is not permitted from the current state.
     /// Use this method instead of assigning `self.state` directly.
-    pub fn transition_to(&mut self, new_state: MailState) -> Result<(), StateMachineError> {
-        let current = self.state.to_string().parse::<MailState>()?;
-        let mut sm = MailStateMachine::from_state(current);
+    pub fn transition_to(&mut self, new_state: MailHooksState) -> Result<(), StateMachineError> {
+        let current = self.state.to_string().parse::<MailHooksState>()?;
+        let mut sm = MailHooksStateMachine::from_state(current);
         sm.transition_to_state(new_state)?;
         self.state = new_state.to_string().parse::<MailState>()
             .map_err(|e| StateMachineError::InvalidState(e.to_string()))?;
@@ -375,7 +375,7 @@ impl MailBuilder {
         Ok(Mail {
             id: Uuid::new_v4(),
             mail_message_id,
-            state: self.state.unwrap_or(MailState::default()),
+            state: self.state.unwrap_or_default(),
             failure_type: self.failure_type,
             scheduled_date: self.scheduled_date,
             auto_delete: self.auto_delete.unwrap_or(false),

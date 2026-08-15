@@ -69,7 +69,7 @@ pub struct MailTrackingValue {
 impl MailTrackingValue {
     /// Create a builder for MailTrackingValue
     pub fn builder() -> MailTrackingValueBuilder {
-        MailTrackingValueBuilder::default()
+        <MailTrackingValueBuilder as Default>::default()
     }
 
     /// Create a new MailTrackingValue with required fields

@@ -66,7 +66,7 @@ pub struct SmsTracker {
 impl SmsTracker {
     /// Create a builder for SmsTracker
     pub fn builder() -> SmsTrackerBuilder {
-        SmsTrackerBuilder::default()
+        <SmsTrackerBuilder as Default>::default()
     }
 
     /// Create a new SmsTracker with required fields
@@ -332,7 +332,7 @@ impl SmsTrackerBuilder {
             sms_uuid,
             message_id: self.message_id,
             notification_id: self.notification_id,
-            state: self.state.unwrap_or(MailNotificationStatus::default()),
+            state: self.state.unwrap_or_default(),
             failure_type: self.failure_type,
             failure_reason: self.failure_reason,
             recipient: self.recipient,

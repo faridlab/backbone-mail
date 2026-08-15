@@ -6,8 +6,6 @@ use uuid::Uuid;
 use super::DiscussChannelType;
 use super::AuditMetadata;
 
-use crate::domain::state_machine::{DiscussChannelStateMachine, DiscussChannelState, StateMachineError};
-
 /// Strongly-typed ID for DiscussChannel
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(transparent)]
@@ -53,7 +51,7 @@ impl std::ops::Deref for DiscussChannelId {
 pub struct DiscussChannel {
     pub id: Uuid,
     pub name: Option<String>,
-    pub(crate) channel_type: DiscussChannelType,
+    pub channel_type: DiscussChannelType,
     pub description: Option<String>,
     pub uuid: Option<String>,
     pub default_access_mode: Option<String>,
@@ -71,7 +69,7 @@ pub struct DiscussChannel {
 impl DiscussChannel {
     /// Create a builder for DiscussChannel
     pub fn builder() -> DiscussChannelBuilder {
-        DiscussChannelBuilder::default()
+        <DiscussChannelBuilder as Default>::default()
     }
 
     /// Create a new DiscussChannel with required fields
@@ -197,23 +195,6 @@ impl DiscussChannel {
     }
 
     // ==========================================================
-    // State Machine
-    // ==========================================================
-
-    /// Transition to a new state via the channel_type state machine.
-    ///
-    /// Returns `Err` if the transition is not permitted from the current state.
-    /// Use this method instead of assigning `self.channel_type` directly.
-    pub fn transition_to(&mut self, new_state: DiscussChannelState) -> Result<(), StateMachineError> {
-        let current = self.channel_type.to_string().parse::<DiscussChannelState>()?;
-        let mut sm = DiscussChannelStateMachine::from_state(current);
-        sm.transition_to_state(new_state)?;
-        self.channel_type = new_state.to_string().parse::<DiscussChannelType>()
-            .map_err(|e| StateMachineError::InvalidState(e.to_string()))?;
-        Ok(())
-    }
-
-    // ==========================================================
     // Partial Update
     // ==========================================================
 
@@ -223,6 +204,9 @@ impl DiscussChannel {
             match key.as_str() {
                 "name" => {
                     if let Ok(v) = serde_json::from_value(value) { self.name = v; }
+                }
+                "channel_type" => {
+                    if let Ok(v) = serde_json::from_value(value) { self.channel_type = v; }
                 }
                 "description" => {
                     if let Ok(v) = serde_json::from_value(value) { self.description = v; }
@@ -410,7 +394,7 @@ impl DiscussChannelBuilder {
         Ok(DiscussChannel {
             id: Uuid::new_v4(),
             name: self.name,
-            channel_type: self.channel_type.unwrap_or(DiscussChannelType::default()),
+            channel_type: self.channel_type.unwrap_or_default(),
             description: self.description,
             uuid: self.uuid,
             default_access_mode: self.default_access_mode,

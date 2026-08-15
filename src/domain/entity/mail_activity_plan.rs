@@ -60,7 +60,7 @@ pub struct MailActivityPlan {
 impl MailActivityPlan {
     /// Create a builder for MailActivityPlan
     pub fn builder() -> MailActivityPlanBuilder {
-        MailActivityPlanBuilder::default()
+        <MailActivityPlanBuilder as Default>::default()
     }
 
     /// Create a new MailActivityPlan with required fields

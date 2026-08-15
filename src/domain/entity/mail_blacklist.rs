@@ -58,7 +58,7 @@ pub struct MailBlacklist {
 impl MailBlacklist {
     /// Create a builder for MailBlacklist
     pub fn builder() -> MailBlacklistBuilder {
-        MailBlacklistBuilder::default()
+        <MailBlacklistBuilder as Default>::default()
     }
 
     /// Create a new MailBlacklist with required fields

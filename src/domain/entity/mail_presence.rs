@@ -6,7 +6,7 @@ use uuid::Uuid;
 use super::MailPresenceStatus;
 use super::AuditMetadata;
 
-use crate::domain::state_machine::{MailPresenceStateMachine, MailPresenceState, StateMachineError};
+use crate::domain::state_machine::{MailPresenceHooksStateMachine, MailPresenceHooksState, StateMachineError};
 
 /// Strongly-typed ID for MailPresence
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -64,7 +64,7 @@ pub struct MailPresence {
 impl MailPresence {
     /// Create a builder for MailPresence
     pub fn builder() -> MailPresenceBuilder {
-        MailPresenceBuilder::default()
+        <MailPresenceBuilder as Default>::default()
     }
 
     /// Create a new MailPresence with required fields
@@ -165,9 +165,9 @@ impl MailPresence {
     ///
     /// Returns `Err` if the transition is not permitted from the current state.
     /// Use this method instead of assigning `self.status` directly.
-    pub fn transition_to(&mut self, new_state: MailPresenceState) -> Result<(), StateMachineError> {
-        let current = self.status.to_string().parse::<MailPresenceState>()?;
-        let mut sm = MailPresenceStateMachine::from_state(current);
+    pub fn transition_to(&mut self, new_state: MailPresenceHooksState) -> Result<(), StateMachineError> {
+        let current = self.status.to_string().parse::<MailPresenceHooksState>()?;
+        let mut sm = MailPresenceHooksStateMachine::from_state(current);
         sm.transition_to_state(new_state)?;
         self.status = new_state.to_string().parse::<MailPresenceStatus>()
             .map_err(|e| StateMachineError::InvalidState(e.to_string()))?;
@@ -301,7 +301,7 @@ impl MailPresenceBuilder {
             id: Uuid::new_v4(),
             user_id: self.user_id,
             guest_id: self.guest_id,
-            status: self.status.unwrap_or(MailPresenceStatus::default()),
+            status: self.status.unwrap_or_default(),
             last_poll: self.last_poll,
             metadata: AuditMetadata::default(),
         })

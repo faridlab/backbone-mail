@@ -60,7 +60,7 @@ pub struct MailMessageReaction {
 impl MailMessageReaction {
     /// Create a builder for MailMessageReaction
     pub fn builder() -> MailMessageReactionBuilder {
-        MailMessageReactionBuilder::default()
+        <MailMessageReactionBuilder as Default>::default()
     }
 
     /// Create a new MailMessageReaction with required fields

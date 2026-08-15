@@ -9,16 +9,76 @@ use axum::Router;
 use std::sync::Arc;
 
 use super::{
-    example_handler::create_example_routes,
+    mail_activity_handler::create_mail_activity_routes,
+    mail_activity_type_handler::create_mail_activity_type_routes,
+    mail_activity_plan_handler::create_mail_activity_plan_routes,
+    mail_activity_plan_template_handler::create_mail_activity_plan_template_routes,
+    mail_alias_domain_handler::create_mail_alias_domain_routes,
+    mail_alias_handler::create_mail_alias_routes,
+    mail_message_handler::create_mail_message_routes,
+    mail_handler::create_mail_routes,
+    mail_notification_handler::create_mail_notification_routes,
+    mail_message_subtype_handler::create_mail_message_subtype_routes,
+    mail_message_reaction_handler::create_mail_message_reaction_routes,
+    mail_followers_handler::create_mail_followers_routes,
+    mail_presence_handler::create_mail_presence_routes,
+    mail_blacklist_handler::create_mail_blacklist_routes,
+    mail_tracking_value_handler::create_mail_tracking_value_routes,
+    discuss_channel_handler::create_discuss_channel_routes,
+    discuss_channel_member_handler::create_discuss_channel_member_routes,
+    mail_guest_handler::create_mail_guest_routes,
+    sms_handler::create_sms_routes,
+    sms_template_handler::create_sms_template_routes,
+    sms_tracker_handler::create_sms_tracker_routes,
 };
 
 use crate::application::service::{
-    ExampleService,
+    MailActivityService,
+    MailActivityTypeService,
+    MailActivityPlanService,
+    MailActivityPlanTemplateService,
+    MailAliasDomainService,
+    MailAliasService,
+    MailMessageService,
+    MailService,
+    MailNotificationService,
+    MailMessageSubtypeService,
+    MailMessageReactionService,
+    MailFollowersService,
+    MailPresenceService,
+    MailBlacklistService,
+    MailTrackingValueService,
+    DiscussChannelService,
+    DiscussChannelMemberService,
+    MailGuestService,
+    SmsService,
+    SmsTemplateService,
+    SmsTrackerService,
 };
 
 /// Services collection for all CRUD endpoints
 pub struct HttpServices {
-    pub example: Arc<ExampleService>,
+    pub mail_activity: Arc<MailActivityService>,
+    pub mail_activity_type: Arc<MailActivityTypeService>,
+    pub mail_activity_plan: Arc<MailActivityPlanService>,
+    pub mail_activity_plan_template: Arc<MailActivityPlanTemplateService>,
+    pub mail_alias_domain: Arc<MailAliasDomainService>,
+    pub mail_alias: Arc<MailAliasService>,
+    pub mail_message: Arc<MailMessageService>,
+    pub mail: Arc<MailService>,
+    pub mail_notification: Arc<MailNotificationService>,
+    pub mail_message_subtype: Arc<MailMessageSubtypeService>,
+    pub mail_message_reaction: Arc<MailMessageReactionService>,
+    pub mail_followers: Arc<MailFollowersService>,
+    pub mail_presence: Arc<MailPresenceService>,
+    pub mail_blacklist: Arc<MailBlacklistService>,
+    pub mail_tracking_value: Arc<MailTrackingValueService>,
+    pub discuss_channel: Arc<DiscussChannelService>,
+    pub discuss_channel_member: Arc<DiscussChannelMemberService>,
+    pub mail_guest: Arc<MailGuestService>,
+    pub sms: Arc<SmsService>,
+    pub sms_template: Arc<SmsTemplateService>,
+    pub sms_tracker: Arc<SmsTrackerService>,
 }
 
 /// Configure all HTTP routes for this module using Axum and BackboneCrudHandler.
@@ -38,16 +98,136 @@ pub struct HttpServices {
 /// 12. GET /api/v1/{collection}/:id/deleted - Get deleted by ID
 pub fn configure_routes(services: HttpServices) -> Router {
     Router::new()
-        // Example routes (12 Backbone endpoints)
-        .merge(create_example_routes(services.example))
+        // MailActivity routes (12 Backbone endpoints)
+        .merge(create_mail_activity_routes(services.mail_activity))
+        // MailActivityType routes (12 Backbone endpoints)
+        .merge(create_mail_activity_type_routes(services.mail_activity_type))
+        // MailActivityPlan routes (12 Backbone endpoints)
+        .merge(create_mail_activity_plan_routes(services.mail_activity_plan))
+        // MailActivityPlanTemplate routes (12 Backbone endpoints)
+        .merge(create_mail_activity_plan_template_routes(services.mail_activity_plan_template))
+        // MailAliasDomain routes (12 Backbone endpoints)
+        .merge(create_mail_alias_domain_routes(services.mail_alias_domain))
+        // MailAlias routes (12 Backbone endpoints)
+        .merge(create_mail_alias_routes(services.mail_alias))
+        // MailMessage routes (12 Backbone endpoints)
+        .merge(create_mail_message_routes(services.mail_message))
+        // Mail routes (12 Backbone endpoints)
+        .merge(create_mail_routes(services.mail))
+        // MailNotification routes (12 Backbone endpoints)
+        .merge(create_mail_notification_routes(services.mail_notification))
+        // MailMessageSubtype routes (12 Backbone endpoints)
+        .merge(create_mail_message_subtype_routes(services.mail_message_subtype))
+        // MailMessageReaction routes (12 Backbone endpoints)
+        .merge(create_mail_message_reaction_routes(services.mail_message_reaction))
+        // MailFollowers routes (12 Backbone endpoints)
+        .merge(create_mail_followers_routes(services.mail_followers))
+        // MailPresence routes (12 Backbone endpoints)
+        .merge(create_mail_presence_routes(services.mail_presence))
+        // MailBlacklist routes (12 Backbone endpoints)
+        .merge(create_mail_blacklist_routes(services.mail_blacklist))
+        // MailTrackingValue routes (12 Backbone endpoints)
+        .merge(create_mail_tracking_value_routes(services.mail_tracking_value))
+        // DiscussChannel routes (12 Backbone endpoints)
+        .merge(create_discuss_channel_routes(services.discuss_channel))
+        // DiscussChannelMember routes (12 Backbone endpoints)
+        .merge(create_discuss_channel_member_routes(services.discuss_channel_member))
+        // MailGuest routes (12 Backbone endpoints)
+        .merge(create_mail_guest_routes(services.mail_guest))
+        // Sms routes (12 Backbone endpoints)
+        .merge(create_sms_routes(services.sms))
+        // SmsTemplate routes (12 Backbone endpoints)
+        .merge(create_sms_template_routes(services.sms_template))
+        // SmsTracker routes (12 Backbone endpoints)
+        .merge(create_sms_tracker_routes(services.sms_tracker))
 }
 
 /// Create an individual entity's routes (for modular configuration)
 pub mod individual {
     use super::*;
 
-    pub fn example_routes(service: Arc<ExampleService>) -> Router {
-        create_example_routes(service)
+    pub fn mail_activity_routes(service: Arc<MailActivityService>) -> Router {
+        create_mail_activity_routes(service)
+    }
+
+    pub fn mail_activity_type_routes(service: Arc<MailActivityTypeService>) -> Router {
+        create_mail_activity_type_routes(service)
+    }
+
+    pub fn mail_activity_plan_routes(service: Arc<MailActivityPlanService>) -> Router {
+        create_mail_activity_plan_routes(service)
+    }
+
+    pub fn mail_activity_plan_template_routes(service: Arc<MailActivityPlanTemplateService>) -> Router {
+        create_mail_activity_plan_template_routes(service)
+    }
+
+    pub fn mail_alias_domain_routes(service: Arc<MailAliasDomainService>) -> Router {
+        create_mail_alias_domain_routes(service)
+    }
+
+    pub fn mail_alias_routes(service: Arc<MailAliasService>) -> Router {
+        create_mail_alias_routes(service)
+    }
+
+    pub fn mail_message_routes(service: Arc<MailMessageService>) -> Router {
+        create_mail_message_routes(service)
+    }
+
+    pub fn mail_routes(service: Arc<MailService>) -> Router {
+        create_mail_routes(service)
+    }
+
+    pub fn mail_notification_routes(service: Arc<MailNotificationService>) -> Router {
+        create_mail_notification_routes(service)
+    }
+
+    pub fn mail_message_subtype_routes(service: Arc<MailMessageSubtypeService>) -> Router {
+        create_mail_message_subtype_routes(service)
+    }
+
+    pub fn mail_message_reaction_routes(service: Arc<MailMessageReactionService>) -> Router {
+        create_mail_message_reaction_routes(service)
+    }
+
+    pub fn mail_followers_routes(service: Arc<MailFollowersService>) -> Router {
+        create_mail_followers_routes(service)
+    }
+
+    pub fn mail_presence_routes(service: Arc<MailPresenceService>) -> Router {
+        create_mail_presence_routes(service)
+    }
+
+    pub fn mail_blacklist_routes(service: Arc<MailBlacklistService>) -> Router {
+        create_mail_blacklist_routes(service)
+    }
+
+    pub fn mail_tracking_value_routes(service: Arc<MailTrackingValueService>) -> Router {
+        create_mail_tracking_value_routes(service)
+    }
+
+    pub fn discuss_channel_routes(service: Arc<DiscussChannelService>) -> Router {
+        create_discuss_channel_routes(service)
+    }
+
+    pub fn discuss_channel_member_routes(service: Arc<DiscussChannelMemberService>) -> Router {
+        create_discuss_channel_member_routes(service)
+    }
+
+    pub fn mail_guest_routes(service: Arc<MailGuestService>) -> Router {
+        create_mail_guest_routes(service)
+    }
+
+    pub fn sms_routes(service: Arc<SmsService>) -> Router {
+        create_sms_routes(service)
+    }
+
+    pub fn sms_template_routes(service: Arc<SmsTemplateService>) -> Router {
+        create_sms_template_routes(service)
+    }
+
+    pub fn sms_tracker_routes(service: Arc<SmsTrackerService>) -> Router {
+        create_sms_tracker_routes(service)
     }
 
 }

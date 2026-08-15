@@ -7,4 +7,26 @@
 # Note: You can manually edit this file to customize the order.
 # Seeds not listed here will be executed after in alphabetical order.
 
-- example_seed
+# Entity seeds discovered by the 2026-08-15 regen (alphabetical — no
+# cross-seed dependencies): 
+- mail_blacklist_seed
+- mail_notification_seed
+- mail_message_subtype_seed
+- mail_activity_type_seed
+- mail_seed
+- sms_seed
+- mail_followers_seed
+- mail_activity_seed
+- sms_template_seed
+- sms_tracker_seed
+- mail_tracking_value_seed
+- mail_guest_seed
+- mail_alias_seed
+- mail_message_reaction_seed
+- discuss_channel_member_seed
+- mail_activity_plan_template_seed
+- mail_activity_plan_seed
+- discuss_channel_seed
+- mail_alias_domain_seed
+- mail_message_seed
+- mail_presence_seed

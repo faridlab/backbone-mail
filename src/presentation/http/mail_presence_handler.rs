@@ -28,7 +28,7 @@ use crate::application::service::{MailPresenceService, ServiceError};
 // DTO imports
 use crate::presentation::dto::{CreateMailPresenceDto, UpdateMailPresenceDto, PatchMailPresenceDto, MailPresenceResponseDto};
 
-use crate::domain::state_machine::{MailPresenceState, MailPresenceStateMachine, MailPresenceTransition};
+use crate::domain::state_machine::{MailPresenceHooksState, MailPresenceHooksStateMachine, MailPresenceHooksTransition};
 
 /// Application error type
 #[derive(Debug, thiserror::Error)]
@@ -212,7 +212,7 @@ pub async fn go_online_transition(
     // Check permission (if auth enabled)
     #[cfg(feature = "auth")]
     {
-        let allowed_roles = MailPresenceTransition::GoOnline.allowed_roles();
+        let allowed_roles = MailPresenceHooksTransition::GoOnline.allowed_roles();
         let has_specific_perm = auth.permissions.iter().any(|p| p == "mail_presence:transition:go_online");
         let has_update_perm = auth.permissions.iter().any(|p| p == "mail_presence:update");
         if !has_specific_perm && !has_update_perm {
@@ -221,10 +221,10 @@ pub async fn go_online_transition(
     }
 
     // Create state machine from entity's actual status and validate transition
-    let current_state: MailPresenceState = entity.status.to_string().parse()
-        .unwrap_or(MailPresenceState::default());
-    let sm = MailPresenceStateMachine::from_state(current_state);
-    if !sm.can_transition(MailPresenceTransition::GoOnline) {
+    let current_state: MailPresenceHooksState = entity.status.to_string().parse()
+        .unwrap_or(MailPresenceHooksState::default());
+    let sm = MailPresenceHooksStateMachine::from_state(current_state);
+    if !sm.can_transition(MailPresenceHooksTransition::GoOnline) {
         return (StatusCode::BAD_REQUEST, Json(ApiResponse::<MailPresenceResponseDto>::error("Transition not allowed from current state")));
     }
 
@@ -262,7 +262,7 @@ pub async fn go_away_transition(
     // Check permission (if auth enabled)
     #[cfg(feature = "auth")]
     {
-        let allowed_roles = MailPresenceTransition::GoAway.allowed_roles();
+        let allowed_roles = MailPresenceHooksTransition::GoAway.allowed_roles();
         let has_specific_perm = auth.permissions.iter().any(|p| p == "mail_presence:transition:go_away");
         let has_update_perm = auth.permissions.iter().any(|p| p == "mail_presence:update");
         if !has_specific_perm && !has_update_perm {
@@ -271,10 +271,10 @@ pub async fn go_away_transition(
     }
 
     // Create state machine from entity's actual status and validate transition
-    let current_state: MailPresenceState = entity.status.to_string().parse()
-        .unwrap_or(MailPresenceState::default());
-    let sm = MailPresenceStateMachine::from_state(current_state);
-    if !sm.can_transition(MailPresenceTransition::GoAway) {
+    let current_state: MailPresenceHooksState = entity.status.to_string().parse()
+        .unwrap_or(MailPresenceHooksState::default());
+    let sm = MailPresenceHooksStateMachine::from_state(current_state);
+    if !sm.can_transition(MailPresenceHooksTransition::GoAway) {
         return (StatusCode::BAD_REQUEST, Json(ApiResponse::<MailPresenceResponseDto>::error("Transition not allowed from current state")));
     }
 
@@ -312,7 +312,7 @@ pub async fn go_offline_transition(
     // Check permission (if auth enabled)
     #[cfg(feature = "auth")]
     {
-        let allowed_roles = MailPresenceTransition::GoOffline.allowed_roles();
+        let allowed_roles = MailPresenceHooksTransition::GoOffline.allowed_roles();
         let has_specific_perm = auth.permissions.iter().any(|p| p == "mail_presence:transition:go_offline");
         let has_update_perm = auth.permissions.iter().any(|p| p == "mail_presence:update");
         if !has_specific_perm && !has_update_perm {
@@ -321,10 +321,10 @@ pub async fn go_offline_transition(
     }
 
     // Create state machine from entity's actual status and validate transition
-    let current_state: MailPresenceState = entity.status.to_string().parse()
-        .unwrap_or(MailPresenceState::default());
-    let sm = MailPresenceStateMachine::from_state(current_state);
-    if !sm.can_transition(MailPresenceTransition::GoOffline) {
+    let current_state: MailPresenceHooksState = entity.status.to_string().parse()
+        .unwrap_or(MailPresenceHooksState::default());
+    let sm = MailPresenceHooksStateMachine::from_state(current_state);
+    if !sm.can_transition(MailPresenceHooksTransition::GoOffline) {
         return (StatusCode::BAD_REQUEST, Json(ApiResponse::<MailPresenceResponseDto>::error("Transition not allowed from current state")));
     }
 

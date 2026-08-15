@@ -11,29 +11,569 @@ use chrono::{DateTime, Utc};
 use super::types::*;
 
 // ============================================================================
-// EXAMPLE EVENTS
+// MAILACTIVITY EVENTS
 // ============================================================================
 
-/// Event published when a Example is created
+/// Event published when a MailActivity is created
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ExampleCreatedEvent {
-    pub id: ExampleId,
-    pub data: ExampleDto,
+pub struct MailActivityCreatedEvent {
+    pub id: MailActivityId,
+    pub data: MailActivityDto,
     pub occurred_at: DateTime<Utc>,
 }
 
-/// Event published when a Example is updated
+/// Event published when a MailActivity is updated
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ExampleUpdatedEvent {
-    pub id: ExampleId,
-    pub data: ExampleDto,
+pub struct MailActivityUpdatedEvent {
+    pub id: MailActivityId,
+    pub data: MailActivityDto,
     pub occurred_at: DateTime<Utc>,
 }
 
-/// Event published when a Example is deleted
+/// Event published when a MailActivity is deleted
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ExampleDeletedEvent {
-    pub id: ExampleId,
+pub struct MailActivityDeletedEvent {
+    pub id: MailActivityId,
+    pub occurred_at: DateTime<Utc>,
+}
+
+// ============================================================================
+// MAILACTIVITYTYPE EVENTS
+// ============================================================================
+
+/// Event published when a MailActivityType is created
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailActivityTypeCreatedEvent {
+    pub id: MailActivityTypeId,
+    pub data: MailActivityTypeDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a MailActivityType is updated
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailActivityTypeUpdatedEvent {
+    pub id: MailActivityTypeId,
+    pub data: MailActivityTypeDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a MailActivityType is deleted
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailActivityTypeDeletedEvent {
+    pub id: MailActivityTypeId,
+    pub occurred_at: DateTime<Utc>,
+}
+
+// ============================================================================
+// MAILACTIVITYPLAN EVENTS
+// ============================================================================
+
+/// Event published when a MailActivityPlan is created
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailActivityPlanCreatedEvent {
+    pub id: MailActivityPlanId,
+    pub data: MailActivityPlanDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a MailActivityPlan is updated
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailActivityPlanUpdatedEvent {
+    pub id: MailActivityPlanId,
+    pub data: MailActivityPlanDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a MailActivityPlan is deleted
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailActivityPlanDeletedEvent {
+    pub id: MailActivityPlanId,
+    pub occurred_at: DateTime<Utc>,
+}
+
+// ============================================================================
+// MAILACTIVITYPLANTEMPLATE EVENTS
+// ============================================================================
+
+/// Event published when a MailActivityPlanTemplate is created
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailActivityPlanTemplateCreatedEvent {
+    pub id: MailActivityPlanTemplateId,
+    pub data: MailActivityPlanTemplateDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a MailActivityPlanTemplate is updated
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailActivityPlanTemplateUpdatedEvent {
+    pub id: MailActivityPlanTemplateId,
+    pub data: MailActivityPlanTemplateDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a MailActivityPlanTemplate is deleted
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailActivityPlanTemplateDeletedEvent {
+    pub id: MailActivityPlanTemplateId,
+    pub occurred_at: DateTime<Utc>,
+}
+
+// ============================================================================
+// MAILALIASDOMAIN EVENTS
+// ============================================================================
+
+/// Event published when a MailAliasDomain is created
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailAliasDomainCreatedEvent {
+    pub id: MailAliasDomainId,
+    pub data: MailAliasDomainDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a MailAliasDomain is updated
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailAliasDomainUpdatedEvent {
+    pub id: MailAliasDomainId,
+    pub data: MailAliasDomainDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a MailAliasDomain is deleted
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailAliasDomainDeletedEvent {
+    pub id: MailAliasDomainId,
+    pub occurred_at: DateTime<Utc>,
+}
+
+// ============================================================================
+// MAILALIAS EVENTS
+// ============================================================================
+
+/// Event published when a MailAlias is created
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailAliasCreatedEvent {
+    pub id: MailAliasId,
+    pub data: MailAliasDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a MailAlias is updated
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailAliasUpdatedEvent {
+    pub id: MailAliasId,
+    pub data: MailAliasDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a MailAlias is deleted
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailAliasDeletedEvent {
+    pub id: MailAliasId,
+    pub occurred_at: DateTime<Utc>,
+}
+
+// ============================================================================
+// MAILMESSAGE EVENTS
+// ============================================================================
+
+/// Event published when a MailMessage is created
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailMessageCreatedEvent {
+    pub id: MailMessageId,
+    pub data: MailMessageDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a MailMessage is updated
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailMessageUpdatedEvent {
+    pub id: MailMessageId,
+    pub data: MailMessageDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a MailMessage is deleted
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailMessageDeletedEvent {
+    pub id: MailMessageId,
+    pub occurred_at: DateTime<Utc>,
+}
+
+// ============================================================================
+// MAIL EVENTS
+// ============================================================================
+
+/// Event published when a Mail is created
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailCreatedEvent {
+    pub id: MailId,
+    pub data: MailDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a Mail is updated
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailUpdatedEvent {
+    pub id: MailId,
+    pub data: MailDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a Mail is deleted
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailDeletedEvent {
+    pub id: MailId,
+    pub occurred_at: DateTime<Utc>,
+}
+
+// ============================================================================
+// MAILNOTIFICATION EVENTS
+// ============================================================================
+
+/// Event published when a MailNotification is created
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailNotificationCreatedEvent {
+    pub id: MailNotificationId,
+    pub data: MailNotificationDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a MailNotification is updated
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailNotificationUpdatedEvent {
+    pub id: MailNotificationId,
+    pub data: MailNotificationDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a MailNotification is deleted
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailNotificationDeletedEvent {
+    pub id: MailNotificationId,
+    pub occurred_at: DateTime<Utc>,
+}
+
+// ============================================================================
+// MAILMESSAGESUBTYPE EVENTS
+// ============================================================================
+
+/// Event published when a MailMessageSubtype is created
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailMessageSubtypeCreatedEvent {
+    pub id: MailMessageSubtypeId,
+    pub data: MailMessageSubtypeDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a MailMessageSubtype is updated
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailMessageSubtypeUpdatedEvent {
+    pub id: MailMessageSubtypeId,
+    pub data: MailMessageSubtypeDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a MailMessageSubtype is deleted
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailMessageSubtypeDeletedEvent {
+    pub id: MailMessageSubtypeId,
+    pub occurred_at: DateTime<Utc>,
+}
+
+// ============================================================================
+// MAILMESSAGEREACTION EVENTS
+// ============================================================================
+
+/// Event published when a MailMessageReaction is created
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailMessageReactionCreatedEvent {
+    pub id: MailMessageReactionId,
+    pub data: MailMessageReactionDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a MailMessageReaction is updated
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailMessageReactionUpdatedEvent {
+    pub id: MailMessageReactionId,
+    pub data: MailMessageReactionDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a MailMessageReaction is deleted
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailMessageReactionDeletedEvent {
+    pub id: MailMessageReactionId,
+    pub occurred_at: DateTime<Utc>,
+}
+
+// ============================================================================
+// MAILFOLLOWERS EVENTS
+// ============================================================================
+
+/// Event published when a MailFollowers is created
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailFollowersCreatedEvent {
+    pub id: MailFollowersId,
+    pub data: MailFollowersDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a MailFollowers is updated
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailFollowersUpdatedEvent {
+    pub id: MailFollowersId,
+    pub data: MailFollowersDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a MailFollowers is deleted
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailFollowersDeletedEvent {
+    pub id: MailFollowersId,
+    pub occurred_at: DateTime<Utc>,
+}
+
+// ============================================================================
+// MAILPRESENCE EVENTS
+// ============================================================================
+
+/// Event published when a MailPresence is created
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailPresenceCreatedEvent {
+    pub id: MailPresenceId,
+    pub data: MailPresenceDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a MailPresence is updated
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailPresenceUpdatedEvent {
+    pub id: MailPresenceId,
+    pub data: MailPresenceDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a MailPresence is deleted
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailPresenceDeletedEvent {
+    pub id: MailPresenceId,
+    pub occurred_at: DateTime<Utc>,
+}
+
+// ============================================================================
+// MAILBLACKLIST EVENTS
+// ============================================================================
+
+/// Event published when a MailBlacklist is created
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailBlacklistCreatedEvent {
+    pub id: MailBlacklistId,
+    pub data: MailBlacklistDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a MailBlacklist is updated
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailBlacklistUpdatedEvent {
+    pub id: MailBlacklistId,
+    pub data: MailBlacklistDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a MailBlacklist is deleted
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailBlacklistDeletedEvent {
+    pub id: MailBlacklistId,
+    pub occurred_at: DateTime<Utc>,
+}
+
+// ============================================================================
+// MAILTRACKINGVALUE EVENTS
+// ============================================================================
+
+/// Event published when a MailTrackingValue is created
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailTrackingValueCreatedEvent {
+    pub id: MailTrackingValueId,
+    pub data: MailTrackingValueDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a MailTrackingValue is updated
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailTrackingValueUpdatedEvent {
+    pub id: MailTrackingValueId,
+    pub data: MailTrackingValueDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a MailTrackingValue is deleted
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailTrackingValueDeletedEvent {
+    pub id: MailTrackingValueId,
+    pub occurred_at: DateTime<Utc>,
+}
+
+// ============================================================================
+// DISCUSSCHANNEL EVENTS
+// ============================================================================
+
+/// Event published when a DiscussChannel is created
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DiscussChannelCreatedEvent {
+    pub id: DiscussChannelId,
+    pub data: DiscussChannelDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a DiscussChannel is updated
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DiscussChannelUpdatedEvent {
+    pub id: DiscussChannelId,
+    pub data: DiscussChannelDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a DiscussChannel is deleted
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DiscussChannelDeletedEvent {
+    pub id: DiscussChannelId,
+    pub occurred_at: DateTime<Utc>,
+}
+
+// ============================================================================
+// DISCUSSCHANNELMEMBER EVENTS
+// ============================================================================
+
+/// Event published when a DiscussChannelMember is created
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DiscussChannelMemberCreatedEvent {
+    pub id: DiscussChannelMemberId,
+    pub data: DiscussChannelMemberDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a DiscussChannelMember is updated
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DiscussChannelMemberUpdatedEvent {
+    pub id: DiscussChannelMemberId,
+    pub data: DiscussChannelMemberDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a DiscussChannelMember is deleted
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DiscussChannelMemberDeletedEvent {
+    pub id: DiscussChannelMemberId,
+    pub occurred_at: DateTime<Utc>,
+}
+
+// ============================================================================
+// MAILGUEST EVENTS
+// ============================================================================
+
+/// Event published when a MailGuest is created
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailGuestCreatedEvent {
+    pub id: MailGuestId,
+    pub data: MailGuestDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a MailGuest is updated
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailGuestUpdatedEvent {
+    pub id: MailGuestId,
+    pub data: MailGuestDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a MailGuest is deleted
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailGuestDeletedEvent {
+    pub id: MailGuestId,
+    pub occurred_at: DateTime<Utc>,
+}
+
+// ============================================================================
+// SMS EVENTS
+// ============================================================================
+
+/// Event published when a Sms is created
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SmsCreatedEvent {
+    pub id: SmsId,
+    pub data: SmsDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a Sms is updated
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SmsUpdatedEvent {
+    pub id: SmsId,
+    pub data: SmsDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a Sms is deleted
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SmsDeletedEvent {
+    pub id: SmsId,
+    pub occurred_at: DateTime<Utc>,
+}
+
+// ============================================================================
+// SMSTEMPLATE EVENTS
+// ============================================================================
+
+/// Event published when a SmsTemplate is created
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SmsTemplateCreatedEvent {
+    pub id: SmsTemplateId,
+    pub data: SmsTemplateDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a SmsTemplate is updated
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SmsTemplateUpdatedEvent {
+    pub id: SmsTemplateId,
+    pub data: SmsTemplateDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a SmsTemplate is deleted
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SmsTemplateDeletedEvent {
+    pub id: SmsTemplateId,
+    pub occurred_at: DateTime<Utc>,
+}
+
+// ============================================================================
+// SMSTRACKER EVENTS
+// ============================================================================
+
+/// Event published when a SmsTracker is created
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SmsTrackerCreatedEvent {
+    pub id: SmsTrackerId,
+    pub data: SmsTrackerDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a SmsTracker is updated
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SmsTrackerUpdatedEvent {
+    pub id: SmsTrackerId,
+    pub data: SmsTrackerDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a SmsTracker is deleted
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SmsTrackerDeletedEvent {
+    pub id: SmsTrackerId,
     pub occurred_at: DateTime<Utc>,
 }
 
@@ -45,9 +585,69 @@ pub struct ExampleDeletedEvent {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "type")]
 pub enum MessagingEvent {
-    ExampleCreated(ExampleCreatedEvent),
-    ExampleUpdated(ExampleUpdatedEvent),
-    ExampleDeleted(ExampleDeletedEvent),
+    MailActivityCreated(MailActivityCreatedEvent),
+    MailActivityUpdated(MailActivityUpdatedEvent),
+    MailActivityDeleted(MailActivityDeletedEvent),
+    MailActivityTypeCreated(MailActivityTypeCreatedEvent),
+    MailActivityTypeUpdated(MailActivityTypeUpdatedEvent),
+    MailActivityTypeDeleted(MailActivityTypeDeletedEvent),
+    MailActivityPlanCreated(MailActivityPlanCreatedEvent),
+    MailActivityPlanUpdated(MailActivityPlanUpdatedEvent),
+    MailActivityPlanDeleted(MailActivityPlanDeletedEvent),
+    MailActivityPlanTemplateCreated(MailActivityPlanTemplateCreatedEvent),
+    MailActivityPlanTemplateUpdated(MailActivityPlanTemplateUpdatedEvent),
+    MailActivityPlanTemplateDeleted(MailActivityPlanTemplateDeletedEvent),
+    MailAliasDomainCreated(MailAliasDomainCreatedEvent),
+    MailAliasDomainUpdated(MailAliasDomainUpdatedEvent),
+    MailAliasDomainDeleted(MailAliasDomainDeletedEvent),
+    MailAliasCreated(MailAliasCreatedEvent),
+    MailAliasUpdated(MailAliasUpdatedEvent),
+    MailAliasDeleted(MailAliasDeletedEvent),
+    MailMessageCreated(MailMessageCreatedEvent),
+    MailMessageUpdated(MailMessageUpdatedEvent),
+    MailMessageDeleted(MailMessageDeletedEvent),
+    MailCreated(MailCreatedEvent),
+    MailUpdated(MailUpdatedEvent),
+    MailDeleted(MailDeletedEvent),
+    MailNotificationCreated(MailNotificationCreatedEvent),
+    MailNotificationUpdated(MailNotificationUpdatedEvent),
+    MailNotificationDeleted(MailNotificationDeletedEvent),
+    MailMessageSubtypeCreated(MailMessageSubtypeCreatedEvent),
+    MailMessageSubtypeUpdated(MailMessageSubtypeUpdatedEvent),
+    MailMessageSubtypeDeleted(MailMessageSubtypeDeletedEvent),
+    MailMessageReactionCreated(MailMessageReactionCreatedEvent),
+    MailMessageReactionUpdated(MailMessageReactionUpdatedEvent),
+    MailMessageReactionDeleted(MailMessageReactionDeletedEvent),
+    MailFollowersCreated(MailFollowersCreatedEvent),
+    MailFollowersUpdated(MailFollowersUpdatedEvent),
+    MailFollowersDeleted(MailFollowersDeletedEvent),
+    MailPresenceCreated(MailPresenceCreatedEvent),
+    MailPresenceUpdated(MailPresenceUpdatedEvent),
+    MailPresenceDeleted(MailPresenceDeletedEvent),
+    MailBlacklistCreated(MailBlacklistCreatedEvent),
+    MailBlacklistUpdated(MailBlacklistUpdatedEvent),
+    MailBlacklistDeleted(MailBlacklistDeletedEvent),
+    MailTrackingValueCreated(MailTrackingValueCreatedEvent),
+    MailTrackingValueUpdated(MailTrackingValueUpdatedEvent),
+    MailTrackingValueDeleted(MailTrackingValueDeletedEvent),
+    DiscussChannelCreated(DiscussChannelCreatedEvent),
+    DiscussChannelUpdated(DiscussChannelUpdatedEvent),
+    DiscussChannelDeleted(DiscussChannelDeletedEvent),
+    DiscussChannelMemberCreated(DiscussChannelMemberCreatedEvent),
+    DiscussChannelMemberUpdated(DiscussChannelMemberUpdatedEvent),
+    DiscussChannelMemberDeleted(DiscussChannelMemberDeletedEvent),
+    MailGuestCreated(MailGuestCreatedEvent),
+    MailGuestUpdated(MailGuestUpdatedEvent),
+    MailGuestDeleted(MailGuestDeletedEvent),
+    SmsCreated(SmsCreatedEvent),
+    SmsUpdated(SmsUpdatedEvent),
+    SmsDeleted(SmsDeletedEvent),
+    SmsTemplateCreated(SmsTemplateCreatedEvent),
+    SmsTemplateUpdated(SmsTemplateUpdatedEvent),
+    SmsTemplateDeleted(SmsTemplateDeletedEvent),
+    SmsTrackerCreated(SmsTrackerCreatedEvent),
+    SmsTrackerUpdated(SmsTrackerUpdatedEvent),
+    SmsTrackerDeleted(SmsTrackerDeletedEvent),
 }
 
 /// Metadata for module events

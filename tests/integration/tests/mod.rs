@@ -6,8 +6,48 @@
 
 pub mod crud_test_base;
 
-pub mod example_api_test;
+pub mod mail_activity_api_test;
+pub mod mail_activity_type_api_test;
+pub mod mail_activity_plan_api_test;
+pub mod mail_activity_plan_template_api_test;
+pub mod mail_alias_domain_api_test;
+pub mod mail_alias_api_test;
+pub mod mail_message_api_test;
+pub mod mail_api_test;
+pub mod mail_notification_api_test;
+pub mod mail_message_subtype_api_test;
+pub mod mail_message_reaction_api_test;
+pub mod mail_followers_api_test;
+pub mod mail_presence_api_test;
+pub mod mail_blacklist_api_test;
+pub mod mail_tracking_value_api_test;
+pub mod discuss_channel_api_test;
+pub mod discuss_channel_member_api_test;
+pub mod mail_guest_api_test;
+pub mod sms_api_test;
+pub mod sms_template_api_test;
+pub mod sms_tracker_api_test;
 
 // Re-exports for convenience
 pub use crud_test_base::*;
-pub use example_api_test::*;
+pub use mail_activity_api_test::*;
+pub use mail_activity_type_api_test::*;
+pub use mail_activity_plan_api_test::*;
+pub use mail_activity_plan_template_api_test::*;
+pub use mail_alias_domain_api_test::*;
+pub use mail_alias_api_test::*;
+pub use mail_message_api_test::*;
+pub use mail_api_test::*;
+pub use mail_notification_api_test::*;
+pub use mail_message_subtype_api_test::*;
+pub use mail_message_reaction_api_test::*;
+pub use mail_followers_api_test::*;
+pub use mail_presence_api_test::*;
+pub use mail_blacklist_api_test::*;
+pub use mail_tracking_value_api_test::*;
+pub use discuss_channel_api_test::*;
+pub use discuss_channel_member_api_test::*;
+pub use mail_guest_api_test::*;
+pub use sms_api_test::*;
+pub use sms_template_api_test::*;
+pub use sms_tracker_api_test::*;

@@ -61,7 +61,7 @@ pub struct MailFollowers {
 impl MailFollowers {
     /// Create a builder for MailFollowers
     pub fn builder() -> MailFollowersBuilder {
-        MailFollowersBuilder::default()
+        <MailFollowersBuilder as Default>::default()
     }
 
     /// Create a new MailFollowers with required fields

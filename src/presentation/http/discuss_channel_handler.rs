@@ -12,7 +12,7 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 // Backbone framework imports
-use backbone_core::http::{ApiResponse, BackboneCrudHandler};
+use backbone_core::http::BackboneCrudHandler;
 
 // Auth integration (optional)
 #[cfg(feature = "auth")]
@@ -27,7 +27,6 @@ use crate::application::service::{DiscussChannelService, ServiceError};
 // DTO imports
 use crate::presentation::dto::{CreateDiscussChannelDto, UpdateDiscussChannelDto, PatchDiscussChannelDto, DiscussChannelResponseDto};
 
-use crate::domain::state_machine::{DiscussChannelState, DiscussChannelStateMachine, DiscussChannelTransition};
 
 /// Application error type
 #[derive(Debug, thiserror::Error)]
@@ -185,17 +184,5 @@ pub fn create_protected_discuss_channel_routes<A: AuthMiddleware + Send + Sync +
                 }
             }
         }))
-}
-
-// =============================================================================
-// State Transition Handlers
-// =============================================================================
-
-/// Create routes for state transitions.
-pub fn create_discuss_channel_transition_routes(service: Arc<DiscussChannelService>) -> Router {
-    use axum::routing::post;
-
-    Router::new()
-        .with_state(service)
 }
 

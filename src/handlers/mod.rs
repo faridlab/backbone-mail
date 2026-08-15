@@ -9,7 +9,27 @@
 use std::sync::Arc;
 
 // Import all services
-use crate::application::service::ExampleService;
+use crate::application::service::MailActivityService;
+use crate::application::service::MailActivityTypeService;
+use crate::application::service::MailActivityPlanService;
+use crate::application::service::MailActivityPlanTemplateService;
+use crate::application::service::MailAliasDomainService;
+use crate::application::service::MailAliasService;
+use crate::application::service::MailMessageService;
+use crate::application::service::MailService;
+use crate::application::service::MailNotificationService;
+use crate::application::service::MailMessageSubtypeService;
+use crate::application::service::MailMessageReactionService;
+use crate::application::service::MailFollowersService;
+use crate::application::service::MailPresenceService;
+use crate::application::service::MailBlacklistService;
+use crate::application::service::MailTrackingValueService;
+use crate::application::service::DiscussChannelService;
+use crate::application::service::DiscussChannelMemberService;
+use crate::application::service::MailGuestService;
+use crate::application::service::SmsService;
+use crate::application::service::SmsTemplateService;
+use crate::application::service::SmsTrackerService;
 
 /// Application state for dependency injection.
 ///
@@ -29,24 +49,124 @@ use crate::application::service::ExampleService;
 /// ```
 #[derive(Clone)]
 pub struct AppState {
-    /// Example service
-    pub example_service: Arc<ExampleService>,
+    /// MailActivity service
+    pub mail_activity_service: Arc<MailActivityService>,
+    /// MailActivityType service
+    pub mail_activity_type_service: Arc<MailActivityTypeService>,
+    /// MailActivityPlan service
+    pub mail_activity_plan_service: Arc<MailActivityPlanService>,
+    /// MailActivityPlanTemplate service
+    pub mail_activity_plan_template_service: Arc<MailActivityPlanTemplateService>,
+    /// MailAliasDomain service
+    pub mail_alias_domain_service: Arc<MailAliasDomainService>,
+    /// MailAlias service
+    pub mail_alias_service: Arc<MailAliasService>,
+    /// MailMessage service
+    pub mail_message_service: Arc<MailMessageService>,
+    /// Mail service
+    pub mail_service: Arc<MailService>,
+    /// MailNotification service
+    pub mail_notification_service: Arc<MailNotificationService>,
+    /// MailMessageSubtype service
+    pub mail_message_subtype_service: Arc<MailMessageSubtypeService>,
+    /// MailMessageReaction service
+    pub mail_message_reaction_service: Arc<MailMessageReactionService>,
+    /// MailFollowers service
+    pub mail_followers_service: Arc<MailFollowersService>,
+    /// MailPresence service
+    pub mail_presence_service: Arc<MailPresenceService>,
+    /// MailBlacklist service
+    pub mail_blacklist_service: Arc<MailBlacklistService>,
+    /// MailTrackingValue service
+    pub mail_tracking_value_service: Arc<MailTrackingValueService>,
+    /// DiscussChannel service
+    pub discuss_channel_service: Arc<DiscussChannelService>,
+    /// DiscussChannelMember service
+    pub discuss_channel_member_service: Arc<DiscussChannelMemberService>,
+    /// MailGuest service
+    pub mail_guest_service: Arc<MailGuestService>,
+    /// Sms service
+    pub sms_service: Arc<SmsService>,
+    /// SmsTemplate service
+    pub sms_template_service: Arc<SmsTemplateService>,
+    /// SmsTracker service
+    pub sms_tracker_service: Arc<SmsTrackerService>,
 }
 
 impl AppState {
     /// Create a new AppState with all services.
     pub fn new(
-        example_service: Arc<ExampleService>
+        mail_activity_service: Arc<MailActivityService>,
+        mail_activity_type_service: Arc<MailActivityTypeService>,
+        mail_activity_plan_service: Arc<MailActivityPlanService>,
+        mail_activity_plan_template_service: Arc<MailActivityPlanTemplateService>,
+        mail_alias_domain_service: Arc<MailAliasDomainService>,
+        mail_alias_service: Arc<MailAliasService>,
+        mail_message_service: Arc<MailMessageService>,
+        mail_service: Arc<MailService>,
+        mail_notification_service: Arc<MailNotificationService>,
+        mail_message_subtype_service: Arc<MailMessageSubtypeService>,
+        mail_message_reaction_service: Arc<MailMessageReactionService>,
+        mail_followers_service: Arc<MailFollowersService>,
+        mail_presence_service: Arc<MailPresenceService>,
+        mail_blacklist_service: Arc<MailBlacklistService>,
+        mail_tracking_value_service: Arc<MailTrackingValueService>,
+        discuss_channel_service: Arc<DiscussChannelService>,
+        discuss_channel_member_service: Arc<DiscussChannelMemberService>,
+        mail_guest_service: Arc<MailGuestService>,
+        sms_service: Arc<SmsService>,
+        sms_template_service: Arc<SmsTemplateService>,
+        sms_tracker_service: Arc<SmsTrackerService>
     ) -> Self {
         Self {
-            example_service,
+            mail_activity_service,
+            mail_activity_type_service,
+            mail_activity_plan_service,
+            mail_activity_plan_template_service,
+            mail_alias_domain_service,
+            mail_alias_service,
+            mail_message_service,
+            mail_service,
+            mail_notification_service,
+            mail_message_subtype_service,
+            mail_message_reaction_service,
+            mail_followers_service,
+            mail_presence_service,
+            mail_blacklist_service,
+            mail_tracking_value_service,
+            discuss_channel_service,
+            discuss_channel_member_service,
+            mail_guest_service,
+            sms_service,
+            sms_template_service,
+            sms_tracker_service,
         }
     }
 
     /// Create AppState from module instance.
     pub fn from_module(module: &crate::MessagingModule) -> Self {
         Self {
-            example_service: module.example_service.clone(),
+            mail_activity_service: module.mail_activity_service.clone(),
+            mail_activity_type_service: module.mail_activity_type_service.clone(),
+            mail_activity_plan_service: module.mail_activity_plan_service.clone(),
+            mail_activity_plan_template_service: module.mail_activity_plan_template_service.clone(),
+            mail_alias_domain_service: module.mail_alias_domain_service.clone(),
+            mail_alias_service: module.mail_alias_service.clone(),
+            mail_message_service: module.mail_message_service.clone(),
+            mail_service: module.mail_service.clone(),
+            mail_notification_service: module.mail_notification_service.clone(),
+            mail_message_subtype_service: module.mail_message_subtype_service.clone(),
+            mail_message_reaction_service: module.mail_message_reaction_service.clone(),
+            mail_followers_service: module.mail_followers_service.clone(),
+            mail_presence_service: module.mail_presence_service.clone(),
+            mail_blacklist_service: module.mail_blacklist_service.clone(),
+            mail_tracking_value_service: module.mail_tracking_value_service.clone(),
+            discuss_channel_service: module.discuss_channel_service.clone(),
+            discuss_channel_member_service: module.discuss_channel_member_service.clone(),
+            mail_guest_service: module.mail_guest_service.clone(),
+            sms_service: module.sms_service.clone(),
+            sms_template_service: module.sms_template_service.clone(),
+            sms_tracker_service: module.sms_tracker_service.clone(),
         }
     }
 }
@@ -56,7 +176,27 @@ impl AppState {
 /// Allows incremental construction of AppState.
 #[derive(Default)]
 pub struct AppStateBuilder {
-    example_service: Option<Arc<ExampleService>>,
+    mail_activity_service: Option<Arc<MailActivityService>>,
+    mail_activity_type_service: Option<Arc<MailActivityTypeService>>,
+    mail_activity_plan_service: Option<Arc<MailActivityPlanService>>,
+    mail_activity_plan_template_service: Option<Arc<MailActivityPlanTemplateService>>,
+    mail_alias_domain_service: Option<Arc<MailAliasDomainService>>,
+    mail_alias_service: Option<Arc<MailAliasService>>,
+    mail_message_service: Option<Arc<MailMessageService>>,
+    mail_service: Option<Arc<MailService>>,
+    mail_notification_service: Option<Arc<MailNotificationService>>,
+    mail_message_subtype_service: Option<Arc<MailMessageSubtypeService>>,
+    mail_message_reaction_service: Option<Arc<MailMessageReactionService>>,
+    mail_followers_service: Option<Arc<MailFollowersService>>,
+    mail_presence_service: Option<Arc<MailPresenceService>>,
+    mail_blacklist_service: Option<Arc<MailBlacklistService>>,
+    mail_tracking_value_service: Option<Arc<MailTrackingValueService>>,
+    discuss_channel_service: Option<Arc<DiscussChannelService>>,
+    discuss_channel_member_service: Option<Arc<DiscussChannelMemberService>>,
+    mail_guest_service: Option<Arc<MailGuestService>>,
+    sms_service: Option<Arc<SmsService>>,
+    sms_template_service: Option<Arc<SmsTemplateService>>,
+    sms_tracker_service: Option<Arc<SmsTrackerService>>,
 }
 
 impl AppStateBuilder {
@@ -65,9 +205,129 @@ impl AppStateBuilder {
         Self::default()
     }
 
-    /// Set the Example service.
-    pub fn with_example_service(mut self, service: Arc<ExampleService>) -> Self {
-        self.example_service = Some(service);
+    /// Set the MailActivity service.
+    pub fn with_mail_activity_service(mut self, service: Arc<MailActivityService>) -> Self {
+        self.mail_activity_service = Some(service);
+        self
+    }
+
+    /// Set the MailActivityType service.
+    pub fn with_mail_activity_type_service(mut self, service: Arc<MailActivityTypeService>) -> Self {
+        self.mail_activity_type_service = Some(service);
+        self
+    }
+
+    /// Set the MailActivityPlan service.
+    pub fn with_mail_activity_plan_service(mut self, service: Arc<MailActivityPlanService>) -> Self {
+        self.mail_activity_plan_service = Some(service);
+        self
+    }
+
+    /// Set the MailActivityPlanTemplate service.
+    pub fn with_mail_activity_plan_template_service(mut self, service: Arc<MailActivityPlanTemplateService>) -> Self {
+        self.mail_activity_plan_template_service = Some(service);
+        self
+    }
+
+    /// Set the MailAliasDomain service.
+    pub fn with_mail_alias_domain_service(mut self, service: Arc<MailAliasDomainService>) -> Self {
+        self.mail_alias_domain_service = Some(service);
+        self
+    }
+
+    /// Set the MailAlias service.
+    pub fn with_mail_alias_service(mut self, service: Arc<MailAliasService>) -> Self {
+        self.mail_alias_service = Some(service);
+        self
+    }
+
+    /// Set the MailMessage service.
+    pub fn with_mail_message_service(mut self, service: Arc<MailMessageService>) -> Self {
+        self.mail_message_service = Some(service);
+        self
+    }
+
+    /// Set the Mail service.
+    pub fn with_mail_service(mut self, service: Arc<MailService>) -> Self {
+        self.mail_service = Some(service);
+        self
+    }
+
+    /// Set the MailNotification service.
+    pub fn with_mail_notification_service(mut self, service: Arc<MailNotificationService>) -> Self {
+        self.mail_notification_service = Some(service);
+        self
+    }
+
+    /// Set the MailMessageSubtype service.
+    pub fn with_mail_message_subtype_service(mut self, service: Arc<MailMessageSubtypeService>) -> Self {
+        self.mail_message_subtype_service = Some(service);
+        self
+    }
+
+    /// Set the MailMessageReaction service.
+    pub fn with_mail_message_reaction_service(mut self, service: Arc<MailMessageReactionService>) -> Self {
+        self.mail_message_reaction_service = Some(service);
+        self
+    }
+
+    /// Set the MailFollowers service.
+    pub fn with_mail_followers_service(mut self, service: Arc<MailFollowersService>) -> Self {
+        self.mail_followers_service = Some(service);
+        self
+    }
+
+    /// Set the MailPresence service.
+    pub fn with_mail_presence_service(mut self, service: Arc<MailPresenceService>) -> Self {
+        self.mail_presence_service = Some(service);
+        self
+    }
+
+    /// Set the MailBlacklist service.
+    pub fn with_mail_blacklist_service(mut self, service: Arc<MailBlacklistService>) -> Self {
+        self.mail_blacklist_service = Some(service);
+        self
+    }
+
+    /// Set the MailTrackingValue service.
+    pub fn with_mail_tracking_value_service(mut self, service: Arc<MailTrackingValueService>) -> Self {
+        self.mail_tracking_value_service = Some(service);
+        self
+    }
+
+    /// Set the DiscussChannel service.
+    pub fn with_discuss_channel_service(mut self, service: Arc<DiscussChannelService>) -> Self {
+        self.discuss_channel_service = Some(service);
+        self
+    }
+
+    /// Set the DiscussChannelMember service.
+    pub fn with_discuss_channel_member_service(mut self, service: Arc<DiscussChannelMemberService>) -> Self {
+        self.discuss_channel_member_service = Some(service);
+        self
+    }
+
+    /// Set the MailGuest service.
+    pub fn with_mail_guest_service(mut self, service: Arc<MailGuestService>) -> Self {
+        self.mail_guest_service = Some(service);
+        self
+    }
+
+    /// Set the Sms service.
+    pub fn with_sms_service(mut self, service: Arc<SmsService>) -> Self {
+        self.sms_service = Some(service);
+        self
+    }
+
+    /// Set the SmsTemplate service.
+    pub fn with_sms_template_service(mut self, service: Arc<SmsTemplateService>) -> Self {
+        self.sms_template_service = Some(service);
+        self
+    }
+
+    /// Set the SmsTracker service.
+    pub fn with_sms_tracker_service(mut self, service: Arc<SmsTrackerService>) -> Self {
+        self.sms_tracker_service = Some(service);
         self
     }
 
@@ -78,7 +338,27 @@ impl AppStateBuilder {
     /// Panics if any required service is not set.
     pub fn build(self) -> AppState {
         AppState {
-            example_service: self.example_service.expect("example_service is required"),
+            mail_activity_service: self.mail_activity_service.expect("mail_activity_service is required"),
+            mail_activity_type_service: self.mail_activity_type_service.expect("mail_activity_type_service is required"),
+            mail_activity_plan_service: self.mail_activity_plan_service.expect("mail_activity_plan_service is required"),
+            mail_activity_plan_template_service: self.mail_activity_plan_template_service.expect("mail_activity_plan_template_service is required"),
+            mail_alias_domain_service: self.mail_alias_domain_service.expect("mail_alias_domain_service is required"),
+            mail_alias_service: self.mail_alias_service.expect("mail_alias_service is required"),
+            mail_message_service: self.mail_message_service.expect("mail_message_service is required"),
+            mail_service: self.mail_service.expect("mail_service is required"),
+            mail_notification_service: self.mail_notification_service.expect("mail_notification_service is required"),
+            mail_message_subtype_service: self.mail_message_subtype_service.expect("mail_message_subtype_service is required"),
+            mail_message_reaction_service: self.mail_message_reaction_service.expect("mail_message_reaction_service is required"),
+            mail_followers_service: self.mail_followers_service.expect("mail_followers_service is required"),
+            mail_presence_service: self.mail_presence_service.expect("mail_presence_service is required"),
+            mail_blacklist_service: self.mail_blacklist_service.expect("mail_blacklist_service is required"),
+            mail_tracking_value_service: self.mail_tracking_value_service.expect("mail_tracking_value_service is required"),
+            discuss_channel_service: self.discuss_channel_service.expect("discuss_channel_service is required"),
+            discuss_channel_member_service: self.discuss_channel_member_service.expect("discuss_channel_member_service is required"),
+            mail_guest_service: self.mail_guest_service.expect("mail_guest_service is required"),
+            sms_service: self.sms_service.expect("sms_service is required"),
+            sms_template_service: self.sms_template_service.expect("sms_template_service is required"),
+            sms_tracker_service: self.sms_tracker_service.expect("sms_tracker_service is required"),
         }
     }
 }

@@ -62,7 +62,7 @@ pub struct SmsTemplate {
 impl SmsTemplate {
     /// Create a builder for SmsTemplate
     pub fn builder() -> SmsTemplateBuilder {
-        SmsTemplateBuilder::default()
+        <SmsTemplateBuilder as Default>::default()
     }
 
     /// Create a new SmsTemplate with required fields

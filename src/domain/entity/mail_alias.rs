@@ -68,7 +68,7 @@ pub struct MailAlias {
 impl MailAlias {
     /// Create a builder for MailAlias
     pub fn builder() -> MailAliasBuilder {
-        MailAliasBuilder::default()
+        <MailAliasBuilder as Default>::default()
     }
 
     /// Create a new MailAlias with required fields
@@ -392,7 +392,7 @@ impl MailAliasBuilder {
             id: Uuid::new_v4(),
             alias_name: self.alias_name,
             alias_domain_id: self.alias_domain_id,
-            alias_contact: self.alias_contact.unwrap_or(MailAliasContact::default()),
+            alias_contact: self.alias_contact.unwrap_or_default(),
             alias_model_id: self.alias_model_id,
             alias_parent_model_id: self.alias_parent_model_id,
             alias_parent_thread_id: self.alias_parent_thread_id,

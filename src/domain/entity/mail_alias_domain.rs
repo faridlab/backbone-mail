@@ -64,7 +64,7 @@ pub struct MailAliasDomain {
 impl MailAliasDomain {
     /// Create a builder for MailAliasDomain
     pub fn builder() -> MailAliasDomainBuilder {
-        MailAliasDomainBuilder::default()
+        <MailAliasDomainBuilder as Default>::default()
     }
 
     /// Create a new MailAliasDomain with required fields

@@ -12,7 +12,27 @@ use sqlx::postgres::PgPoolOptions;
 use std::env;
 
 // Import seeders
-use backbone_mail::seeders::SeedExampleSeeder;
+use backbone_mail::seeders::SeedMailActivitySeeder;
+use backbone_mail::seeders::SeedMailActivityTypeSeeder;
+use backbone_mail::seeders::SeedMailActivityPlanSeeder;
+use backbone_mail::seeders::SeedMailActivityPlanTemplateSeeder;
+use backbone_mail::seeders::SeedMailAliasDomainSeeder;
+use backbone_mail::seeders::SeedMailAliasSeeder;
+use backbone_mail::seeders::SeedMailMessageSeeder;
+use backbone_mail::seeders::SeedMailSeeder;
+use backbone_mail::seeders::SeedMailNotificationSeeder;
+use backbone_mail::seeders::SeedMailMessageSubtypeSeeder;
+use backbone_mail::seeders::SeedMailMessageReactionSeeder;
+use backbone_mail::seeders::SeedMailFollowersSeeder;
+use backbone_mail::seeders::SeedMailPresenceSeeder;
+use backbone_mail::seeders::SeedMailBlacklistSeeder;
+use backbone_mail::seeders::SeedMailTrackingValueSeeder;
+use backbone_mail::seeders::SeedDiscussChannelSeeder;
+use backbone_mail::seeders::SeedDiscussChannelMemberSeeder;
+use backbone_mail::seeders::SeedMailGuestSeeder;
+use backbone_mail::seeders::SeedSmsSeeder;
+use backbone_mail::seeders::SeedSmsTemplateSeeder;
+use backbone_mail::seeders::SeedSmsTrackerSeeder;
 use backbone_mail::seeders::Seeder;
 
 #[tokio::main]
@@ -25,7 +45,7 @@ async fn main() -> Result<()> {
         .map(|s| s.as_str());
 
     let database_url = env::var("DATABASE_URL")
-        .expect("DATABASE_URL must be set");
+        .map_err(|e| anyhow::anyhow!("DATABASE_URL must be set: {e}"))?;
 
     println!("Connecting to database...");
 
@@ -41,7 +61,27 @@ async fn main() -> Result<()> {
 
     // Register seeders in order
     let mut seeders: Vec<Box<dyn Seeder + Send + Sync>> = Vec::new();
-    seeders.push(Box::new(SeedExampleSeeder::new()));
+    seeders.push(Box::new(SeedMailActivitySeeder::new()));
+    seeders.push(Box::new(SeedMailActivityTypeSeeder::new()));
+    seeders.push(Box::new(SeedMailActivityPlanSeeder::new()));
+    seeders.push(Box::new(SeedMailActivityPlanTemplateSeeder::new()));
+    seeders.push(Box::new(SeedMailAliasDomainSeeder::new()));
+    seeders.push(Box::new(SeedMailAliasSeeder::new()));
+    seeders.push(Box::new(SeedMailMessageSeeder::new()));
+    seeders.push(Box::new(SeedMailSeeder::new()));
+    seeders.push(Box::new(SeedMailNotificationSeeder::new()));
+    seeders.push(Box::new(SeedMailMessageSubtypeSeeder::new()));
+    seeders.push(Box::new(SeedMailMessageReactionSeeder::new()));
+    seeders.push(Box::new(SeedMailFollowersSeeder::new()));
+    seeders.push(Box::new(SeedMailPresenceSeeder::new()));
+    seeders.push(Box::new(SeedMailBlacklistSeeder::new()));
+    seeders.push(Box::new(SeedMailTrackingValueSeeder::new()));
+    seeders.push(Box::new(SeedDiscussChannelSeeder::new()));
+    seeders.push(Box::new(SeedDiscussChannelMemberSeeder::new()));
+    seeders.push(Box::new(SeedMailGuestSeeder::new()));
+    seeders.push(Box::new(SeedSmsSeeder::new()));
+    seeders.push(Box::new(SeedSmsTemplateSeeder::new()));
+    seeders.push(Box::new(SeedSmsTrackerSeeder::new()));
 
     // Sort by order
     seeders.sort_by_key(|s| s.order());

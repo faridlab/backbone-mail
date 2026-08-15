@@ -9,7 +9,7 @@ use super::MailActivityDelayUnit;
 use super::MailActivityDelayFrom;
 use super::AuditMetadata;
 
-use crate::domain::state_machine::{MailActivityTypeStateMachine, MailActivityTypeState, StateMachineError};
+use crate::domain::state_machine::{MailActivityTypeHooksStateMachine, MailActivityTypeHooksState, StateMachineError};
 
 /// Strongly-typed ID for MailActivityType
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -77,7 +77,7 @@ pub struct MailActivityType {
 impl MailActivityType {
     /// Create a builder for MailActivityType
     pub fn builder() -> MailActivityTypeBuilder {
-        MailActivityTypeBuilder::default()
+        <MailActivityTypeBuilder as Default>::default()
     }
 
     /// Create a new MailActivityType with required fields
@@ -213,9 +213,9 @@ impl MailActivityType {
     ///
     /// Returns `Err` if the transition is not permitted from the current state.
     /// Use this method instead of assigning `self.chaining_type` directly.
-    pub fn transition_to(&mut self, new_state: MailActivityTypeState) -> Result<(), StateMachineError> {
-        let current = self.chaining_type.to_string().parse::<MailActivityTypeState>()?;
-        let mut sm = MailActivityTypeStateMachine::from_state(current);
+    pub fn transition_to(&mut self, new_state: MailActivityTypeHooksState) -> Result<(), StateMachineError> {
+        let current = self.chaining_type.to_string().parse::<MailActivityTypeHooksState>()?;
+        let mut sm = MailActivityTypeHooksStateMachine::from_state(current);
         sm.transition_to_state(new_state)?;
         self.chaining_type = new_state.to_string().parse::<MailActivityChainingType>()
             .map_err(|e| StateMachineError::InvalidState(e.to_string()))?;
@@ -455,10 +455,10 @@ impl MailActivityTypeBuilder {
             summary: self.summary,
             note: self.note,
             category: self.category,
-            chaining_type: self.chaining_type.unwrap_or(MailActivityChainingType::default()),
+            chaining_type: self.chaining_type.unwrap_or_default(),
             delay_count: self.delay_count.unwrap_or(0),
-            delay_unit: self.delay_unit.unwrap_or(MailActivityDelayUnit::default()),
-            delay_from: self.delay_from.unwrap_or(MailActivityDelayFrom::default()),
+            delay_unit: self.delay_unit.unwrap_or_default(),
+            delay_from: self.delay_from.unwrap_or_default(),
             default_user_id: self.default_user_id,
             default_note: self.default_note,
             icon: self.icon,

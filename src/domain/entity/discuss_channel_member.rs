@@ -68,7 +68,7 @@ pub struct DiscussChannelMember {
 impl DiscussChannelMember {
     /// Create a builder for DiscussChannelMember
     pub fn builder() -> DiscussChannelMemberBuilder {
-        DiscussChannelMemberBuilder::default()
+        <DiscussChannelMemberBuilder as Default>::default()
     }
 
     /// Create a new DiscussChannelMember with required fields

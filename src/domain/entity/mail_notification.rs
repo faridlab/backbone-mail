@@ -8,7 +8,7 @@ use super::MailNotificationStatus;
 use super::NotificationFailureType;
 use super::AuditMetadata;
 
-use crate::domain::state_machine::{MailNotificationStateMachine, MailNotificationState, StateMachineError};
+use crate::domain::state_machine::{MailNotificationHooksStateMachine, MailNotificationHooksState, StateMachineError};
 
 /// Strongly-typed ID for MailNotification
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -70,7 +70,7 @@ pub struct MailNotification {
 impl MailNotification {
     /// Create a builder for MailNotification
     pub fn builder() -> MailNotificationBuilder {
-        MailNotificationBuilder::default()
+        <MailNotificationBuilder as Default>::default()
     }
 
     /// Create a new MailNotification with required fields
@@ -176,9 +176,9 @@ impl MailNotification {
     ///
     /// Returns `Err` if the transition is not permitted from the current state.
     /// Use this method instead of assigning `self.notification_status` directly.
-    pub fn transition_to(&mut self, new_state: MailNotificationState) -> Result<(), StateMachineError> {
-        let current = self.notification_status.to_string().parse::<MailNotificationState>()?;
-        let mut sm = MailNotificationStateMachine::from_state(current);
+    pub fn transition_to(&mut self, new_state: MailNotificationHooksState) -> Result<(), StateMachineError> {
+        let current = self.notification_status.to_string().parse::<MailNotificationHooksState>()?;
+        let mut sm = MailNotificationHooksStateMachine::from_state(current);
         sm.transition_to_state(new_state)?;
         self.notification_status = new_state.to_string().parse::<MailNotificationStatus>()
             .map_err(|e| StateMachineError::InvalidState(e.to_string()))?;
@@ -355,8 +355,8 @@ impl MailNotificationBuilder {
             id: Uuid::new_v4(),
             mail_message_id,
             res_partner_id: self.res_partner_id,
-            notification_type: self.notification_type.unwrap_or(MailNotificationType::default()),
-            notification_status: self.notification_status.unwrap_or(MailNotificationStatus::default()),
+            notification_type: self.notification_type.unwrap_or_default(),
+            notification_status: self.notification_status.unwrap_or_default(),
             failure_type: self.failure_type,
             failure_reason: self.failure_reason,
             mail_mail_id_int: self.mail_mail_id_int,

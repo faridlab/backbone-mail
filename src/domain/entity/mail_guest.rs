@@ -60,7 +60,7 @@ pub struct MailGuest {
 impl MailGuest {
     /// Create a builder for MailGuest
     pub fn builder() -> MailGuestBuilder {
-        MailGuestBuilder::default()
+        <MailGuestBuilder as Default>::default()
     }
 
     /// Create a new MailGuest with required fields

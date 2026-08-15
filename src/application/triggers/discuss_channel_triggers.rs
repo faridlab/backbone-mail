@@ -18,8 +18,6 @@ pub type DiscussChannelTriggerRegistry   = TriggerRegistry<DiscussChannel>;
 pub type DiscussChannelTriggerHandlerObj =
     dyn TriggerHandler<TriggerContext<DiscussChannel>, TriggerEvent>;
 
-// State machine trigger handlers
-
 /// Create a default registry pre-populated with all handlers for DiscussChannel.
 pub fn discuss_channel_trigger_registry() -> DiscussChannelTriggerRegistry {
     TriggerRegistry::build(|r| {

@@ -27,7 +27,7 @@ use crate::application::service::{MailActivityTypeService, ServiceError};
 // DTO imports
 use crate::presentation::dto::{CreateMailActivityTypeDto, UpdateMailActivityTypeDto, PatchMailActivityTypeDto, MailActivityTypeResponseDto};
 
-use crate::domain::state_machine::{MailActivityTypeState, MailActivityTypeStateMachine, MailActivityTypeTransition};
+use crate::domain::state_machine::{MailActivityTypeHooksState, MailActivityTypeHooksStateMachine, MailActivityTypeHooksTransition};
 
 /// Application error type
 #[derive(Debug, thiserror::Error)]
@@ -211,7 +211,7 @@ pub async fn enable_trigger_transition(
     // Check permission (if auth enabled)
     #[cfg(feature = "auth")]
     {
-        let allowed_roles = MailActivityTypeTransition::EnableTrigger.allowed_roles();
+        let allowed_roles = MailActivityTypeHooksTransition::EnableTrigger.allowed_roles();
         let has_specific_perm = auth.permissions.iter().any(|p| p == "mail_activity_type:transition:enable_trigger");
         let has_update_perm = auth.permissions.iter().any(|p| p == "mail_activity_type:update");
         if !has_specific_perm && !has_update_perm {
@@ -220,10 +220,10 @@ pub async fn enable_trigger_transition(
     }
 
     // Create state machine from entity's actual status and validate transition
-    let current_state: MailActivityTypeState = entity.chaining_type.to_string().parse()
-        .unwrap_or(MailActivityTypeState::default());
-    let sm = MailActivityTypeStateMachine::from_state(current_state);
-    if !sm.can_transition(MailActivityTypeTransition::EnableTrigger) {
+    let current_state: MailActivityTypeHooksState = entity.chaining_type.to_string().parse()
+        .unwrap_or(MailActivityTypeHooksState::default());
+    let sm = MailActivityTypeHooksStateMachine::from_state(current_state);
+    if !sm.can_transition(MailActivityTypeHooksTransition::EnableTrigger) {
         return (StatusCode::BAD_REQUEST, Json(ApiResponse::<MailActivityTypeResponseDto>::error("Transition not allowed from current state")));
     }
 

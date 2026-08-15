@@ -27,7 +27,7 @@ use crate::application::service::{SmsService, ServiceError};
 // DTO imports
 use crate::presentation::dto::{CreateSmsDto, UpdateSmsDto, PatchSmsDto, SmsResponseDto};
 
-use crate::domain::state_machine::{SmsState, SmsStateMachine, SmsTransition};
+use crate::domain::state_machine::{SmsHooksState, SmsHooksStateMachine, SmsHooksTransition};
 
 /// Application error type
 #[derive(Debug, thiserror::Error)]
@@ -220,7 +220,7 @@ pub async fn pickup_transition(
     // Check permission (if auth enabled)
     #[cfg(feature = "auth")]
     {
-        let allowed_roles = SmsTransition::Pickup.allowed_roles();
+        let allowed_roles = SmsHooksTransition::Pickup.allowed_roles();
         let has_specific_perm = auth.permissions.iter().any(|p| p == "sms:transition:pickup");
         let has_update_perm = auth.permissions.iter().any(|p| p == "sms:update");
         if !has_specific_perm && !has_update_perm {
@@ -229,10 +229,10 @@ pub async fn pickup_transition(
     }
 
     // Create state machine from entity's actual status and validate transition
-    let current_state: SmsState = entity.state.to_string().parse()
-        .unwrap_or(SmsState::default());
-    let sm = SmsStateMachine::from_state(current_state);
-    if !sm.can_transition(SmsTransition::Pickup) {
+    let current_state: SmsHooksState = entity.state.to_string().parse()
+        .unwrap_or(SmsHooksState::default());
+    let sm = SmsHooksStateMachine::from_state(current_state);
+    if !sm.can_transition(SmsHooksTransition::Pickup) {
         return (StatusCode::BAD_REQUEST, Json(ApiResponse::<SmsResponseDto>::error("Transition not allowed from current state")));
     }
 
@@ -270,7 +270,7 @@ pub async fn iap_accepted_transition(
     // Check permission (if auth enabled)
     #[cfg(feature = "auth")]
     {
-        let allowed_roles = SmsTransition::IapAccepted.allowed_roles();
+        let allowed_roles = SmsHooksTransition::IapAccepted.allowed_roles();
         let has_specific_perm = auth.permissions.iter().any(|p| p == "sms:transition:iap_accepted");
         let has_update_perm = auth.permissions.iter().any(|p| p == "sms:update");
         if !has_specific_perm && !has_update_perm {
@@ -279,10 +279,10 @@ pub async fn iap_accepted_transition(
     }
 
     // Create state machine from entity's actual status and validate transition
-    let current_state: SmsState = entity.state.to_string().parse()
-        .unwrap_or(SmsState::default());
-    let sm = SmsStateMachine::from_state(current_state);
-    if !sm.can_transition(SmsTransition::IapAccepted) {
+    let current_state: SmsHooksState = entity.state.to_string().parse()
+        .unwrap_or(SmsHooksState::default());
+    let sm = SmsHooksStateMachine::from_state(current_state);
+    if !sm.can_transition(SmsHooksTransition::IapAccepted) {
         return (StatusCode::BAD_REQUEST, Json(ApiResponse::<SmsResponseDto>::error("Transition not allowed from current state")));
     }
 
@@ -320,7 +320,7 @@ pub async fn delivery_confirmed_transition(
     // Check permission (if auth enabled)
     #[cfg(feature = "auth")]
     {
-        let allowed_roles = SmsTransition::DeliveryConfirmed.allowed_roles();
+        let allowed_roles = SmsHooksTransition::DeliveryConfirmed.allowed_roles();
         let has_specific_perm = auth.permissions.iter().any(|p| p == "sms:transition:delivery_confirmed");
         let has_update_perm = auth.permissions.iter().any(|p| p == "sms:update");
         if !has_specific_perm && !has_update_perm {
@@ -329,10 +329,10 @@ pub async fn delivery_confirmed_transition(
     }
 
     // Create state machine from entity's actual status and validate transition
-    let current_state: SmsState = entity.state.to_string().parse()
-        .unwrap_or(SmsState::default());
-    let sm = SmsStateMachine::from_state(current_state);
-    if !sm.can_transition(SmsTransition::DeliveryConfirmed) {
+    let current_state: SmsHooksState = entity.state.to_string().parse()
+        .unwrap_or(SmsHooksState::default());
+    let sm = SmsHooksStateMachine::from_state(current_state);
+    if !sm.can_transition(SmsHooksTransition::DeliveryConfirmed) {
         return (StatusCode::BAD_REQUEST, Json(ApiResponse::<SmsResponseDto>::error("Transition not allowed from current state")));
     }
 
@@ -370,7 +370,7 @@ pub async fn send_failed_transition(
     // Check permission (if auth enabled)
     #[cfg(feature = "auth")]
     {
-        let allowed_roles = SmsTransition::SendFailed.allowed_roles();
+        let allowed_roles = SmsHooksTransition::SendFailed.allowed_roles();
         let has_specific_perm = auth.permissions.iter().any(|p| p == "sms:transition:send_failed");
         let has_update_perm = auth.permissions.iter().any(|p| p == "sms:update");
         if !has_specific_perm && !has_update_perm {
@@ -379,10 +379,10 @@ pub async fn send_failed_transition(
     }
 
     // Create state machine from entity's actual status and validate transition
-    let current_state: SmsState = entity.state.to_string().parse()
-        .unwrap_or(SmsState::default());
-    let sm = SmsStateMachine::from_state(current_state);
-    if !sm.can_transition(SmsTransition::SendFailed) {
+    let current_state: SmsHooksState = entity.state.to_string().parse()
+        .unwrap_or(SmsHooksState::default());
+    let sm = SmsHooksStateMachine::from_state(current_state);
+    if !sm.can_transition(SmsHooksTransition::SendFailed) {
         return (StatusCode::BAD_REQUEST, Json(ApiResponse::<SmsResponseDto>::error("Transition not allowed from current state")));
     }
 
@@ -420,7 +420,7 @@ pub async fn canceled_transition(
     // Check permission (if auth enabled)
     #[cfg(feature = "auth")]
     {
-        let allowed_roles = SmsTransition::Canceled.allowed_roles();
+        let allowed_roles = SmsHooksTransition::Canceled.allowed_roles();
         let has_specific_perm = auth.permissions.iter().any(|p| p == "sms:transition:canceled");
         let has_update_perm = auth.permissions.iter().any(|p| p == "sms:update");
         if !has_specific_perm && !has_update_perm {
@@ -429,10 +429,10 @@ pub async fn canceled_transition(
     }
 
     // Create state machine from entity's actual status and validate transition
-    let current_state: SmsState = entity.state.to_string().parse()
-        .unwrap_or(SmsState::default());
-    let sm = SmsStateMachine::from_state(current_state);
-    if !sm.can_transition(SmsTransition::Canceled) {
+    let current_state: SmsHooksState = entity.state.to_string().parse()
+        .unwrap_or(SmsHooksState::default());
+    let sm = SmsHooksStateMachine::from_state(current_state);
+    if !sm.can_transition(SmsHooksTransition::Canceled) {
         return (StatusCode::BAD_REQUEST, Json(ApiResponse::<SmsResponseDto>::error("Transition not allowed from current state")));
     }
 

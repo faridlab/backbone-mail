@@ -5,16 +5,196 @@
 //! This module provides DTOs for the presentation layer,
 //! with validation and OpenAPI schema support.
 
-pub mod example_dto;
+pub mod mail_activity_dto;
+pub mod mail_activity_type_dto;
+pub mod mail_activity_plan_dto;
+pub mod mail_activity_plan_template_dto;
+pub mod mail_alias_domain_dto;
+pub mod mail_alias_dto;
+pub mod mail_message_dto;
+pub mod mail_dto;
+pub mod mail_notification_dto;
+pub mod mail_message_subtype_dto;
+pub mod mail_message_reaction_dto;
+pub mod mail_followers_dto;
+pub mod mail_presence_dto;
+pub mod mail_blacklist_dto;
+pub mod mail_tracking_value_dto;
+pub mod discuss_channel_dto;
+pub mod discuss_channel_member_dto;
+pub mod mail_guest_dto;
+pub mod sms_dto;
+pub mod sms_template_dto;
+pub mod sms_tracker_dto;
 
 // Re-exports
-pub use example_dto::{
-    CreateExampleDto,
-    UpdateExampleDto,
-    PatchExampleDto,
-    ExampleResponseDto,
-    ExampleListResponseDto,
-    ExampleSummaryDto,
+pub use mail_activity_dto::{
+    CreateMailActivityDto,
+    UpdateMailActivityDto,
+    PatchMailActivityDto,
+    MailActivityResponseDto,
+    MailActivityListResponseDto,
+    MailActivitySummaryDto,
+};
+pub use mail_activity_type_dto::{
+    CreateMailActivityTypeDto,
+    UpdateMailActivityTypeDto,
+    PatchMailActivityTypeDto,
+    MailActivityTypeResponseDto,
+    MailActivityTypeListResponseDto,
+    MailActivityTypeSummaryDto,
+};
+pub use mail_activity_plan_dto::{
+    CreateMailActivityPlanDto,
+    UpdateMailActivityPlanDto,
+    PatchMailActivityPlanDto,
+    MailActivityPlanResponseDto,
+    MailActivityPlanListResponseDto,
+    MailActivityPlanSummaryDto,
+};
+pub use mail_activity_plan_template_dto::{
+    CreateMailActivityPlanTemplateDto,
+    UpdateMailActivityPlanTemplateDto,
+    PatchMailActivityPlanTemplateDto,
+    MailActivityPlanTemplateResponseDto,
+    MailActivityPlanTemplateListResponseDto,
+    MailActivityPlanTemplateSummaryDto,
+};
+pub use mail_alias_domain_dto::{
+    CreateMailAliasDomainDto,
+    UpdateMailAliasDomainDto,
+    PatchMailAliasDomainDto,
+    MailAliasDomainResponseDto,
+    MailAliasDomainListResponseDto,
+    MailAliasDomainSummaryDto,
+};
+pub use mail_alias_dto::{
+    CreateMailAliasDto,
+    UpdateMailAliasDto,
+    PatchMailAliasDto,
+    MailAliasResponseDto,
+    MailAliasListResponseDto,
+    MailAliasSummaryDto,
+};
+pub use mail_message_dto::{
+    CreateMailMessageDto,
+    UpdateMailMessageDto,
+    PatchMailMessageDto,
+    MailMessageResponseDto,
+    MailMessageListResponseDto,
+    MailMessageSummaryDto,
+};
+pub use mail_dto::{
+    CreateMailDto,
+    UpdateMailDto,
+    PatchMailDto,
+    MailResponseDto,
+    MailListResponseDto,
+    MailSummaryDto,
+};
+pub use mail_notification_dto::{
+    CreateMailNotificationDto,
+    UpdateMailNotificationDto,
+    PatchMailNotificationDto,
+    MailNotificationResponseDto,
+    MailNotificationListResponseDto,
+    MailNotificationSummaryDto,
+};
+pub use mail_message_subtype_dto::{
+    CreateMailMessageSubtypeDto,
+    UpdateMailMessageSubtypeDto,
+    PatchMailMessageSubtypeDto,
+    MailMessageSubtypeResponseDto,
+    MailMessageSubtypeListResponseDto,
+    MailMessageSubtypeSummaryDto,
+};
+pub use mail_message_reaction_dto::{
+    CreateMailMessageReactionDto,
+    UpdateMailMessageReactionDto,
+    PatchMailMessageReactionDto,
+    MailMessageReactionResponseDto,
+    MailMessageReactionListResponseDto,
+    MailMessageReactionSummaryDto,
+};
+pub use mail_followers_dto::{
+    CreateMailFollowersDto,
+    UpdateMailFollowersDto,
+    PatchMailFollowersDto,
+    MailFollowersResponseDto,
+    MailFollowersListResponseDto,
+    MailFollowersSummaryDto,
+};
+pub use mail_presence_dto::{
+    CreateMailPresenceDto,
+    UpdateMailPresenceDto,
+    PatchMailPresenceDto,
+    MailPresenceResponseDto,
+    MailPresenceListResponseDto,
+    MailPresenceSummaryDto,
+};
+pub use mail_blacklist_dto::{
+    CreateMailBlacklistDto,
+    UpdateMailBlacklistDto,
+    PatchMailBlacklistDto,
+    MailBlacklistResponseDto,
+    MailBlacklistListResponseDto,
+    MailBlacklistSummaryDto,
+};
+pub use mail_tracking_value_dto::{
+    CreateMailTrackingValueDto,
+    UpdateMailTrackingValueDto,
+    PatchMailTrackingValueDto,
+    MailTrackingValueResponseDto,
+    MailTrackingValueListResponseDto,
+    MailTrackingValueSummaryDto,
+};
+pub use discuss_channel_dto::{
+    CreateDiscussChannelDto,
+    UpdateDiscussChannelDto,
+    PatchDiscussChannelDto,
+    DiscussChannelResponseDto,
+    DiscussChannelListResponseDto,
+    DiscussChannelSummaryDto,
+};
+pub use discuss_channel_member_dto::{
+    CreateDiscussChannelMemberDto,
+    UpdateDiscussChannelMemberDto,
+    PatchDiscussChannelMemberDto,
+    DiscussChannelMemberResponseDto,
+    DiscussChannelMemberListResponseDto,
+    DiscussChannelMemberSummaryDto,
+};
+pub use mail_guest_dto::{
+    CreateMailGuestDto,
+    UpdateMailGuestDto,
+    PatchMailGuestDto,
+    MailGuestResponseDto,
+    MailGuestListResponseDto,
+    MailGuestSummaryDto,
+};
+pub use sms_dto::{
+    CreateSmsDto,
+    UpdateSmsDto,
+    PatchSmsDto,
+    SmsResponseDto,
+    SmsListResponseDto,
+    SmsSummaryDto,
+};
+pub use sms_template_dto::{
+    CreateSmsTemplateDto,
+    UpdateSmsTemplateDto,
+    PatchSmsTemplateDto,
+    SmsTemplateResponseDto,
+    SmsTemplateListResponseDto,
+    SmsTemplateSummaryDto,
+};
+pub use sms_tracker_dto::{
+    CreateSmsTrackerDto,
+    UpdateSmsTrackerDto,
+    PatchSmsTrackerDto,
+    SmsTrackerResponseDto,
+    SmsTrackerListResponseDto,
+    SmsTrackerSummaryDto,
 };
 
 // Common pagination types

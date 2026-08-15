@@ -1,4 +1,3 @@
-mod discuss_channel_hooks_state_machine;
 mod mail_hooks_state_machine;
 mod mail_activity_type_hooks_state_machine;
 mod mail_notification_hooks_state_machine;
@@ -33,7 +32,6 @@ pub enum StateMachineError {
     FinalStateReached(String),
 }
 
-pub use discuss_channel_hooks_state_machine::{DiscussChannelHooksState, DiscussChannelHooksTransition, DiscussChannelHooksStateMachine};
 pub use mail_hooks_state_machine::{MailHooksState, MailHooksTransition, MailHooksStateMachine};
 pub use mail_activity_type_hooks_state_machine::{MailActivityTypeHooksState, MailActivityTypeHooksTransition, MailActivityTypeHooksStateMachine};
 pub use mail_notification_hooks_state_machine::{MailNotificationHooksState, MailNotificationHooksTransition, MailNotificationHooksStateMachine};

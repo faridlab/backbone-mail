@@ -6,7 +6,27 @@
 
 pub use backbone_core::{Specification, AndSpecification, OrSpecification, NotSpecification};
 
-pub mod example_specification;
+pub mod mail_activity_specification;
+pub mod mail_activity_type_specification;
+pub mod mail_activity_plan_specification;
+pub mod mail_activity_plan_template_specification;
+pub mod mail_alias_domain_specification;
+pub mod mail_alias_specification;
+pub mod mail_message_specification;
+pub mod mail_specification;
+pub mod mail_notification_specification;
+pub mod mail_message_subtype_specification;
+pub mod mail_message_reaction_specification;
+pub mod mail_followers_specification;
+pub mod mail_presence_specification;
+pub mod mail_blacklist_specification;
+pub mod mail_tracking_value_specification;
+pub mod discuss_channel_specification;
+pub mod discuss_channel_member_specification;
+pub mod mail_guest_specification;
+pub mod sms_specification;
+pub mod sms_template_specification;
+pub mod sms_tracker_specification;
 
 // <<< CUSTOM
 // END CUSTOM

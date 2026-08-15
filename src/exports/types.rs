@@ -7,20 +7,20 @@
 
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, Utc, NaiveDate};
 use crate::domain::entity::*;
 
 // ============================================================================
-// EXAMPLE TYPES
+// MAILACTIVITY TYPES
 // ============================================================================
 
-/// Type-safe ID for Example
+/// Type-safe ID for MailActivity
 ///
 /// Use this instead of raw Uuid for type safety across modules.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
-pub struct ExampleId(pub Uuid);
+pub struct MailActivityId(pub Uuid);
 
-impl ExampleId {
+impl MailActivityId {
     pub fn new(id: Uuid) -> Self {
         Self(id)
     }
@@ -30,42 +30,1284 @@ impl ExampleId {
     }
 }
 
-impl From<Uuid> for ExampleId {
+impl From<Uuid> for MailActivityId {
     fn from(id: Uuid) -> Self {
         Self(id)
     }
 }
 
-impl From<ExampleId> for Uuid {
-    fn from(id: ExampleId) -> Self {
+impl From<MailActivityId> for Uuid {
+    fn from(id: MailActivityId) -> Self {
         id.0
     }
 }
 
-/// Data transfer object for Example
+/// Data transfer object for MailActivity
 ///
-/// This is the public representation of Example for other modules.
+/// This is the public representation of MailActivity for other modules.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ExampleDto {
-    pub id: ExampleId,
-    pub name: String,
-    pub description: Option<String>,
-    pub status: ExampleStatus,
+pub struct MailActivityDto {
+    pub id: MailActivityId,
+    pub res_model: String,
+    pub res_id: Uuid,
+    pub res_model_id: Option<Uuid>,
+    pub activity_type_id: Option<Uuid>,
+    pub summary: Option<String>,
+    pub note: Option<String>,
+    pub date_deadline: NaiveDate,
+    pub user_id: Uuid,
+    pub requested_user_id: Option<Uuid>,
+    pub state: MailActivityState,
+    pub active: bool,
+    pub has_recommended_activities: bool,
+    pub chained_next_activity: Option<serde_json::Value>,
+    pub calendar_event_id: Option<Uuid>,
     pub metadata: serde_json::Value,
 }
 
-/// Summary view of Example for list displays
+/// Summary view of MailActivity for list displays
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ExampleSummary {
-    pub id: ExampleId,
-    pub name: String,
-    pub status: ExampleStatus,
+pub struct MailActivitySummary {
+    pub id: MailActivityId,
 }
 
-/// Reference to Example for foreign key relationships
+/// Reference to MailActivity for foreign key relationships
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ExampleRef {
-    pub id: ExampleId,
+pub struct MailActivityRef {
+    pub id: MailActivityId,
+}
+
+// ============================================================================
+// MAILACTIVITYTYPE TYPES
+// ============================================================================
+
+/// Type-safe ID for MailActivityType
+///
+/// Use this instead of raw Uuid for type safety across modules.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub struct MailActivityTypeId(pub Uuid);
+
+impl MailActivityTypeId {
+    pub fn new(id: Uuid) -> Self {
+        Self(id)
+    }
+
+    pub fn into_inner(self) -> Uuid {
+        self.0
+    }
+}
+
+impl From<Uuid> for MailActivityTypeId {
+    fn from(id: Uuid) -> Self {
+        Self(id)
+    }
+}
+
+impl From<MailActivityTypeId> for Uuid {
+    fn from(id: MailActivityTypeId) -> Self {
+        id.0
+    }
+}
+
+/// Data transfer object for MailActivityType
+///
+/// This is the public representation of MailActivityType for other modules.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailActivityTypeDto {
+    pub id: MailActivityTypeId,
+    pub name: String,
+    pub summary: Option<String>,
+    pub note: Option<String>,
+    pub category: Option<MailActivityCategory>,
+    pub chaining_type: MailActivityChainingType,
+    pub delay_count: i32,
+    pub delay_unit: MailActivityDelayUnit,
+    pub delay_from: MailActivityDelayFrom,
+    pub default_user_id: Option<Uuid>,
+    pub default_note: Option<String>,
+    pub icon: Option<String>,
+    pub res_model: Option<String>,
+    pub res_model_id: Option<Uuid>,
+    pub active: bool,
+    pub metadata: serde_json::Value,
+}
+
+/// Summary view of MailActivityType for list displays
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailActivityTypeSummary {
+    pub id: MailActivityTypeId,
+    pub name: String,
+}
+
+/// Reference to MailActivityType for foreign key relationships
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailActivityTypeRef {
+    pub id: MailActivityTypeId,
+}
+
+// ============================================================================
+// MAILACTIVITYPLAN TYPES
+// ============================================================================
+
+/// Type-safe ID for MailActivityPlan
+///
+/// Use this instead of raw Uuid for type safety across modules.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub struct MailActivityPlanId(pub Uuid);
+
+impl MailActivityPlanId {
+    pub fn new(id: Uuid) -> Self {
+        Self(id)
+    }
+
+    pub fn into_inner(self) -> Uuid {
+        self.0
+    }
+}
+
+impl From<Uuid> for MailActivityPlanId {
+    fn from(id: Uuid) -> Self {
+        Self(id)
+    }
+}
+
+impl From<MailActivityPlanId> for Uuid {
+    fn from(id: MailActivityPlanId) -> Self {
+        id.0
+    }
+}
+
+/// Data transfer object for MailActivityPlan
+///
+/// This is the public representation of MailActivityPlan for other modules.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailActivityPlanDto {
+    pub id: MailActivityPlanId,
+    pub name: String,
+    pub res_model: Option<String>,
+    pub res_model_id: Option<Uuid>,
+    pub active: bool,
+    pub metadata: serde_json::Value,
+}
+
+/// Summary view of MailActivityPlan for list displays
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailActivityPlanSummary {
+    pub id: MailActivityPlanId,
+    pub name: String,
+}
+
+/// Reference to MailActivityPlan for foreign key relationships
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailActivityPlanRef {
+    pub id: MailActivityPlanId,
+}
+
+// ============================================================================
+// MAILACTIVITYPLANTEMPLATE TYPES
+// ============================================================================
+
+/// Type-safe ID for MailActivityPlanTemplate
+///
+/// Use this instead of raw Uuid for type safety across modules.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub struct MailActivityPlanTemplateId(pub Uuid);
+
+impl MailActivityPlanTemplateId {
+    pub fn new(id: Uuid) -> Self {
+        Self(id)
+    }
+
+    pub fn into_inner(self) -> Uuid {
+        self.0
+    }
+}
+
+impl From<Uuid> for MailActivityPlanTemplateId {
+    fn from(id: Uuid) -> Self {
+        Self(id)
+    }
+}
+
+impl From<MailActivityPlanTemplateId> for Uuid {
+    fn from(id: MailActivityPlanTemplateId) -> Self {
+        id.0
+    }
+}
+
+/// Data transfer object for MailActivityPlanTemplate
+///
+/// This is the public representation of MailActivityPlanTemplate for other modules.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailActivityPlanTemplateDto {
+    pub id: MailActivityPlanTemplateId,
+    pub plan_id: Uuid,
+    pub activity_type_id: Uuid,
+    pub summary: Option<String>,
+    pub note: Option<String>,
+    pub delay_count: Option<i32>,
+    pub delay_unit: Option<MailActivityDelayUnit>,
+    pub user_id: Option<Uuid>,
+    pub metadata: serde_json::Value,
+}
+
+/// Summary view of MailActivityPlanTemplate for list displays
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailActivityPlanTemplateSummary {
+    pub id: MailActivityPlanTemplateId,
+}
+
+/// Reference to MailActivityPlanTemplate for foreign key relationships
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailActivityPlanTemplateRef {
+    pub id: MailActivityPlanTemplateId,
+}
+
+// ============================================================================
+// MAILALIASDOMAIN TYPES
+// ============================================================================
+
+/// Type-safe ID for MailAliasDomain
+///
+/// Use this instead of raw Uuid for type safety across modules.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub struct MailAliasDomainId(pub Uuid);
+
+impl MailAliasDomainId {
+    pub fn new(id: Uuid) -> Self {
+        Self(id)
+    }
+
+    pub fn into_inner(self) -> Uuid {
+        self.0
+    }
+}
+
+impl From<Uuid> for MailAliasDomainId {
+    fn from(id: Uuid) -> Self {
+        Self(id)
+    }
+}
+
+impl From<MailAliasDomainId> for Uuid {
+    fn from(id: MailAliasDomainId) -> Self {
+        id.0
+    }
+}
+
+/// Data transfer object for MailAliasDomain
+///
+/// This is the public representation of MailAliasDomain for other modules.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailAliasDomainDto {
+    pub id: MailAliasDomainId,
+    pub name: String,
+    pub catchall_alias: Option<String>,
+    pub bounce_alias: Option<String>,
+    pub bounce_alias_email: Option<String>,
+    pub catchall_alias_email: Option<String>,
+    pub use_mx: bool,
+    pub mail_server_id: Option<Uuid>,
+    pub from_filter: Option<String>,
+    pub metadata: serde_json::Value,
+}
+
+/// Summary view of MailAliasDomain for list displays
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailAliasDomainSummary {
+    pub id: MailAliasDomainId,
+    pub name: String,
+}
+
+/// Reference to MailAliasDomain for foreign key relationships
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailAliasDomainRef {
+    pub id: MailAliasDomainId,
+}
+
+// ============================================================================
+// MAILALIAS TYPES
+// ============================================================================
+
+/// Type-safe ID for MailAlias
+///
+/// Use this instead of raw Uuid for type safety across modules.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub struct MailAliasId(pub Uuid);
+
+impl MailAliasId {
+    pub fn new(id: Uuid) -> Self {
+        Self(id)
+    }
+
+    pub fn into_inner(self) -> Uuid {
+        self.0
+    }
+}
+
+impl From<Uuid> for MailAliasId {
+    fn from(id: Uuid) -> Self {
+        Self(id)
+    }
+}
+
+impl From<MailAliasId> for Uuid {
+    fn from(id: MailAliasId) -> Self {
+        id.0
+    }
+}
+
+/// Data transfer object for MailAlias
+///
+/// This is the public representation of MailAlias for other modules.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailAliasDto {
+    pub id: MailAliasId,
+    pub alias_name: Option<String>,
+    pub alias_domain_id: Option<Uuid>,
+    pub alias_contact: MailAliasContact,
+    pub alias_model_id: Option<Uuid>,
+    pub alias_parent_model_id: Option<Uuid>,
+    pub alias_parent_thread_id: Option<Uuid>,
+    pub alias_user_id: Option<Uuid>,
+    pub alias_defaults: Option<String>,
+    pub alias_force_thread_id: Option<Uuid>,
+    pub alias_reply_to_address: Option<String>,
+    pub metadata: serde_json::Value,
+}
+
+/// Summary view of MailAlias for list displays
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailAliasSummary {
+    pub id: MailAliasId,
+    pub alias_name: Option<String>,
+}
+
+/// Reference to MailAlias for foreign key relationships
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailAliasRef {
+    pub id: MailAliasId,
+}
+
+// ============================================================================
+// MAILMESSAGE TYPES
+// ============================================================================
+
+/// Type-safe ID for MailMessage
+///
+/// Use this instead of raw Uuid for type safety across modules.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub struct MailMessageId(pub Uuid);
+
+impl MailMessageId {
+    pub fn new(id: Uuid) -> Self {
+        Self(id)
+    }
+
+    pub fn into_inner(self) -> Uuid {
+        self.0
+    }
+}
+
+impl From<Uuid> for MailMessageId {
+    fn from(id: Uuid) -> Self {
+        Self(id)
+    }
+}
+
+impl From<MailMessageId> for Uuid {
+    fn from(id: MailMessageId) -> Self {
+        id.0
+    }
+}
+
+/// Data transfer object for MailMessage
+///
+/// This is the public representation of MailMessage for other modules.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailMessageDto {
+    pub id: MailMessageId,
+    pub subject: Option<String>,
+    pub date: DateTime<Utc>,
+    pub body: String,
+    pub message_type: MailMessageType,
+    pub subtype_id: Option<Uuid>,
+    pub is_internal: bool,
+    pub author_id: Option<Uuid>,
+    pub author_guest_id: Option<Uuid>,
+    pub email_from: Option<String>,
+    pub message_id: Option<String>,
+    pub reply_to: Option<String>,
+    pub model: Option<String>,
+    pub res_id: Option<Uuid>,
+    pub record_name: Option<String>,
+    pub moderation_status: Option<MailModerationStatus>,
+    pub needaction: bool,
+    pub has_error: bool,
+    pub failure_reason: Option<String>,
+    pub rating_value: Option<f64>,
+    pub metadata: serde_json::Value,
+}
+
+/// Summary view of MailMessage for list displays
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailMessageSummary {
+    pub id: MailMessageId,
+    pub record_name: Option<String>,
+}
+
+/// Reference to MailMessage for foreign key relationships
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailMessageRef {
+    pub id: MailMessageId,
+}
+
+// ============================================================================
+// MAIL TYPES
+// ============================================================================
+
+/// Type-safe ID for Mail
+///
+/// Use this instead of raw Uuid for type safety across modules.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub struct MailId(pub Uuid);
+
+impl MailId {
+    pub fn new(id: Uuid) -> Self {
+        Self(id)
+    }
+
+    pub fn into_inner(self) -> Uuid {
+        self.0
+    }
+}
+
+impl From<Uuid> for MailId {
+    fn from(id: Uuid) -> Self {
+        Self(id)
+    }
+}
+
+impl From<MailId> for Uuid {
+    fn from(id: MailId) -> Self {
+        id.0
+    }
+}
+
+/// Data transfer object for Mail
+///
+/// This is the public representation of Mail for other modules.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailDto {
+    pub id: MailId,
+    pub mail_message_id: Uuid,
+    pub state: MailState,
+    pub failure_type: Option<MailFailureType>,
+    pub scheduled_date: Option<DateTime<Utc>>,
+    pub auto_delete: bool,
+    pub failure_reason: Option<String>,
+    pub email_to: Option<String>,
+    pub email_cc: Option<String>,
+    pub reply_to: Option<String>,
+    pub metadata: serde_json::Value,
+}
+
+/// Summary view of Mail for list displays
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailSummary {
+    pub id: MailId,
+}
+
+/// Reference to Mail for foreign key relationships
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailRef {
+    pub id: MailId,
+}
+
+// ============================================================================
+// MAILNOTIFICATION TYPES
+// ============================================================================
+
+/// Type-safe ID for MailNotification
+///
+/// Use this instead of raw Uuid for type safety across modules.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub struct MailNotificationId(pub Uuid);
+
+impl MailNotificationId {
+    pub fn new(id: Uuid) -> Self {
+        Self(id)
+    }
+
+    pub fn into_inner(self) -> Uuid {
+        self.0
+    }
+}
+
+impl From<Uuid> for MailNotificationId {
+    fn from(id: Uuid) -> Self {
+        Self(id)
+    }
+}
+
+impl From<MailNotificationId> for Uuid {
+    fn from(id: MailNotificationId) -> Self {
+        id.0
+    }
+}
+
+/// Data transfer object for MailNotification
+///
+/// This is the public representation of MailNotification for other modules.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailNotificationDto {
+    pub id: MailNotificationId,
+    pub mail_message_id: Uuid,
+    pub res_partner_id: Option<Uuid>,
+    pub notification_type: MailNotificationType,
+    pub notification_status: MailNotificationStatus,
+    pub failure_type: Option<NotificationFailureType>,
+    pub failure_reason: Option<String>,
+    pub mail_mail_id_int: Option<Uuid>,
+    pub is_read: bool,
+    pub metadata: serde_json::Value,
+}
+
+/// Summary view of MailNotification for list displays
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailNotificationSummary {
+    pub id: MailNotificationId,
+}
+
+/// Reference to MailNotification for foreign key relationships
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailNotificationRef {
+    pub id: MailNotificationId,
+}
+
+// ============================================================================
+// MAILMESSAGESUBTYPE TYPES
+// ============================================================================
+
+/// Type-safe ID for MailMessageSubtype
+///
+/// Use this instead of raw Uuid for type safety across modules.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub struct MailMessageSubtypeId(pub Uuid);
+
+impl MailMessageSubtypeId {
+    pub fn new(id: Uuid) -> Self {
+        Self(id)
+    }
+
+    pub fn into_inner(self) -> Uuid {
+        self.0
+    }
+}
+
+impl From<Uuid> for MailMessageSubtypeId {
+    fn from(id: Uuid) -> Self {
+        Self(id)
+    }
+}
+
+impl From<MailMessageSubtypeId> for Uuid {
+    fn from(id: MailMessageSubtypeId) -> Self {
+        id.0
+    }
+}
+
+/// Data transfer object for MailMessageSubtype
+///
+/// This is the public representation of MailMessageSubtype for other modules.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailMessageSubtypeDto {
+    pub id: MailMessageSubtypeId,
+    pub name: String,
+    pub description: Option<String>,
+    pub internal: bool,
+    pub parent_id: Option<Uuid>,
+    pub relation_field: Option<String>,
+    pub res_model: Option<String>,
+    pub default: bool,
+    pub hidden: bool,
+    pub tracked: bool,
+    pub metadata: serde_json::Value,
+}
+
+/// Summary view of MailMessageSubtype for list displays
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailMessageSubtypeSummary {
+    pub id: MailMessageSubtypeId,
+    pub name: String,
+}
+
+/// Reference to MailMessageSubtype for foreign key relationships
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailMessageSubtypeRef {
+    pub id: MailMessageSubtypeId,
+}
+
+// ============================================================================
+// MAILMESSAGEREACTION TYPES
+// ============================================================================
+
+/// Type-safe ID for MailMessageReaction
+///
+/// Use this instead of raw Uuid for type safety across modules.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub struct MailMessageReactionId(pub Uuid);
+
+impl MailMessageReactionId {
+    pub fn new(id: Uuid) -> Self {
+        Self(id)
+    }
+
+    pub fn into_inner(self) -> Uuid {
+        self.0
+    }
+}
+
+impl From<Uuid> for MailMessageReactionId {
+    fn from(id: Uuid) -> Self {
+        Self(id)
+    }
+}
+
+impl From<MailMessageReactionId> for Uuid {
+    fn from(id: MailMessageReactionId) -> Self {
+        id.0
+    }
+}
+
+/// Data transfer object for MailMessageReaction
+///
+/// This is the public representation of MailMessageReaction for other modules.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailMessageReactionDto {
+    pub id: MailMessageReactionId,
+    pub message_id: Uuid,
+    pub content: String,
+    pub partner_id: Option<Uuid>,
+    pub guest_id: Option<Uuid>,
+    pub metadata: serde_json::Value,
+}
+
+/// Summary view of MailMessageReaction for list displays
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailMessageReactionSummary {
+    pub id: MailMessageReactionId,
+}
+
+/// Reference to MailMessageReaction for foreign key relationships
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailMessageReactionRef {
+    pub id: MailMessageReactionId,
+}
+
+// ============================================================================
+// MAILFOLLOWERS TYPES
+// ============================================================================
+
+/// Type-safe ID for MailFollowers
+///
+/// Use this instead of raw Uuid for type safety across modules.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub struct MailFollowersId(pub Uuid);
+
+impl MailFollowersId {
+    pub fn new(id: Uuid) -> Self {
+        Self(id)
+    }
+
+    pub fn into_inner(self) -> Uuid {
+        self.0
+    }
+}
+
+impl From<Uuid> for MailFollowersId {
+    fn from(id: Uuid) -> Self {
+        Self(id)
+    }
+}
+
+impl From<MailFollowersId> for Uuid {
+    fn from(id: MailFollowersId) -> Self {
+        id.0
+    }
+}
+
+/// Data transfer object for MailFollowers
+///
+/// This is the public representation of MailFollowers for other modules.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailFollowersDto {
+    pub id: MailFollowersId,
+    pub res_model: String,
+    pub res_id: Uuid,
+    pub partner_id: Option<Uuid>,
+    pub channel_id: Option<Uuid>,
+    pub subtype_ids: Option<serde_json::Value>,
+    pub metadata: serde_json::Value,
+}
+
+/// Summary view of MailFollowers for list displays
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailFollowersSummary {
+    pub id: MailFollowersId,
+}
+
+/// Reference to MailFollowers for foreign key relationships
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailFollowersRef {
+    pub id: MailFollowersId,
+}
+
+// ============================================================================
+// MAILPRESENCE TYPES
+// ============================================================================
+
+/// Type-safe ID for MailPresence
+///
+/// Use this instead of raw Uuid for type safety across modules.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub struct MailPresenceId(pub Uuid);
+
+impl MailPresenceId {
+    pub fn new(id: Uuid) -> Self {
+        Self(id)
+    }
+
+    pub fn into_inner(self) -> Uuid {
+        self.0
+    }
+}
+
+impl From<Uuid> for MailPresenceId {
+    fn from(id: Uuid) -> Self {
+        Self(id)
+    }
+}
+
+impl From<MailPresenceId> for Uuid {
+    fn from(id: MailPresenceId) -> Self {
+        id.0
+    }
+}
+
+/// Data transfer object for MailPresence
+///
+/// This is the public representation of MailPresence for other modules.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailPresenceDto {
+    pub id: MailPresenceId,
+    pub user_id: Option<Uuid>,
+    pub guest_id: Option<Uuid>,
+    pub status: MailPresenceStatus,
+    pub last_poll: Option<DateTime<Utc>>,
+    pub metadata: serde_json::Value,
+}
+
+/// Summary view of MailPresence for list displays
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailPresenceSummary {
+    pub id: MailPresenceId,
+    pub status: MailPresenceStatus,
+}
+
+/// Reference to MailPresence for foreign key relationships
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailPresenceRef {
+    pub id: MailPresenceId,
+}
+
+// ============================================================================
+// MAILBLACKLIST TYPES
+// ============================================================================
+
+/// Type-safe ID for MailBlacklist
+///
+/// Use this instead of raw Uuid for type safety across modules.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub struct MailBlacklistId(pub Uuid);
+
+impl MailBlacklistId {
+    pub fn new(id: Uuid) -> Self {
+        Self(id)
+    }
+
+    pub fn into_inner(self) -> Uuid {
+        self.0
+    }
+}
+
+impl From<Uuid> for MailBlacklistId {
+    fn from(id: Uuid) -> Self {
+        Self(id)
+    }
+}
+
+impl From<MailBlacklistId> for Uuid {
+    fn from(id: MailBlacklistId) -> Self {
+        id.0
+    }
+}
+
+/// Data transfer object for MailBlacklist
+///
+/// This is the public representation of MailBlacklist for other modules.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailBlacklistDto {
+    pub id: MailBlacklistId,
+    pub email: String,
+    pub active: bool,
+    pub metadata: serde_json::Value,
+}
+
+/// Summary view of MailBlacklist for list displays
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailBlacklistSummary {
+    pub id: MailBlacklistId,
+    pub email: String,
+}
+
+/// Reference to MailBlacklist for foreign key relationships
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailBlacklistRef {
+    pub id: MailBlacklistId,
+}
+
+// ============================================================================
+// MAILTRACKINGVALUE TYPES
+// ============================================================================
+
+/// Type-safe ID for MailTrackingValue
+///
+/// Use this instead of raw Uuid for type safety across modules.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub struct MailTrackingValueId(pub Uuid);
+
+impl MailTrackingValueId {
+    pub fn new(id: Uuid) -> Self {
+        Self(id)
+    }
+
+    pub fn into_inner(self) -> Uuid {
+        self.0
+    }
+}
+
+impl From<Uuid> for MailTrackingValueId {
+    fn from(id: Uuid) -> Self {
+        Self(id)
+    }
+}
+
+impl From<MailTrackingValueId> for Uuid {
+    fn from(id: MailTrackingValueId) -> Self {
+        id.0
+    }
+}
+
+/// Data transfer object for MailTrackingValue
+///
+/// This is the public representation of MailTrackingValue for other modules.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailTrackingValueDto {
+    pub id: MailTrackingValueId,
+    pub mail_message_id: Uuid,
+    pub field: String,
+    pub field_desc: Option<String>,
+    pub field_type: Option<String>,
+    pub old_value_integer: Option<i32>,
+    pub old_value_float: Option<f64>,
+    pub old_value_text: Option<String>,
+    pub old_value_datetime: Option<DateTime<Utc>>,
+    pub new_value_integer: Option<i32>,
+    pub new_value_float: Option<f64>,
+    pub new_value_text: Option<String>,
+    pub new_value_datetime: Option<DateTime<Utc>>,
+    pub currency_id: Option<Uuid>,
+    pub metadata: serde_json::Value,
+}
+
+/// Summary view of MailTrackingValue for list displays
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailTrackingValueSummary {
+    pub id: MailTrackingValueId,
+}
+
+/// Reference to MailTrackingValue for foreign key relationships
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailTrackingValueRef {
+    pub id: MailTrackingValueId,
+}
+
+// ============================================================================
+// DISCUSSCHANNEL TYPES
+// ============================================================================
+
+/// Type-safe ID for DiscussChannel
+///
+/// Use this instead of raw Uuid for type safety across modules.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub struct DiscussChannelId(pub Uuid);
+
+impl DiscussChannelId {
+    pub fn new(id: Uuid) -> Self {
+        Self(id)
+    }
+
+    pub fn into_inner(self) -> Uuid {
+        self.0
+    }
+}
+
+impl From<Uuid> for DiscussChannelId {
+    fn from(id: Uuid) -> Self {
+        Self(id)
+    }
+}
+
+impl From<DiscussChannelId> for Uuid {
+    fn from(id: DiscussChannelId) -> Self {
+        id.0
+    }
+}
+
+/// Data transfer object for DiscussChannel
+///
+/// This is the public representation of DiscussChannel for other modules.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DiscussChannelDto {
+    pub id: DiscussChannelId,
+    pub name: Option<String>,
+    pub channel_type: DiscussChannelType,
+    pub description: Option<String>,
+    pub uuid: Option<String>,
+    pub default_access_mode: Option<String>,
+    pub avatar_128: Option<String>,
+    pub email_send: bool,
+    pub moderation: bool,
+    pub group_public_id: Option<Uuid>,
+    pub alias_id: Option<Uuid>,
+    pub last_message_id: Option<Uuid>,
+    pub metadata: serde_json::Value,
+}
+
+/// Summary view of DiscussChannel for list displays
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DiscussChannelSummary {
+    pub id: DiscussChannelId,
+    pub name: Option<String>,
+}
+
+/// Reference to DiscussChannel for foreign key relationships
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DiscussChannelRef {
+    pub id: DiscussChannelId,
+}
+
+// ============================================================================
+// DISCUSSCHANNELMEMBER TYPES
+// ============================================================================
+
+/// Type-safe ID for DiscussChannelMember
+///
+/// Use this instead of raw Uuid for type safety across modules.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub struct DiscussChannelMemberId(pub Uuid);
+
+impl DiscussChannelMemberId {
+    pub fn new(id: Uuid) -> Self {
+        Self(id)
+    }
+
+    pub fn into_inner(self) -> Uuid {
+        self.0
+    }
+}
+
+impl From<Uuid> for DiscussChannelMemberId {
+    fn from(id: Uuid) -> Self {
+        Self(id)
+    }
+}
+
+impl From<DiscussChannelMemberId> for Uuid {
+    fn from(id: DiscussChannelMemberId) -> Self {
+        id.0
+    }
+}
+
+/// Data transfer object for DiscussChannelMember
+///
+/// This is the public representation of DiscussChannelMember for other modules.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DiscussChannelMemberDto {
+    pub id: DiscussChannelMemberId,
+    pub channel_id: Uuid,
+    pub partner_id: Option<Uuid>,
+    pub guest_id: Option<Uuid>,
+    pub fold_state: Option<SidebarFoldState>,
+    pub message_unread_counter: i32,
+    pub unread_counter: i32,
+    pub message_follower_counter: i32,
+    pub seen_message_id: Option<Uuid>,
+    pub last_interest_dt: Option<DateTime<Utc>>,
+    pub is_pinned: bool,
+    pub metadata: serde_json::Value,
+}
+
+/// Summary view of DiscussChannelMember for list displays
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DiscussChannelMemberSummary {
+    pub id: DiscussChannelMemberId,
+}
+
+/// Reference to DiscussChannelMember for foreign key relationships
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DiscussChannelMemberRef {
+    pub id: DiscussChannelMemberId,
+}
+
+// ============================================================================
+// MAILGUEST TYPES
+// ============================================================================
+
+/// Type-safe ID for MailGuest
+///
+/// Use this instead of raw Uuid for type safety across modules.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub struct MailGuestId(pub Uuid);
+
+impl MailGuestId {
+    pub fn new(id: Uuid) -> Self {
+        Self(id)
+    }
+
+    pub fn into_inner(self) -> Uuid {
+        self.0
+    }
+}
+
+impl From<Uuid> for MailGuestId {
+    fn from(id: Uuid) -> Self {
+        Self(id)
+    }
+}
+
+impl From<MailGuestId> for Uuid {
+    fn from(id: MailGuestId) -> Self {
+        id.0
+    }
+}
+
+/// Data transfer object for MailGuest
+///
+/// This is the public representation of MailGuest for other modules.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailGuestDto {
+    pub id: MailGuestId,
+    pub name: String,
+    pub country_id: Option<Uuid>,
+    pub last_connection_dt: Option<DateTime<Utc>>,
+    pub active: bool,
+    pub metadata: serde_json::Value,
+}
+
+/// Summary view of MailGuest for list displays
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailGuestSummary {
+    pub id: MailGuestId,
+    pub name: String,
+}
+
+/// Reference to MailGuest for foreign key relationships
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailGuestRef {
+    pub id: MailGuestId,
+}
+
+// ============================================================================
+// SMS TYPES
+// ============================================================================
+
+/// Type-safe ID for Sms
+///
+/// Use this instead of raw Uuid for type safety across modules.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub struct SmsId(pub Uuid);
+
+impl SmsId {
+    pub fn new(id: Uuid) -> Self {
+        Self(id)
+    }
+
+    pub fn into_inner(self) -> Uuid {
+        self.0
+    }
+}
+
+impl From<Uuid> for SmsId {
+    fn from(id: Uuid) -> Self {
+        Self(id)
+    }
+}
+
+impl From<SmsId> for Uuid {
+    fn from(id: SmsId) -> Self {
+        id.0
+    }
+}
+
+/// Data transfer object for Sms
+///
+/// This is the public representation of Sms for other modules.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SmsDto {
+    pub id: SmsId,
+    pub uuid: String,
+    pub number: String,
+    pub body: String,
+    pub state: SmsState,
+    pub failure_type: Option<SmsFailureType>,
+    pub error_message: Option<String>,
+    pub mail_message_id: Option<Uuid>,
+    pub iap_status_code: Option<i32>,
+    pub metadata: serde_json::Value,
+}
+
+/// Summary view of Sms for list displays
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SmsSummary {
+    pub id: SmsId,
+}
+
+/// Reference to Sms for foreign key relationships
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SmsRef {
+    pub id: SmsId,
+}
+
+// ============================================================================
+// SMSTEMPLATE TYPES
+// ============================================================================
+
+/// Type-safe ID for SmsTemplate
+///
+/// Use this instead of raw Uuid for type safety across modules.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub struct SmsTemplateId(pub Uuid);
+
+impl SmsTemplateId {
+    pub fn new(id: Uuid) -> Self {
+        Self(id)
+    }
+
+    pub fn into_inner(self) -> Uuid {
+        self.0
+    }
+}
+
+impl From<Uuid> for SmsTemplateId {
+    fn from(id: Uuid) -> Self {
+        Self(id)
+    }
+}
+
+impl From<SmsTemplateId> for Uuid {
+    fn from(id: SmsTemplateId) -> Self {
+        id.0
+    }
+}
+
+/// Data transfer object for SmsTemplate
+///
+/// This is the public representation of SmsTemplate for other modules.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SmsTemplateDto {
+    pub id: SmsTemplateId,
+    pub name: String,
+    pub body: String,
+    pub model_id: Option<Uuid>,
+    pub lang: Option<String>,
+    pub condition: Option<String>,
+    pub active: bool,
+    pub metadata: serde_json::Value,
+}
+
+/// Summary view of SmsTemplate for list displays
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SmsTemplateSummary {
+    pub id: SmsTemplateId,
+    pub name: String,
+}
+
+/// Reference to SmsTemplate for foreign key relationships
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SmsTemplateRef {
+    pub id: SmsTemplateId,
+}
+
+// ============================================================================
+// SMSTRACKER TYPES
+// ============================================================================
+
+/// Type-safe ID for SmsTracker
+///
+/// Use this instead of raw Uuid for type safety across modules.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub struct SmsTrackerId(pub Uuid);
+
+impl SmsTrackerId {
+    pub fn new(id: Uuid) -> Self {
+        Self(id)
+    }
+
+    pub fn into_inner(self) -> Uuid {
+        self.0
+    }
+}
+
+impl From<Uuid> for SmsTrackerId {
+    fn from(id: Uuid) -> Self {
+        Self(id)
+    }
+}
+
+impl From<SmsTrackerId> for Uuid {
+    fn from(id: SmsTrackerId) -> Self {
+        id.0
+    }
+}
+
+/// Data transfer object for SmsTracker
+///
+/// This is the public representation of SmsTracker for other modules.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SmsTrackerDto {
+    pub id: SmsTrackerId,
+    pub sms_uuid: String,
+    pub message_id: Option<Uuid>,
+    pub notification_id: Option<Uuid>,
+    pub state: MailNotificationStatus,
+    pub failure_type: Option<NotificationFailureType>,
+    pub failure_reason: Option<String>,
+    pub recipient: Option<String>,
+    pub metadata: serde_json::Value,
+}
+
+/// Summary view of SmsTracker for list displays
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SmsTrackerSummary {
+    pub id: SmsTrackerId,
+}
+
+/// Reference to SmsTracker for foreign key relationships
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SmsTrackerRef {
+    pub id: SmsTrackerId,
 }
 
 // ============================================================================
