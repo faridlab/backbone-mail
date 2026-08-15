@@ -82,6 +82,17 @@ user_owned:
   # SSE realtime (ADR-0017 carrier semantics; BUS-B2 channel validation).
   - "src/realtime/**"
 
+  # --- messaging increment-3 hand-written behavior (gateway core) ---------------
+  # Outbound SMTP port + the inbound webhook service (MAIL-M26/M27/M28; the
+  # transports themselves live in the composing app — the module holds ports,
+  # selection ladder, and the one-tx inbound pipeline MAIL-B2/B6).
+  - "src/application/service/mail_ports.rs"
+  - "src/application/service/mail_server_query_service.rs"
+  - "src/application/service/mail_inbound_service.rs"
+  - "src/infrastructure/persistence/mail_server_repository.rs"
+  - "src/infrastructure/persistence/inbound_repository.rs"
+  - "src/presentation/http/inbound_routes.rs"
+
   # Behavior tests (the golden cases / oracle) + BDD features.
   - "tests/behavior_tests.rs"
   - "tests/behavior/**"
