@@ -141,3 +141,48 @@ map onto the existing outbox/inbox substrate:
 
 Mail and sms port as producers/consumers of this ONE substrate: the notify pump publishes, the
 email/SMS queue drainers consume. Neither introduces its own queue tables.
+
+---
+
+## 7. Increment-2 scope register (the delivery surface)
+
+**Locked owner decisions (2026-08-15):** transport = **SSE over the outbox** (no websocket — every
+client→server op is a POST route; Odoo's ws is receive-push only); SSE feed = **read-only tailer
+per replica**; scope = **full ~47-route surface staged** (schema → services → routes → realtime →
+app); host = **new `apps/backbone-messaging-app`** backend-service.
+
+### In scope (flag IDs)
+
+| Surface | Flags | Notes |
+|---|---|---|
+| Chatter/thread routes (fetch/post/edit/reaction/star/subscribe/attachments, inbox/history/starred mailboxes) | MAIL-M16/B, MAIL-M1/M5 | `_message_fetch` pagination port; MAIL-B1 procedural ACL walk (below). |
+| Discuss channel ops (12 routes: members, messages, pinned, mark_as_read, separator, typing, attachments, join, avatar, sub-channels, search) | MAIL-M37/M38 | `channel_fetched FOR NO KEY UPDATE SKIP LOCKED`; pin UPDATE without `updated_at` bump; `_get_or_create_chat` ARRAY_AGG set-equality. |
+| Guest identity (`/mail/guest/update_name`, dgid middleware, public bootstrap endpoints) | MAIL-M43 | Public pages → JSON bootstrap, no HTML; find-or-create variants are POST (ADR-0019 rule 1). |
+| Presence (`set_manual_im_status`, `update_bus_presence` with SSE-session proof) | MAIL-M11 | Broadcasts `bus.bus/im_status_updated` on the partner/guest channel. |
+| `/sms/status` webhook | **SM-B2**, ADR-0021 | Raw-body HMAC, consteq, ±5min replay window, **fail-closed, zero state writes before verification**. |
+| Scheduled-message models (M8/M9) + dispatch | MAIL-M8/M9 | Jobs declared in increment 1; tables + `dispatch_due` (SKIP LOCKED) land now. |
+| Member state fields (separator, custom_notifications, mute_until_dt) | MAIL-M38 | Schema gap found at increment-2 planning. |
+| Pinned messages, stars, slim attachments | MAIL-M37 adjunct, MAIL-M1, MAIL-M45 (slim) | `MailAttachment` is a minimal messaging-owned entity (access_token consteq, owner XOR); full `ir.attachment` stays with `system`. |
+| New jobs: SM-B13 stuck-process sweep, presence/guest GC; MAIL-B8 GC change | SM-B13, MAIL-B8 | MAIL-B8 delta: the port has no `partner_share` flag, so the GC reaps ALL rows by age — the portal carve-out is dropped by documented decision. |
+| Chatter seam (`ThreadAccessResolver` + `ChatterService`) | MAIL-M16, MAIL-B1 | Host modules register a resolver via `MessagingModuleBuilder::with_thread_acl`; default DenyHostDocs. |
+| SSE realtime (registry, tailer, session proof, stream) | BUS-B2/B5, ADR-0017 | Channel-key validation at the boundary (plain-str only); `Last-Event-ID` watermark with clamp-to-window; per-replica read-only tailer over `outbox_events` (55s window, 1s poll) feeding the local broadcast registry — the relay stays carrier of record for durable consumers. |
+
+### Deferred from increment 2 (with justification — obligations travel)
+
+| Item | Flags | Deferred to | Why |
+|---|---|---|---|
+| MAIL-B7 (security email to PREVIOUS address) | MAIL-B7, MAIL-M44 | increment 3 (gateway group M26/M27) | No SMTP transport exists until the gateway group — "email the previous address" is untestable dead code now. **Seam ships:** `UserEmailChanged` outbox event contract for the sapiens `User` host (the User host is `backbone-sapiens`, NOT a `backbone-identity` — that module doesn't exist). |
+| Link-preview routes | MAIL-M7/M12 | increment 3 | Routes without their persistence are stubs; defer with the models. |
+| RTC, push devices, fetchmail/ir.mail_server, wizards, translations, canned responses, GIF/voice | MAIL-M13/M14, M26..M28, M39..M42, M15, M6 | increment 3 | Per §2 unchanged. |
+
+### Posture decisions
+
+- **ADR-0019 lint debt:** the safe-method reachability lint does not exist yet. Compensating
+  controls: every ported route is POST by construction (the two GET handlers — SSE stream +
+  read-only bootstrap — are snapshot-tested for zero side effects); a manual method-audit
+  checklist runs at Stage 6. The framework lint itself is registered debt, not scope.
+- **Throttling:** enumeration-shaped endpoints (`/discuss/search`, recipients lookups,
+  `/mail/partner/from_email`, public bootstrap, `/sms/status`, attachment ops) are throttled with
+  the EXISTING `backbone-rate-limit` middleware (ADR-0019 rule 3) — no new framework code.
+- **Auth:** fence-none (ADR-0014 posture 4) ⇒ the app uses user-scope auth + guest middleware,
+  NEVER `company_auth` (no company context exists to prove).

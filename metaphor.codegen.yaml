@@ -41,6 +41,47 @@ user_owned:
   - "src/infrastructure/persistence/mail_queue_repository.rs"
   - "src/infrastructure/persistence/alias_resolution_repository.rs"
 
+  # --- messaging increment-2 hand-written behavior --------------------------------
+  # The delivery surface: discuss/chatter services, the /sms/status webhook,
+  # the chatter ACL seam (MAIL-B1), SSE realtime, guest middleware, and the
+  # guarded routers. Declared BEFORE any file lands (regen-safety contract).
+  - "src/application/service/channel_write_service.rs"
+  - "src/application/service/channel_member_write_service.rs"
+  - "src/application/service/typing_service.rs"
+  - "src/application/service/reaction_write_service.rs"
+  - "src/application/service/message_edit_service.rs"
+  - "src/application/service/guest_write_service.rs"
+  - "src/application/service/presence_write_service.rs"
+  - "src/application/service/schedule_write_service.rs"
+  - "src/application/service/sms_status_webhook_service.rs"
+  - "src/application/service/gc_service.rs"
+  - "src/application/service/attachment_write_service.rs"
+  - "src/application/service/message_query_service.rs"
+  - "src/application/service/channel_query_service.rs"
+  - "src/application/service/recipient_query_service.rs"
+  - "src/application/service/chatter_acl.rs"
+  - "src/application/service/thread_chatter_service.rs"
+
+  # Increment-2 repositories (SQL lives here, not in services).
+  - "src/infrastructure/persistence/channel_repository.rs"
+  - "src/infrastructure/persistence/channel_member_repository.rs"
+  - "src/infrastructure/persistence/schedule_repository.rs"
+  - "src/infrastructure/persistence/webhook_repository.rs"
+  - "src/infrastructure/persistence/chatter_repository.rs"
+
+  # Increment-2 HTTP surface (generated CRUD untouched).
+  - "src/presentation/http/thread_routes.rs"
+  - "src/presentation/http/channel_routes.rs"
+  - "src/presentation/http/guest_routes.rs"
+  - "src/presentation/http/presence_routes.rs"
+  - "src/presentation/http/attachment_routes.rs"
+  - "src/presentation/http/webhook_routes.rs"
+  - "src/presentation/http/public_routes.rs"
+  - "src/presentation/middleware/**"
+
+  # SSE realtime (ADR-0017 carrier semantics; BUS-B2 channel validation).
+  - "src/realtime/**"
+
   # Behavior tests (the golden cases / oracle) + BDD features.
   - "tests/behavior_tests.rs"
   - "tests/behavior/**"

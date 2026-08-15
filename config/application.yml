@@ -27,10 +27,9 @@ sms:
   sender: "${SMS_SENDER}"
   # Provider API token. ENV REF ONLY — never a literal here (ADR-0024 interim).
   api_token: "${SMS_API_TOKEN}"
-  # Increment 2: the /sms/status webhook HMAC secret (ADR-0021 scheme) reads
-  # SMS_WEBHOOK_SECRET under the same env-ref posture. The route itself is
-  # increment 2; declared here so the contract is visible from day one.
-  # webhook_secret: "${SMS_WEBHOOK_SECRET}"
+  # The /sms/status webhook HMAC secret (ADR-0021 scheme: raw-body HMAC,
+  # fail-closed, no state writes before verification passes).
+  webhook_secret: "${SMS_WEBHOOK_SECRET}"
 
 # Outbox/inbox substrate (ADR-0017: Odoo's `bus` maps onto backbone-outbox).
 outbox:
@@ -42,3 +41,40 @@ outbox:
   # Consumers key on channels, not companies — never filter these rows by
   # company. See docs/adr-notes/outbox-fence-and-credentials.md.
   company_id: "00000000-0000-0000-0000-000000000000"
+
+# Realtime (increment 2: SSE over the outbox — ADR-0017).
+# Every app replica runs a READ-ONLY tailer over outbox_events within this
+# window; the relay stays the carrier of record for durable consumers. The
+# window doubles as the reconnect replay buffer (Odoo's 50s catch-up analog).
+realtime:
+  window_seconds: 55
+  poll_ms: 1000
+  max_channels_per_connection: 64
+  keepalive_seconds: 15
+
+# Guest identity (mail.guest port — MAIL-M43).
+guest:
+  cookie: "dgid"
+  # Guests unseen for this long are reaped by the mail-guest-gc job.
+  gc_after_minutes: 60
+
+# Presence (mail.presence port — MAIL-M11).
+presence:
+  # Rows not polled within this window are stale (offline) and reaped by
+  # mail-presence-gc (Odoo reaps at 12h).
+  stale_after_hours: 12
+
+# Scheduled-job intervals (postures live in schema/hooks/index.hook.yaml;
+# these are the runner-side tick overrides for the app service).
+jobs:
+  sms_process_queue_seconds: 300
+  mail_send_queue_seconds: 300
+  mail_scheduled_notification_seconds: 300
+  mail_notification_gc_cron: "0 3 * * *"
+  sms_gc_cron: "0 3 * * *"
+  mail_presence_gc_cron: "0 3 * * *"
+  mail_guest_gc_cron: "0 3 * * *"
+  sms_stuck_process_sweep_minutes: 10
+  # SM-B13: an sms row stuck in `process` longer than this is swept
+  # (alert event + bounded re-queue).
+  sms_process_stuck_threshold_minutes: 30
