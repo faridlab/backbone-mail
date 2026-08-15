@@ -236,6 +236,19 @@ HTTP JSON adapter** mirroring Odoo's IAP batch shape (endpoint + token env refs)
 | `sms::gc` | job roster | Bounded reap of `to_delete` + terminal-state Sms rows (the MAIL-B8-age analog for sms). |
 | Generic HTTP SMS adapter | SM group | IAP batch shape `{content, numbers:[{uuid, number}]}`; state map `processing→process`, `success/sent→pending`, `delivered→sent`; error codes → `sms_credit`, `sms_number_format`, `sms_country_not_supported`, `sms_server`, `sms_acc`. |
 
+### Closure ledger (2026-08-15, increment 3 landed)
+
+| Scope row | Status | Proof |
+|---|---|---|
+| `MailServer` + `MailApiPort` + queue send path (MAIL-M26) | ✅ closed | selection ladder tests (exact/domain/wildcard/sequence, case-insensitive); queue send path via port (fake port success/failure); `process_queue(port, batch, max_batches)` signature live |
+| `FetchmailServer` + `MailGatewayAllowed` + inbound pipeline (MAIL-M27/M28) | ✅ closed | `POST /mail/inbound/:server_id` bare-mounted, POST-only (ADR-0019 audit 2026-08-15); zero-writes-before-auth proven by full-table snapshot test; replay idempotent; sender-reject stages `InboundEmailRejected` with no message row |
+| **MAIL-B2** (per-message commit partial-state) | ✅ closed | one transaction per message, dedup-guarded — the webhook path never holds a partial cursor at all |
+| **MAIL-B6** (advisory-lock-on-hashtext dedup) | ✅ closed | UNIQUE partial index `mail_messages.message_id WHERE message_id IS NOT NULL`; conflict → idempotent 200 |
+| **MAIL-B7** (previous-address security email) | ✅ closed | module-side `UserEmailChanged` contract + app relay consumer; verified live 2026-08-15 against a hand-staged event (mail row landed on `victim@old.example`, outgoing); single-tx `message_post` ⇒ relay retry cannot double-send |
+| `sms::gc` | ✅ closed | `GcService::sms_gc(retention_days)` + app job `sms::gc` (retention under `gc.sms_retention_days`) |
+| Generic HTTP SMS adapter | ✅ closed | `HttpSmsApi` (reqwest, IAP-shaped) in the app; state/error-code map unit-tested; boot gate `jobs.sms_provider: noop\|http` |
+| relay → backbone-notification transport wiring | ⛔ **deferred to 3b — blocked seam** | backbone-notification is company-fence RLS (its write paths wrap `with_company_scope`; `dispatch_pending` needs a per-company sweep); backbone-messaging-app is fence-none (ADR-0014 posture 4) with no company registry in its DB. Composing it today would require an RLS-bypassing role — a silently wrong production posture. Revisit with the 3b push/RTC work (also blocked: no `notify()` producers exist in this app yet). |
+
 ### Credential posture (ADR-0024 interim, one documented deviation)
 
 - SMTP **passwords**: env-var REFERENCES (`smtp_pass_ref` = env var name; the app resolves at send
@@ -256,3 +269,4 @@ HTTP JSON adapter** mirroring Odoo's IAP batch shape (endpoint + token env refs)
 | Wizards (compose/message, sms) | MAIL-M67..M74, SM-M16..SM-M21 | **SM-B1** (sender-name regex missing `$` anchor) + **MMB-4-class** duplicate-mint risk on mass mode. Re-express as command endpoints, not transient models. |
 | RTC / call history / GIF / voice / ICE | MAIL-M39..M42, MAIL-M65 | Waits on the websocket-surface decision (SFU ≥3, 75s reaper, JWT HS256 sessions). |
 | IMAP/POP poller | MAIL-M27 adjunct | Webhook chose first; poller lands behind the same service if a customer needs mailbox polling. |
+| backbone-notification composition (relay→transport fan-out) | app seam | **Blocked, not forgotten** (owner decision 2026-08-15): company-fence RLS module vs a fence-none app DB — composing needs an RLS-bypassing role or a company registry in the app. Revisit with the push/RTC work, when `notify()` producers also first exist. See closure ledger above. |
