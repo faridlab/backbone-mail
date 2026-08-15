@@ -79,18 +79,13 @@ async fn bootstrap(
         "guest_id": guest_id,
     });
     let body = serde_json::to_string(&payload).unwrap_or_default();
-    let mut res = Response::builder()
-        .status(StatusCode::OK)
-        .body(Body::from(body))
-        .expect("static response parts");
-    res.headers_mut()
-        .insert(header::CONTENT_TYPE, axum::http::HeaderValue::from_static("application/json"));
+    let mut headers = vec![(header::CONTENT_TYPE, axum::http::HeaderValue::from_static("application/json"))];
     if let Some(cookie) = cookie {
         if let Ok(v) = axum::http::HeaderValue::from_str(&cookie) {
-            res.headers_mut().insert(header::SET_COOKIE, v);
+            headers.push((header::SET_COOKIE, v));
         }
     }
-    res
+    (StatusCode::OK, axum::response::AppendHeaders(headers), Body::from(body)).into_response()
 }
 
 /// The public bootstrap group — mount behind `guest_context` ONLY (no user

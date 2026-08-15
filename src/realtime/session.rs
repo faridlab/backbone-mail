@@ -67,7 +67,8 @@ fn identity_key(identity: &MessagingIdentity) -> String {
 }
 
 fn mac(secret: &[u8], payload: &[u8]) -> [u8; 32] {
-    let mut m = HmacSha256::new_from_slice(secret).expect("HMAC accepts any key length");
+    let mut m = HmacSha256::new_from_slice(secret)
+        .unwrap_or_else(|_| unreachable!("HMAC-SHA256 accepts any key length"));
     m.update(payload);
     m.finalize().into_bytes().into()
 }

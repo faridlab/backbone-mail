@@ -178,12 +178,14 @@ pub struct ThreadAclSlot {
 impl ThreadAclSlot {
     /// Install (replace) the active resolver.
     pub fn install(&self, resolver: Arc<dyn ThreadAccessResolver>) {
-        *self.inner.write().unwrap() = resolver;
+        // A poisoned lock still holds the old value — recovering it beats
+        // panicking every future ACL check over one panicked writer.
+        *self.inner.write().unwrap_or_else(|e| e.into_inner()) = resolver;
     }
 
     /// The currently installed resolver.
     pub fn current(&self) -> Arc<dyn ThreadAccessResolver> {
-        self.inner.read().unwrap().clone()
+        self.inner.read().unwrap_or_else(|e| e.into_inner()).clone()
     }
 }
 

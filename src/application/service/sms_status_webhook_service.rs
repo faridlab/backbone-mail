@@ -121,7 +121,8 @@ impl WebhookPayload {
 
 /// HMAC-SHA256 over the raw body with the configured secret.
 fn mac_raw_body(secret: &[u8], raw_body: &[u8]) -> [u8; 32] {
-    let mut mac = HmacSha256::new_from_slice(secret).expect("HMAC accepts any key length");
+    let mut mac = HmacSha256::new_from_slice(secret)
+        .unwrap_or_else(|_| unreachable!("HMAC-SHA256 accepts any key length"));
     mac.update(raw_body);
     mac.finalize().into_bytes().into()
 }

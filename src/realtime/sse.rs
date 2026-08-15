@@ -218,9 +218,10 @@ async fn stream(
         .keep_alive(KeepAlive::new().interval(std::time::Duration::from_secs(15)))
         .into_response();
     // Disable reverse-proxy buffering (nginx et al.) or SSE stalls behind it.
-    response
-        .headers_mut()
-        .insert("x-accel-buffering", "no".parse().unwrap());
+    response.headers_mut().insert(
+        axum::http::HeaderName::from_static("x-accel-buffering"),
+        axum::http::HeaderValue::from_static("no"),
+    );
     response
 }
 

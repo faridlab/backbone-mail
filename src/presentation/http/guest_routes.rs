@@ -40,19 +40,18 @@ async fn mint_guest(
     }
     let name = body.and_then(|Json(b)| b.name);
     match app.guest_write_service.mint(name.as_deref()).await {
-        Ok(guest_id) => {
-            let mut res = Response::builder()
-                .status(StatusCode::OK)
-                .header(header::SET_COOKIE, guest_cookie(guest_id))
-                .body(Body::from(
-                    serde_json::to_string(&serde_json::json!({ "guest_id": guest_id }))
-                        .unwrap_or_default(),
-                ))
-                .expect("static response parts");
-            res.headers_mut()
-                .insert(header::CONTENT_TYPE, axum::http::HeaderValue::from_static("application/json"));
-            res
-        }
+        Ok(guest_id) => (
+            StatusCode::OK,
+            [
+                (header::SET_COOKIE, guest_cookie(guest_id)),
+                (header::CONTENT_TYPE, "application/json".to_string()),
+            ],
+            Body::from(
+                serde_json::to_string(&serde_json::json!({ "guest_id": guest_id }))
+                    .unwrap_or_default(),
+            ),
+        )
+            .into_response(),
         Err(e) => match e {
             crate::application::service::GuestError::Invalid(m) => {
                 (StatusCode::UNPROCESSABLE_ENTITY, Json(json_err(&m))).into_response()
@@ -74,11 +73,9 @@ async fn update_name(
     Json(body): Json<UpdateNameBody>,
 ) -> Response {
     let Some(caller) = identity.identity() else { return unauthorized() };
-    if !identity.is_guest() {
-        // A signed-in partner is not a guest — no cross-persona renames here.
-        return unauthorized();
-    }
-    match app.guest_write_service.update_name(caller.guest_id().expect("checked above"), &body.name, caller).await {
+    // A signed-in partner is not a guest — no cross-persona renames here.
+    let Some(guest_id) = caller.guest_id() else { return unauthorized() };
+    match app.guest_write_service.update_name(guest_id, &body.name, caller).await {
         Ok(()) => ok_json(serde_json::json!({ "renamed": true })),
         Err(e) => match e {
             GuestError::NotFound(id) => (

@@ -61,7 +61,7 @@ impl RealtimeRegistry {
     pub fn publish(&self, event: TailedEvent) {
         let event = Arc::new(event);
         {
-            let mut ring = self.ring.lock().expect("ring lock");
+            let mut ring = self.ring.lock().unwrap_or_else(|e| e.into_inner());
             ring.push_back(Arc::clone(&event));
             while ring.len() > RING_CAPACITY {
                 ring.pop_front();
@@ -79,7 +79,7 @@ impl RealtimeRegistry {
     /// (in ring order); absent (reconnect too old, first connect, or a
     /// forged-ahead id) → the whole ring, i.e. clamped to the window start.
     pub fn replay_after(&self, last_id: Option<Uuid>) -> Vec<Arc<TailedEvent>> {
-        let ring = self.ring.lock().expect("ring lock");
+        let ring = self.ring.lock().unwrap_or_else(|e| e.into_inner());
         let start = match last_id.and_then(|id| ring.iter().position(|e| e.id == id)) {
             Some(pos) => pos + 1,
             None => 0,
@@ -90,7 +90,7 @@ impl RealtimeRegistry {
     /// Reserve a connection slot for an identity. `Ok(())` under the cap,
     /// `Err(current)` when the identity already holds `cap` streams.
     pub fn reserve_connection(&self, identity_key: &str, cap: usize) -> Result<(), usize> {
-        let mut conns = self.connections.lock().expect("connections lock");
+        let mut conns = self.connections.lock().unwrap_or_else(|e| e.into_inner());
         let current = *conns.get(identity_key).unwrap_or(&0);
         if current >= cap {
             return Err(current);
@@ -101,7 +101,7 @@ impl RealtimeRegistry {
 
     /// Release a connection slot (guard's Drop).
     pub fn release_connection(&self, identity_key: &str) {
-        let mut conns = self.connections.lock().expect("connections lock");
+        let mut conns = self.connections.lock().unwrap_or_else(|e| e.into_inner());
         if let Some(n) = conns.get_mut(identity_key) {
             *n = n.saturating_sub(1);
             if *n == 0 {
