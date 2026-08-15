@@ -123,6 +123,32 @@ pub async fn stage_bus_event(
     Ok(())
 }
 
+// ============================================================================
+// MAIL-B7 — the UserEmailChanged contract (increment 3)
+// ============================================================================
+//
+// The sapiens User host (backbone-sapiens — NOT a backbone-identity module;
+// that module doesn't exist) stages this event when a user's email changes.
+// The CONSUMER is the composing app's relay handler: it sends the security
+// warning to the PREVIOUS address through the mail queue — the whole point is
+// that the actor who changed the address cannot suppress a warning to the
+// address they took over. Load-bearing: never "fix" this by sending to the
+// new address (port-notes MAIL-B7).
+
+/// The outbox event name (greppable — the stager in sapiens and the app's
+/// relay consumer must agree on exactly this string).
+pub const USER_EMAIL_CHANGED_EVENT: &str = "UserEmailChanged";
+
+/// The staged payload shape. `{user_id, previous_email, new_email, changed_at}`
+/// — staged by the sapiens host; consumed by the app's MAIL-B7 relay handler.
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct UserEmailChangedPayload {
+    pub user_id: Uuid,
+    pub previous_email: String,
+    pub new_email: String,
+    pub changed_at: chrono::DateTime<chrono::Utc>,
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

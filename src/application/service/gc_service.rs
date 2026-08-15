@@ -14,6 +14,9 @@
 //! - `sweep_stuck_process` — SM-B13: sms rows stuck in `'process'` past the
 //!   threshold mean a drainer died mid-flight; emit `SmsStuckProcessDetected`
 //!   and (bounded) re-queue the rows for pickup.
+//! - `sms_gc` — increment 3, the `sms::gc` job hook (sms-gc-device): reap
+//!   TERMINAL sms rows (`sent`/`error`/`canceled`) past the retention bound;
+//!   `pending` still awaits a DSN and is never reaped here.
 
 use uuid::Uuid;
 
@@ -79,6 +82,18 @@ impl GcService {
     pub async fn guest_gc(&self) -> Result<u64, GcError> {
         let mut tx = self.pool.begin().await?;
         let n = GcRepository::guest_gc(&mut tx, self.guest_stale_minutes).await?;
+        tx.commit().await?;
+        Ok(n)
+    }
+
+    /// Increment 3 (`sms::gc` — the sms-gc-device job hook): reap sms rows in
+    /// terminal states past `retention_days`. The bound comes from the JOB
+    /// config (not the constructor) — notification/presence/guest bounds are
+    /// module-wide constants, but sms retention is an ops dial (aggressive
+    /// reaping is sometimes wanted under provider-quota pressure).
+    pub async fn sms_gc(&self, retention_days: i64) -> Result<u64, GcError> {
+        let mut tx = self.pool.begin().await?;
+        let n = GcRepository::sms_gc(&mut tx, retention_days).await?;
         tx.commit().await?;
         Ok(n)
     }

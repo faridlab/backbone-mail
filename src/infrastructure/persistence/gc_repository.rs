@@ -132,6 +132,29 @@ impl GcRepository {
             .await?;
         Ok(res.rows_affected())
     }
+
+    /// Increment 3 (`sms::gc` — the sms-gc-device job hook): reap sms rows in
+    /// TERMINAL states (`sent`, `error`, `canceled`) past the retention bound.
+    /// `pending` is NOT terminal (LABEL 'Sent', still awaiting a DSN — reaping
+    /// it would orphan a live delivery report); `outgoing`/`process` belong to
+    /// the drainer + the SM-B13 sweep, never the GC. The MailNotification
+    /// mirror survives via `sms_id_int`'s deliberate no-FK (SM-M1) — the
+    /// notification keeps its status history after the sms row is gone.
+    pub async fn sms_gc(
+        conn: &mut PgConnection,
+        retention_days: i64,
+    ) -> Result<u64, sqlx::Error> {
+        let res = sqlx::query(r#"
+            DELETE FROM messaging.sms
+            WHERE state IN ('sent'::sms_state, 'error'::sms_state, 'canceled'::sms_state)
+              AND COALESCE((metadata->>'updated_at'), (metadata->>'created_at'))::timestamptz
+                  < NOW() - make_interval(days => $1::int)
+        "#)
+            .bind(retention_days)
+            .execute(&mut *conn)
+            .await?;
+        Ok(res.rows_affected())
+    }
 }
 
 impl Default for GcRepository {
