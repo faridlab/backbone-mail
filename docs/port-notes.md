@@ -186,3 +186,30 @@ app); host = **new `apps/backbone-messaging-app`** backend-service.
   the EXISTING `backbone-rate-limit` middleware (ADR-0019 rule 3) — no new framework code.
 - **Auth:** fence-none (ADR-0014 posture 4) ⇒ the app uses user-scope auth + guest middleware,
   NEVER `company_auth` (no company context exists to prove).
+
+### Increment-2 closure (2026-08-15)
+
+Landed. Obligation ledger (§5 refs → resolution):
+
+| Obligation | Status |
+|---|---|
+| BUS-B2 str-only wire contract | **Closed.** `realtime::tailer::valid_channel_key` (`^[A-Za-z0-9_.-]+$`, ≤128) at the SSE boundary; record-shaped keys resolved per-identity via `ThreadAccessResolver` — out-of-allowlist events are dropped + warn-logged (`mail::realtime_stream`), never 403 (no enumeration oracle). |
+| MAIL-B7 previous-address email | **Deferred → increment 3** (gateway group), seam as registered in the table above. |
+| SM-B2 `/sms/status` HMAC | **Closed.** Raw-body HMAC-SHA256, consteq, ±5min window, fail-closed 503 on unset secret, zero pre-verification writes — proven by row-snapshot tests (commit abca0ec). |
+| MAIL-B1 document-level ACL | **Closed.** `chatter_acl::ThreadAccessResolver` (default `DenyHostDocs`); the SSE allowlist and `_message_fetch` both consult it procedurally — no rule-shaped WHERE on `mail.message`. |
+| SM-B13 stuck-process sweep | **Closed.** `GcService::sweep_stuck_process` + the widened SM-B6 guard escape (migration `20260815220007`, one-shot via the `swept_at` marker). |
+| MAIL-B2/B3 (fetchmail/push error masking) | **Ride the M13/M27 increment-3 deferrals** — unchanged. |
+| MAIL-B8 notification GC | **Closed.** Reaps ALL rows by age (portal carve-out dropped — documented delta); `GcService::notification_gc`. |
+| BUS-B4/B5 (bus GC / dedup) | **Closed structurally** per §6; the SSE tailer adds per-replica in-memory dedup keyed on the outbox id (window overlap + dedup, never a watermark that can skip rows). |
+
+**ADR-0019 manual method-audit (Stage 6):** 61 custom routes audited — 56 POST, 5 GET. The GETs:
+`/mail/inbox/unread_count`, `/mail/channels/unread_counts`, `/discuss/channel/:id/members`,
+`/discuss/channel/:id/pinned` (all query-service reads, no writes), and `/mail/realtime/stream`
+(SSE; reserves an in-memory connection slot and mints a session proof — no domain-state writes).
+Find-or-create surfaces (`/discuss/chat`, `/discuss/public/bootstrap`, `/mail/guest`) are POST.
+
+**App composition:** `apps/backbone-messaging-app` (registered in the root `metaphor.yaml`) —
+user-scope verifier (backbone-auth ships no user-scope verifier; the app adds a thin one proving
+the partner id from the Bearer JWT sub), guest middleware, bare-mounted webhook, 7 job runners,
+outbox relay (logging publish seam — increment-3 transport), per-replica SSE tailer. Increment-3
+seams documented in the app README: noop sms provider, relay publish seam, missing `sms::gc`.
