@@ -157,6 +157,10 @@ pub struct MessagingModule {
     /// The shared pool (route composers build one-off services — e.g. the
     /// sms webhook — without re-threading a pool through every caller).
     pub pool: sqlx::PgPool,
+    /// The replica-local realtime fan-out (SSE ring + connection caps). The
+    /// host app spawns the outbox tailer onto THIS same instance — the
+    /// identity between the two is what makes post→stream delivery work.
+    pub realtime_registry: std::sync::Arc<realtime::RealtimeRegistry>,
     // END CUSTOM
 }
 
@@ -372,6 +376,15 @@ impl MessagingModule {
     pub fn webhook_routes(self: &Arc<Self>) -> Router {
         presentation::http::webhook_routes::composer().with_state(self.clone())
     }
+
+    /// The realtime SSE stream (`GET /mail/realtime/stream`). Requires the
+    /// `guest_context` middleware AND the `realtime::SessionSecret` router
+    /// extension — the same contract as the presence group. The host app
+    /// also spawns [`realtime::tailer::spawn`] onto
+    /// [`Self::realtime_registry`] or the stream serves only its keepalives.
+    pub fn realtime_routes(self: &Arc<Self>) -> Router {
+        realtime::sse::composer().with_state(self.clone())
+    }
     // END CUSTOM
 }
 
@@ -536,6 +549,10 @@ impl MessagingModuleBuilder {
         let guest_write_service = Arc::new(GuestWriteService::new(db_pool.clone()));
         let presence_write_service = Arc::new(PresenceWriteService::new(db_pool.clone()));
         let attachment_write_service = Arc::new(AttachmentWriteService::new(db_pool.clone()));
+
+        // The replica-local SSE fan-out point (Stage 4). One per process;
+        // the host app's tailer publishes into it, the stream route reads.
+        let realtime_registry = std::sync::Arc::new(realtime::RealtimeRegistry::new());
         // END CUSTOM
 
         Ok(MessagingModule {
@@ -587,6 +604,7 @@ impl MessagingModuleBuilder {
             channel_query_service,
             recipient_query_service,
             pool: db_pool.clone(),
+            realtime_registry,
             // END CUSTOM
         })
     }

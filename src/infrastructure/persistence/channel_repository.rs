@@ -297,6 +297,33 @@ impl ChannelRepository {
             .collect())
     }
 
+    /// The LIVE channels an identity is a member of (the SSE allowlist's
+    /// membership leg — `discuss.channel_<id>` keys are built from these ids
+    /// by the caller; key CONSTRUCTION stays server-side per BUS-B2).
+    /// Soft-deleted memberships and soft-deleted channels both excluded.
+    pub async fn membership_channel_ids(
+        executor: impl sqlx::Executor<'_, Database = sqlx::Postgres>,
+        partner_id: Option<Uuid>,
+        guest_id: Option<Uuid>,
+    ) -> Result<Vec<Uuid>, sqlx::Error> {
+        sqlx::query_scalar(
+            r#"
+            SELECT c.id
+            FROM messaging.discuss_channels c
+            JOIN messaging.discuss_channel_members m
+              ON m.channel_id = c.id
+             AND m.partner_id IS NOT DISTINCT FROM $1
+             AND m.guest_id IS NOT DISTINCT FROM $2
+             AND (m.metadata->>'deleted_at') IS NULL
+            WHERE (c.metadata->>'deleted_at') IS NULL
+            "#,
+        )
+        .bind(partner_id)
+        .bind(guest_id)
+        .fetch_all(executor)
+        .await
+    }
+
     /// Public-channel lookup for the unauthenticated bootstrap: (id, name,
     /// channel_type) when the invitation uuid matches a LIVE channel whose
     /// `default_access_mode` is 'public'. Non-public and soft-deleted

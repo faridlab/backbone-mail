@@ -991,6 +991,7 @@ dependencies = [
  "tempfile",
  "thiserror 1.0.69",
  "tokio",
+ "tokio-stream",
  "tokio-test",
  "tonic",
  "tonic-build",
@@ -5249,6 +5250,7 @@ dependencies = [
  "futures-core",
  "pin-project-lite",
  "tokio",
+ "tokio-util",
 ]
 
 [[package]]
