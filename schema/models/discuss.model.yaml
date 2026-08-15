@@ -39,12 +39,11 @@ models:
         attributes: ["@required", "@default(channel)"]
         lifecycle:
           shape: hand_set
-          state_machine: DiscussChannelHooks
           display_labels:
             chat: "Chat"
             channel: "Channel"
             group: "Group"
-        description: "The channel kind (M37). Set at create, IMMUTABLE after (Odoo raises on writes that change it; the all-final machine enforces this). Drives member semantics, default name and UI surface."
+        description: "The channel kind (M37). Set at create, IMMUTABLE after (Odoo raises on writes that change it — no transition exists; enforced at the write layer, see port-notes M37-IMMUTABLE). Drives member semantics, default name and UI surface."
       description:
         type: string?
         description: "Channel topic/description."

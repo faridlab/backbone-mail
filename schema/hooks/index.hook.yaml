@@ -11,7 +11,7 @@
 #   mail_followers.hook.yaml        G-MAIL-1
 #   mail_blacklist.hook.yaml        G-MAIL-2
 #   mail_alias_domain.hook.yaml     G-MAIL-5 (bounce + catchall)
-#   discuss_channel.hook.yaml       DiscussChannelHooks (immutable channel_type)
+#   discuss_channel.hook.yaml       DiscussChannelHooks (immutable channel_type — NO machine, see hook)
 #   discuss_channel_member.hook.yaml G-MAIL-8
 #   sms.hook.yaml                   SmsHooks (machine + G-SM1)
 #   sms_tracker.hook.yaml           G-SM2 + SM-B6 monotonic-trigger intent
