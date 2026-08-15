@@ -1,0 +1,130 @@
+# =============================================================================
+# Module: backbone-mail — Area: ATTACHMENTS (slim, MAIL-M45).
+# Source-verified 2026-08-15 against playground/odoo @ b9eb72eb
+# (addons/mail/models/mail_message.py: attachment_ids m2m + toggle_star
+# vicinity; attachments themselves live on ir.attachment in Odoo).
+#
+# SCOPE DECISION (increment-2 scope register §3): this module ships a SLIM
+# MailAttachment — name/mimetype/size/checksum, a public access_token, owner
+# XOR (partner|guest) — enough for message attachments and the guarded
+# /mail/attachment routes. The FULL ir.attachment port (ir.attachment as a
+# generic document store, sizes, thumbnails, url-attachments, res_model
+# binding to arbitrary hosts) stays with the `system` module.
+#
+# INCREMENT-2 adaptations:
+#  - datas is stored as an opaque STORAGE HANDLE string (storage backend id /
+#  object key), NOT base64 bytes in a TEXT column (Odoo's inline default is
+#  an anti-pattern at scale; the framework has object storage elsewhere).
+#  - access_token comparisons are consteq at the service layer (MAIL-B1).
+# =============================================================================
+
+models:
+
+  # ===========================================================================
+  # mail.attachment (slim) — a file attached to messages (M45).
+  # ===========================================================================
+  - name: MailAttachment
+    collection: mail_attachments
+    description: "Slim mail attachment (MAIL-M45): a file attached to one or more mail.messages. Full ir.attachment port stays with the system module. Public access via access_token (consteq-compared, never a DB lookup key for authz). Owner is XOR partner|guest — anonymous guests may own their uploads."
+    fields:
+      id:
+        type: uuid
+        attributes: ["@id", "@default(uuid)"]
+        description: "Primary key"
+      name:
+        type: string
+        attributes: ["@required"]
+        description: "Display filename (client-provided; the storage key is separate)."
+      mimetype:
+        type: string?
+        description: "Content type (client-asserted, treated as UNTRUSTED — served with an explicit safe Content-Type, never reflected raw)."
+      size:
+        type: integer?
+        description: "Byte size (validated against the actual stored object at upload)."
+      datas:
+        type: string?
+        description: "Opaque STORAGE HANDLE (backend/object key) — NOT base64 bytes (increment-2 adaptation; see file header)."
+      checksum:
+        type: string?
+        description: "Content digest for dedup/integrity."
+      access_token:
+        type: uuid?
+        attributes: ["@unique"]
+        description: "Public access token (uuid; minted on demand). Authorization is consteq at the service layer — possession of the token IS the grant (Odoo semantics), but the comparison never leaks timing."
+      owner_party_id:
+        type: uuid?
+        attributes: ["@foreign_key(party.Party.owned_attachments)", "@exclude_from_foreign_key_check", "@indexed"]
+        description: "Owning partner # logical FK to party.Party.id. XOR with owner_guest_id."
+      owner_guest_id:
+        type: uuid?
+        attributes: ["@foreign_key(MailGuest.owned_attachments)", "@exclude_from_foreign_key_check", "@indexed"]
+        description: "Owning guest # logical FK to MailGuest.id. XOR with owner_party_id."
+      metadata:
+        type: Metadata
+        attributes: ["@audit_metadata"]
+        description: "Audit metadata (created_at, updated_at, deleted_at, created_by, updated_by, deleted_by)"
+    indexes:
+      - type: index
+        fields: [owner_party_id]
+        name: mail_attachment_owner_party_idx
+      - type: index
+        fields: [owner_guest_id]
+        name: mail_attachment_owner_guest_idx
+
+  # ===========================================================================
+  # mail.message.attachment — message↔attachment join (M45).
+  # ===========================================================================
+  - name: MailMessageAttachment
+    collection: mail_message_attachments
+    description: "Join row: attachment linked to a message (mail.message.attachment_ids m2m, MAIL-M45). A row exists only while linked; unlink removes it (no soft-delete semantics on the join)."
+    fields:
+      id:
+        type: uuid
+        attributes: ["@id", "@default(uuid)"]
+        description: "Primary key"
+      message_id:
+        type: uuid
+        attributes: ["@required", "@foreign_key(MailMessage.attachments)", "@exclude_from_foreign_key_check", "@indexed"]
+        description: "The message # logical FK to MailMessage.id (Odoo: cascade)"
+      attachment_id:
+        type: uuid
+        attributes: ["@required", "@foreign_key(MailAttachment.messages)", "@exclude_from_foreign_key_check", "@indexed"]
+        description: "The attachment # logical FK to MailAttachment.id"
+      metadata:
+        type: Metadata
+        attributes: ["@audit_metadata"]
+        description: "Audit metadata (created_at, updated_at, deleted_at, created_by, updated_by, deleted_by)"
+    indexes:
+      - type: unique
+        fields: [message_id, attachment_id]
+        name: mail_message_attachment_uniq
+
+  # ===========================================================================
+  # mail.message star — the starred m2m materialized (MAIL-M45 adjunct).
+  # Odoo: mail.message.starred_partner_ids m2m; a row = this partner starred
+  # this message. /mail/starred/messages reads it; toggle_star writes it.
+  # ===========================================================================
+  - name: MailMessageStar
+    collection: mail_message_stars
+    description: "Materialized star (MAIL-M45 adjunct): one row = one partner starred one message (Odoo mail.message.starred_partner_ids m2m). Written by toggle_star; read by the starred-messages fetch."
+    fields:
+      id:
+        type: uuid
+        attributes: ["@id", "@default(uuid)"]
+        description: "Primary key"
+      partner_id:
+        type: uuid
+        attributes: ["@required", "@foreign_key(party.Party.starred_messages)", "@exclude_from_foreign_key_check", "@indexed"]
+        description: "The starring partner # logical FK to party.Party.id"
+      message_id:
+        type: uuid
+        attributes: ["@required", "@foreign_key(MailMessage.starred_by)", "@exclude_from_foreign_key_check", "@indexed"]
+        description: "The starred message # logical FK to MailMessage.id (Odoo: cascade)"
+      metadata:
+        type: Metadata
+        attributes: ["@audit_metadata"]
+        description: "Audit metadata (created_at, updated_at, deleted_at, created_by, updated_by, deleted_by)"
+    indexes:
+      - type: unique
+        fields: [partner_id, message_id]
+        name: mail_message_star_uniq

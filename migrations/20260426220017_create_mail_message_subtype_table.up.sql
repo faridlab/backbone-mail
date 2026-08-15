@@ -11,7 +11,9 @@ CREATE TABLE IF NOT EXISTS messaging.mail_message_subtypes (
     parent_id UUID,
     relation_field TEXT,
     res_model TEXT,
-    default BOOLEAN NOT NULL DEFAULT FALSE,
+    -- quoted: `default` is a Postgres reserved word (plugin v0.11.2 quote_ident
+    -- backfill — hand-applied because regen never rewrites timestamped migrations)
+    "default" BOOLEAN NOT NULL DEFAULT FALSE,
     hidden BOOLEAN NOT NULL DEFAULT FALSE,
     tracked BOOLEAN NOT NULL DEFAULT FALSE,
     metadata JSONB NOT NULL DEFAULT '{"created_at":null,"updated_at":null,"deleted_at":null,"created_by":null,"updated_by":null,"deleted_by":null}'::jsonb,

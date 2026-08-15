@@ -76,6 +76,8 @@ imports:
   - activity.model.yaml
   - alias.model.yaml
   - discuss.model.yaml
+  - schedule.model.yaml
+  - attachment.model.yaml
   - sms.model.yaml
 
 # =============================================================================
@@ -104,6 +106,10 @@ imports:
 #   G-MAIL-3/4 activity CHECKs         hooks/mail_activity.hook.yaml
 #   MAIL-B6  inbound message_id dedup  core.model.yaml (message_id indexed; advisory-lock dedup is gateway-layer, Increment 2+)
 #   MAIL-B8  notification GC 180d      hooks/index.hook.yaml (mail-notification-gc job; portal-row carve-out NOT ported — a port should reap them)
+#   MAIL-M37.1 pinned messages         core.model.yaml MailMessage.pinned_at (source-verified: Odoo pins via a column
+#                                      on mail.message, NOT a join table; raw UPDATE deliberately skips updated_at — see port-notes)
+#   MAIL-M38.1 member read state       discuss.model.yaml (fetched_message_id, new_message_separator [int→uuid adaptation],
+#                                      custom_notifications, mute_until_dt ['+infinity' = until-unmuted], unpin_dt, last_seen_dt)
 #
 # SMS (docs/odoo/messaging/sms):
 #   SM-M1/2  Sms (queue row)           sms.model.yaml (+hooks/sms.hook.yaml machine, G-SM1)
@@ -111,11 +117,18 @@ imports:
 #   SM-M1/4  SmsTracker                sms.model.yaml (+hooks/sms_tracker.hook.yaml, G-SM2, SM-B6 trigger intent)
 #   SM-M5    sms overlay folded        core.model.yaml (message_type/notification_type 'sms', NotificationFailureType vocab)
 #   SM-F19   label inversion           Sms.state + MailNotification.notification_status display_labels (pending='Sent', sent='Delivered')
+#   SM-B13   stuck-process sweep       hooks/index.hook.yaml (sms-stuck-process-sweep job — Increment 2)
+#
+# SCHEDULED MESSAGES + ATTACHMENTS (Increment 2):
+#   MAIL-M8  MailMessageSchedule       schedule.model.yaml (notify-later; delete-on-dispatch, NO state column — SKIP LOCKED claim)
+#   MAIL-M9  MailScheduledMessage      schedule.model.yaml (post-later composer values; posts via message_post as creator)
+#   MAIL-M45 MailAttachment (slim)     attachment.model.yaml (full ir.attachment port stays with `system`)
+#            MailMessageAttachment     attachment.model.yaml (message↔attachment join, unique)
+#            MailMessageStar           attachment.model.yaml (starred m2m materialized, unique partner+message)
 #
 # NOT ported (by design — see module brief): framework extensions (ir.*/res.*,
 # G-MAIL-6 lives on res.users), wizards, mixins, push devices, RTC/gif/voice/
-# previews/translations/MailMessageSchedule+MailScheduledMessage MODELS
-# (their event/job contracts ARE pinned in hooks/index.hook.yaml),
-# fetchmail/ir.mail_server (gateway layer, Increment 2+), mail.template
-# (lives in backbone-notification).
+# previews/translations (link-preview MODELS MAIL-M7/M12 deferred with their
+# routes — Increment 3), fetchmail/ir.mail_server (gateway layer, Increment 3),
+# mail.template (lives in backbone-notification).
 # =============================================================================

@@ -23,6 +23,12 @@ tags:
     description: MailAliasDomain management endpoints
   - name: MailAliases
     description: MailAlias management endpoints
+  - name: MailAttachments
+    description: MailAttachment management endpoints
+  - name: MailMessageAttachments
+    description: MailMessageAttachment management endpoints
+  - name: MailMessageStars
+    description: MailMessageStar management endpoints
   - name: MailMessages
     description: MailMessage management endpoints
   - name: Mails
@@ -47,6 +53,10 @@ tags:
     description: DiscussChannelMember management endpoints
   - name: MailGuests
     description: MailGuest management endpoints
+  - name: MailMessageSchedules
+    description: MailMessageSchedule management endpoints
+  - name: MailScheduledMessages
+    description: MailScheduledMessage management endpoints
   - name: Smses
     description: Sms management endpoints
   - name: SmsTemplates
@@ -2237,6 +2247,1104 @@ paths:
         - MailAliases
       summary: Bulk permanently-delete MailAliases from trash by ids (atomic)
       operationId: bulkPermanentDeleteMailAliases
+      requestBody:
+        $ref: '#/components/requestBodies/BatchIds'
+      responses:
+        '200':
+          description: Permanently deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  permanently_deleted: { type: integer }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/mail_attachments:
+    get:
+      tags:
+        - MailAttachments
+      summary: List MailAttachments
+      description: Get a paginated list of MailAttachments with optional filtering and sorting
+      operationId: listMailAttachments
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PerPageParam'
+        - $ref: '#/components/parameters/SortByParam'
+        - $ref: '#/components/parameters/SortOrderParam'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailAttachmentList'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      tags:
+        - MailAttachments
+      summary: Create MailAttachment
+      description: Create a new MailAttachment
+      operationId: createMailAttachment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateMailAttachmentRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailAttachment'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/v1/mail_attachments/{id}:
+    parameters:
+      - $ref: '#/components/parameters/IdParam'
+
+    get:
+      tags:
+        - MailAttachments
+      summary: Get MailAttachment by ID
+      operationId: getMailAttachment
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailAttachment'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags:
+        - MailAttachments
+      summary: Update MailAttachment (full)
+      operationId: updateMailAttachment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateMailAttachmentRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailAttachment'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      tags:
+        - MailAttachments
+      summary: Update MailAttachment (partial)
+      operationId: patchMailAttachment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchMailAttachmentRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailAttachment'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags:
+        - MailAttachments
+      summary: Delete MailAttachment (soft)
+      operationId: deleteMailAttachment
+      responses:
+        '204':
+          description: Deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/mail_attachments/bulk:
+    post:
+      tags:
+        - MailAttachments
+      summary: Bulk create MailAttachments
+      operationId: bulkCreateMailAttachments
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/CreateMailAttachmentRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MailAttachment'
+    put:
+      tags:
+        - MailAttachments
+      summary: Bulk update MailAttachments (full, atomic)
+      operationId: bulkUpdateMailAttachments
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                allOf:
+                  - type: object
+                    required: [id]
+                    properties:
+                      id:
+                        type: string
+                  - $ref: '#/components/schemas/UpdateMailAttachmentRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailAttachmentBulkResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+    patch:
+      tags:
+        - MailAttachments
+      summary: Bulk partial-update MailAttachments (atomic)
+      operationId: bulkPatchMailAttachments
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - type: object
+                  required: [ids, patch]
+                  properties:
+                    ids:
+                      type: array
+                      items: { type: string }
+                    patch:
+                      type: object
+                      additionalProperties: true
+                - type: object
+                  required: [items]
+                  properties:
+                    items:
+                      type: array
+                      items:
+                        type: object
+                        required: [id, patch]
+                        properties:
+                          id: { type: string }
+                          patch: { type: object, additionalProperties: true }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailAttachmentBulkResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/mail_attachments/upsert:
+    post:
+      tags:
+        - MailAttachments
+      summary: Upsert MailAttachment
+      operationId: upsertMailAttachment
+      parameters:
+        - name: key_field
+          in: query
+          schema:
+            type: string
+        - name: key_value
+          in: query
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateMailAttachmentRequest'
+      responses:
+        '200':
+          description: Upserted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailAttachment'
+
+  /api/v1/mail_attachments/trash:
+    get:
+      tags:
+        - MailAttachments
+      summary: List deleted MailAttachments
+      operationId: listDeletedMailAttachments
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PerPageParam'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailAttachmentList'
+
+  /api/v1/mail_attachments/{id}/restore:
+    parameters:
+      - $ref: '#/components/parameters/IdParam'
+    post:
+      tags:
+        - MailAttachments
+      summary: Restore deleted MailAttachment
+      operationId: restoreMailAttachment
+      responses:
+        '200':
+          description: Restored
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailAttachment'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/mail_attachments/empty:
+    delete:
+      tags:
+        - MailAttachments
+      summary: Empty trash for MailAttachments
+      operationId: emptyTrashMailAttachments
+      responses:
+        '200':
+          description: Trash emptied
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  deleted_count:
+                    type: integer
+
+  /api/v1/mail_attachments/delete/bulk:
+    post:
+      tags:
+        - MailAttachments
+      summary: Bulk soft-delete MailAttachments by ids (atomic)
+      operationId: bulkDeleteMailAttachments
+      requestBody:
+        $ref: '#/components/requestBodies/BatchIds'
+      responses:
+        '200':
+          description: Soft-deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  soft_deleted: { type: integer }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/mail_attachments/restore/bulk:
+    post:
+      tags:
+        - MailAttachments
+      summary: Bulk restore MailAttachments by ids (atomic)
+      operationId: bulkRestoreMailAttachments
+      requestBody:
+        $ref: '#/components/requestBodies/BatchIds'
+      responses:
+        '200':
+          description: Restored
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailAttachmentBulkResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/mail_attachments/restore/all:
+    post:
+      tags:
+        - MailAttachments
+      summary: Restore all soft-deleted MailAttachments
+      operationId: restoreAllMailAttachments
+      responses:
+        '200':
+          description: Restored
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  restored: { type: integer }
+
+  /api/v1/mail_attachments/trash/bulk:
+    delete:
+      tags:
+        - MailAttachments
+      summary: Bulk permanently-delete MailAttachments from trash by ids (atomic)
+      operationId: bulkPermanentDeleteMailAttachments
+      requestBody:
+        $ref: '#/components/requestBodies/BatchIds'
+      responses:
+        '200':
+          description: Permanently deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  permanently_deleted: { type: integer }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/mail_message_attachments:
+    get:
+      tags:
+        - MailMessageAttachments
+      summary: List MailMessageAttachments
+      description: Get a paginated list of MailMessageAttachments with optional filtering and sorting
+      operationId: listMailMessageAttachments
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PerPageParam'
+        - $ref: '#/components/parameters/SortByParam'
+        - $ref: '#/components/parameters/SortOrderParam'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailMessageAttachmentList'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      tags:
+        - MailMessageAttachments
+      summary: Create MailMessageAttachment
+      description: Create a new MailMessageAttachment
+      operationId: createMailMessageAttachment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateMailMessageAttachmentRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailMessageAttachment'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/v1/mail_message_attachments/{id}:
+    parameters:
+      - $ref: '#/components/parameters/IdParam'
+
+    get:
+      tags:
+        - MailMessageAttachments
+      summary: Get MailMessageAttachment by ID
+      operationId: getMailMessageAttachment
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailMessageAttachment'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags:
+        - MailMessageAttachments
+      summary: Update MailMessageAttachment (full)
+      operationId: updateMailMessageAttachment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateMailMessageAttachmentRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailMessageAttachment'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      tags:
+        - MailMessageAttachments
+      summary: Update MailMessageAttachment (partial)
+      operationId: patchMailMessageAttachment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchMailMessageAttachmentRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailMessageAttachment'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags:
+        - MailMessageAttachments
+      summary: Delete MailMessageAttachment (soft)
+      operationId: deleteMailMessageAttachment
+      responses:
+        '204':
+          description: Deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/mail_message_attachments/bulk:
+    post:
+      tags:
+        - MailMessageAttachments
+      summary: Bulk create MailMessageAttachments
+      operationId: bulkCreateMailMessageAttachments
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/CreateMailMessageAttachmentRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MailMessageAttachment'
+    put:
+      tags:
+        - MailMessageAttachments
+      summary: Bulk update MailMessageAttachments (full, atomic)
+      operationId: bulkUpdateMailMessageAttachments
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                allOf:
+                  - type: object
+                    required: [id]
+                    properties:
+                      id:
+                        type: string
+                  - $ref: '#/components/schemas/UpdateMailMessageAttachmentRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailMessageAttachmentBulkResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+    patch:
+      tags:
+        - MailMessageAttachments
+      summary: Bulk partial-update MailMessageAttachments (atomic)
+      operationId: bulkPatchMailMessageAttachments
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - type: object
+                  required: [ids, patch]
+                  properties:
+                    ids:
+                      type: array
+                      items: { type: string }
+                    patch:
+                      type: object
+                      additionalProperties: true
+                - type: object
+                  required: [items]
+                  properties:
+                    items:
+                      type: array
+                      items:
+                        type: object
+                        required: [id, patch]
+                        properties:
+                          id: { type: string }
+                          patch: { type: object, additionalProperties: true }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailMessageAttachmentBulkResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/mail_message_attachments/upsert:
+    post:
+      tags:
+        - MailMessageAttachments
+      summary: Upsert MailMessageAttachment
+      operationId: upsertMailMessageAttachment
+      parameters:
+        - name: key_field
+          in: query
+          schema:
+            type: string
+        - name: key_value
+          in: query
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateMailMessageAttachmentRequest'
+      responses:
+        '200':
+          description: Upserted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailMessageAttachment'
+
+  /api/v1/mail_message_attachments/trash:
+    get:
+      tags:
+        - MailMessageAttachments
+      summary: List deleted MailMessageAttachments
+      operationId: listDeletedMailMessageAttachments
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PerPageParam'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailMessageAttachmentList'
+
+  /api/v1/mail_message_attachments/{id}/restore:
+    parameters:
+      - $ref: '#/components/parameters/IdParam'
+    post:
+      tags:
+        - MailMessageAttachments
+      summary: Restore deleted MailMessageAttachment
+      operationId: restoreMailMessageAttachment
+      responses:
+        '200':
+          description: Restored
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailMessageAttachment'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/mail_message_attachments/empty:
+    delete:
+      tags:
+        - MailMessageAttachments
+      summary: Empty trash for MailMessageAttachments
+      operationId: emptyTrashMailMessageAttachments
+      responses:
+        '200':
+          description: Trash emptied
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  deleted_count:
+                    type: integer
+
+  /api/v1/mail_message_attachments/delete/bulk:
+    post:
+      tags:
+        - MailMessageAttachments
+      summary: Bulk soft-delete MailMessageAttachments by ids (atomic)
+      operationId: bulkDeleteMailMessageAttachments
+      requestBody:
+        $ref: '#/components/requestBodies/BatchIds'
+      responses:
+        '200':
+          description: Soft-deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  soft_deleted: { type: integer }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/mail_message_attachments/restore/bulk:
+    post:
+      tags:
+        - MailMessageAttachments
+      summary: Bulk restore MailMessageAttachments by ids (atomic)
+      operationId: bulkRestoreMailMessageAttachments
+      requestBody:
+        $ref: '#/components/requestBodies/BatchIds'
+      responses:
+        '200':
+          description: Restored
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailMessageAttachmentBulkResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/mail_message_attachments/restore/all:
+    post:
+      tags:
+        - MailMessageAttachments
+      summary: Restore all soft-deleted MailMessageAttachments
+      operationId: restoreAllMailMessageAttachments
+      responses:
+        '200':
+          description: Restored
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  restored: { type: integer }
+
+  /api/v1/mail_message_attachments/trash/bulk:
+    delete:
+      tags:
+        - MailMessageAttachments
+      summary: Bulk permanently-delete MailMessageAttachments from trash by ids (atomic)
+      operationId: bulkPermanentDeleteMailMessageAttachments
+      requestBody:
+        $ref: '#/components/requestBodies/BatchIds'
+      responses:
+        '200':
+          description: Permanently deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  permanently_deleted: { type: integer }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/mail_message_stars:
+    get:
+      tags:
+        - MailMessageStars
+      summary: List MailMessageStars
+      description: Get a paginated list of MailMessageStars with optional filtering and sorting
+      operationId: listMailMessageStars
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PerPageParam'
+        - $ref: '#/components/parameters/SortByParam'
+        - $ref: '#/components/parameters/SortOrderParam'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailMessageStarList'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      tags:
+        - MailMessageStars
+      summary: Create MailMessageStar
+      description: Create a new MailMessageStar
+      operationId: createMailMessageStar
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateMailMessageStarRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailMessageStar'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/v1/mail_message_stars/{id}:
+    parameters:
+      - $ref: '#/components/parameters/IdParam'
+
+    get:
+      tags:
+        - MailMessageStars
+      summary: Get MailMessageStar by ID
+      operationId: getMailMessageStar
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailMessageStar'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags:
+        - MailMessageStars
+      summary: Update MailMessageStar (full)
+      operationId: updateMailMessageStar
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateMailMessageStarRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailMessageStar'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      tags:
+        - MailMessageStars
+      summary: Update MailMessageStar (partial)
+      operationId: patchMailMessageStar
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchMailMessageStarRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailMessageStar'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags:
+        - MailMessageStars
+      summary: Delete MailMessageStar (soft)
+      operationId: deleteMailMessageStar
+      responses:
+        '204':
+          description: Deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/mail_message_stars/bulk:
+    post:
+      tags:
+        - MailMessageStars
+      summary: Bulk create MailMessageStars
+      operationId: bulkCreateMailMessageStars
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/CreateMailMessageStarRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MailMessageStar'
+    put:
+      tags:
+        - MailMessageStars
+      summary: Bulk update MailMessageStars (full, atomic)
+      operationId: bulkUpdateMailMessageStars
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                allOf:
+                  - type: object
+                    required: [id]
+                    properties:
+                      id:
+                        type: string
+                  - $ref: '#/components/schemas/UpdateMailMessageStarRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailMessageStarBulkResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+    patch:
+      tags:
+        - MailMessageStars
+      summary: Bulk partial-update MailMessageStars (atomic)
+      operationId: bulkPatchMailMessageStars
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - type: object
+                  required: [ids, patch]
+                  properties:
+                    ids:
+                      type: array
+                      items: { type: string }
+                    patch:
+                      type: object
+                      additionalProperties: true
+                - type: object
+                  required: [items]
+                  properties:
+                    items:
+                      type: array
+                      items:
+                        type: object
+                        required: [id, patch]
+                        properties:
+                          id: { type: string }
+                          patch: { type: object, additionalProperties: true }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailMessageStarBulkResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/mail_message_stars/upsert:
+    post:
+      tags:
+        - MailMessageStars
+      summary: Upsert MailMessageStar
+      operationId: upsertMailMessageStar
+      parameters:
+        - name: key_field
+          in: query
+          schema:
+            type: string
+        - name: key_value
+          in: query
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateMailMessageStarRequest'
+      responses:
+        '200':
+          description: Upserted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailMessageStar'
+
+  /api/v1/mail_message_stars/trash:
+    get:
+      tags:
+        - MailMessageStars
+      summary: List deleted MailMessageStars
+      operationId: listDeletedMailMessageStars
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PerPageParam'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailMessageStarList'
+
+  /api/v1/mail_message_stars/{id}/restore:
+    parameters:
+      - $ref: '#/components/parameters/IdParam'
+    post:
+      tags:
+        - MailMessageStars
+      summary: Restore deleted MailMessageStar
+      operationId: restoreMailMessageStar
+      responses:
+        '200':
+          description: Restored
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailMessageStar'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/mail_message_stars/empty:
+    delete:
+      tags:
+        - MailMessageStars
+      summary: Empty trash for MailMessageStars
+      operationId: emptyTrashMailMessageStars
+      responses:
+        '200':
+          description: Trash emptied
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  deleted_count:
+                    type: integer
+
+  /api/v1/mail_message_stars/delete/bulk:
+    post:
+      tags:
+        - MailMessageStars
+      summary: Bulk soft-delete MailMessageStars by ids (atomic)
+      operationId: bulkDeleteMailMessageStars
+      requestBody:
+        $ref: '#/components/requestBodies/BatchIds'
+      responses:
+        '200':
+          description: Soft-deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  soft_deleted: { type: integer }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/mail_message_stars/restore/bulk:
+    post:
+      tags:
+        - MailMessageStars
+      summary: Bulk restore MailMessageStars by ids (atomic)
+      operationId: bulkRestoreMailMessageStars
+      requestBody:
+        $ref: '#/components/requestBodies/BatchIds'
+      responses:
+        '200':
+          description: Restored
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailMessageStarBulkResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/mail_message_stars/restore/all:
+    post:
+      tags:
+        - MailMessageStars
+      summary: Restore all soft-deleted MailMessageStars
+      operationId: restoreAllMailMessageStars
+      responses:
+        '200':
+          description: Restored
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  restored: { type: integer }
+
+  /api/v1/mail_message_stars/trash/bulk:
+    delete:
+      tags:
+        - MailMessageStars
+      summary: Bulk permanently-delete MailMessageStars from trash by ids (atomic)
+      operationId: bulkPermanentDeleteMailMessageStars
       requestBody:
         $ref: '#/components/requestBodies/BatchIds'
       responses:
@@ -6643,6 +7751,738 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
+  /api/v1/mail_message_schedules:
+    get:
+      tags:
+        - MailMessageSchedules
+      summary: List MailMessageSchedules
+      description: Get a paginated list of MailMessageSchedules with optional filtering and sorting
+      operationId: listMailMessageSchedules
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PerPageParam'
+        - $ref: '#/components/parameters/SortByParam'
+        - $ref: '#/components/parameters/SortOrderParam'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailMessageScheduleList'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      tags:
+        - MailMessageSchedules
+      summary: Create MailMessageSchedule
+      description: Create a new MailMessageSchedule
+      operationId: createMailMessageSchedule
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateMailMessageScheduleRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailMessageSchedule'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/v1/mail_message_schedules/{id}:
+    parameters:
+      - $ref: '#/components/parameters/IdParam'
+
+    get:
+      tags:
+        - MailMessageSchedules
+      summary: Get MailMessageSchedule by ID
+      operationId: getMailMessageSchedule
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailMessageSchedule'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags:
+        - MailMessageSchedules
+      summary: Update MailMessageSchedule (full)
+      operationId: updateMailMessageSchedule
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateMailMessageScheduleRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailMessageSchedule'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      tags:
+        - MailMessageSchedules
+      summary: Update MailMessageSchedule (partial)
+      operationId: patchMailMessageSchedule
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchMailMessageScheduleRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailMessageSchedule'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags:
+        - MailMessageSchedules
+      summary: Delete MailMessageSchedule (soft)
+      operationId: deleteMailMessageSchedule
+      responses:
+        '204':
+          description: Deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/mail_message_schedules/bulk:
+    post:
+      tags:
+        - MailMessageSchedules
+      summary: Bulk create MailMessageSchedules
+      operationId: bulkCreateMailMessageSchedules
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/CreateMailMessageScheduleRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MailMessageSchedule'
+    put:
+      tags:
+        - MailMessageSchedules
+      summary: Bulk update MailMessageSchedules (full, atomic)
+      operationId: bulkUpdateMailMessageSchedules
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                allOf:
+                  - type: object
+                    required: [id]
+                    properties:
+                      id:
+                        type: string
+                  - $ref: '#/components/schemas/UpdateMailMessageScheduleRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailMessageScheduleBulkResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+    patch:
+      tags:
+        - MailMessageSchedules
+      summary: Bulk partial-update MailMessageSchedules (atomic)
+      operationId: bulkPatchMailMessageSchedules
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - type: object
+                  required: [ids, patch]
+                  properties:
+                    ids:
+                      type: array
+                      items: { type: string }
+                    patch:
+                      type: object
+                      additionalProperties: true
+                - type: object
+                  required: [items]
+                  properties:
+                    items:
+                      type: array
+                      items:
+                        type: object
+                        required: [id, patch]
+                        properties:
+                          id: { type: string }
+                          patch: { type: object, additionalProperties: true }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailMessageScheduleBulkResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/mail_message_schedules/upsert:
+    post:
+      tags:
+        - MailMessageSchedules
+      summary: Upsert MailMessageSchedule
+      operationId: upsertMailMessageSchedule
+      parameters:
+        - name: key_field
+          in: query
+          schema:
+            type: string
+        - name: key_value
+          in: query
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateMailMessageScheduleRequest'
+      responses:
+        '200':
+          description: Upserted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailMessageSchedule'
+
+  /api/v1/mail_message_schedules/trash:
+    get:
+      tags:
+        - MailMessageSchedules
+      summary: List deleted MailMessageSchedules
+      operationId: listDeletedMailMessageSchedules
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PerPageParam'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailMessageScheduleList'
+
+  /api/v1/mail_message_schedules/{id}/restore:
+    parameters:
+      - $ref: '#/components/parameters/IdParam'
+    post:
+      tags:
+        - MailMessageSchedules
+      summary: Restore deleted MailMessageSchedule
+      operationId: restoreMailMessageSchedule
+      responses:
+        '200':
+          description: Restored
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailMessageSchedule'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/mail_message_schedules/empty:
+    delete:
+      tags:
+        - MailMessageSchedules
+      summary: Empty trash for MailMessageSchedules
+      operationId: emptyTrashMailMessageSchedules
+      responses:
+        '200':
+          description: Trash emptied
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  deleted_count:
+                    type: integer
+
+  /api/v1/mail_message_schedules/delete/bulk:
+    post:
+      tags:
+        - MailMessageSchedules
+      summary: Bulk soft-delete MailMessageSchedules by ids (atomic)
+      operationId: bulkDeleteMailMessageSchedules
+      requestBody:
+        $ref: '#/components/requestBodies/BatchIds'
+      responses:
+        '200':
+          description: Soft-deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  soft_deleted: { type: integer }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/mail_message_schedules/restore/bulk:
+    post:
+      tags:
+        - MailMessageSchedules
+      summary: Bulk restore MailMessageSchedules by ids (atomic)
+      operationId: bulkRestoreMailMessageSchedules
+      requestBody:
+        $ref: '#/components/requestBodies/BatchIds'
+      responses:
+        '200':
+          description: Restored
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailMessageScheduleBulkResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/mail_message_schedules/restore/all:
+    post:
+      tags:
+        - MailMessageSchedules
+      summary: Restore all soft-deleted MailMessageSchedules
+      operationId: restoreAllMailMessageSchedules
+      responses:
+        '200':
+          description: Restored
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  restored: { type: integer }
+
+  /api/v1/mail_message_schedules/trash/bulk:
+    delete:
+      tags:
+        - MailMessageSchedules
+      summary: Bulk permanently-delete MailMessageSchedules from trash by ids (atomic)
+      operationId: bulkPermanentDeleteMailMessageSchedules
+      requestBody:
+        $ref: '#/components/requestBodies/BatchIds'
+      responses:
+        '200':
+          description: Permanently deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  permanently_deleted: { type: integer }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/mail_scheduled_messages:
+    get:
+      tags:
+        - MailScheduledMessages
+      summary: List MailScheduledMessages
+      description: Get a paginated list of MailScheduledMessages with optional filtering and sorting
+      operationId: listMailScheduledMessages
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PerPageParam'
+        - $ref: '#/components/parameters/SortByParam'
+        - $ref: '#/components/parameters/SortOrderParam'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailScheduledMessageList'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      tags:
+        - MailScheduledMessages
+      summary: Create MailScheduledMessage
+      description: Create a new MailScheduledMessage
+      operationId: createMailScheduledMessage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateMailScheduledMessageRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailScheduledMessage'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/v1/mail_scheduled_messages/{id}:
+    parameters:
+      - $ref: '#/components/parameters/IdParam'
+
+    get:
+      tags:
+        - MailScheduledMessages
+      summary: Get MailScheduledMessage by ID
+      operationId: getMailScheduledMessage
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailScheduledMessage'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags:
+        - MailScheduledMessages
+      summary: Update MailScheduledMessage (full)
+      operationId: updateMailScheduledMessage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateMailScheduledMessageRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailScheduledMessage'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      tags:
+        - MailScheduledMessages
+      summary: Update MailScheduledMessage (partial)
+      operationId: patchMailScheduledMessage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchMailScheduledMessageRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailScheduledMessage'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags:
+        - MailScheduledMessages
+      summary: Delete MailScheduledMessage (soft)
+      operationId: deleteMailScheduledMessage
+      responses:
+        '204':
+          description: Deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/mail_scheduled_messages/bulk:
+    post:
+      tags:
+        - MailScheduledMessages
+      summary: Bulk create MailScheduledMessages
+      operationId: bulkCreateMailScheduledMessages
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/CreateMailScheduledMessageRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MailScheduledMessage'
+    put:
+      tags:
+        - MailScheduledMessages
+      summary: Bulk update MailScheduledMessages (full, atomic)
+      operationId: bulkUpdateMailScheduledMessages
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                allOf:
+                  - type: object
+                    required: [id]
+                    properties:
+                      id:
+                        type: string
+                  - $ref: '#/components/schemas/UpdateMailScheduledMessageRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailScheduledMessageBulkResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+    patch:
+      tags:
+        - MailScheduledMessages
+      summary: Bulk partial-update MailScheduledMessages (atomic)
+      operationId: bulkPatchMailScheduledMessages
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - type: object
+                  required: [ids, patch]
+                  properties:
+                    ids:
+                      type: array
+                      items: { type: string }
+                    patch:
+                      type: object
+                      additionalProperties: true
+                - type: object
+                  required: [items]
+                  properties:
+                    items:
+                      type: array
+                      items:
+                        type: object
+                        required: [id, patch]
+                        properties:
+                          id: { type: string }
+                          patch: { type: object, additionalProperties: true }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailScheduledMessageBulkResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/mail_scheduled_messages/upsert:
+    post:
+      tags:
+        - MailScheduledMessages
+      summary: Upsert MailScheduledMessage
+      operationId: upsertMailScheduledMessage
+      parameters:
+        - name: key_field
+          in: query
+          schema:
+            type: string
+        - name: key_value
+          in: query
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateMailScheduledMessageRequest'
+      responses:
+        '200':
+          description: Upserted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailScheduledMessage'
+
+  /api/v1/mail_scheduled_messages/trash:
+    get:
+      tags:
+        - MailScheduledMessages
+      summary: List deleted MailScheduledMessages
+      operationId: listDeletedMailScheduledMessages
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PerPageParam'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailScheduledMessageList'
+
+  /api/v1/mail_scheduled_messages/{id}/restore:
+    parameters:
+      - $ref: '#/components/parameters/IdParam'
+    post:
+      tags:
+        - MailScheduledMessages
+      summary: Restore deleted MailScheduledMessage
+      operationId: restoreMailScheduledMessage
+      responses:
+        '200':
+          description: Restored
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailScheduledMessage'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/mail_scheduled_messages/empty:
+    delete:
+      tags:
+        - MailScheduledMessages
+      summary: Empty trash for MailScheduledMessages
+      operationId: emptyTrashMailScheduledMessages
+      responses:
+        '200':
+          description: Trash emptied
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  deleted_count:
+                    type: integer
+
+  /api/v1/mail_scheduled_messages/delete/bulk:
+    post:
+      tags:
+        - MailScheduledMessages
+      summary: Bulk soft-delete MailScheduledMessages by ids (atomic)
+      operationId: bulkDeleteMailScheduledMessages
+      requestBody:
+        $ref: '#/components/requestBodies/BatchIds'
+      responses:
+        '200':
+          description: Soft-deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  soft_deleted: { type: integer }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/mail_scheduled_messages/restore/bulk:
+    post:
+      tags:
+        - MailScheduledMessages
+      summary: Bulk restore MailScheduledMessages by ids (atomic)
+      operationId: bulkRestoreMailScheduledMessages
+      requestBody:
+        $ref: '#/components/requestBodies/BatchIds'
+      responses:
+        '200':
+          description: Restored
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailScheduledMessageBulkResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/mail_scheduled_messages/restore/all:
+    post:
+      tags:
+        - MailScheduledMessages
+      summary: Restore all soft-deleted MailScheduledMessages
+      operationId: restoreAllMailScheduledMessages
+      responses:
+        '200':
+          description: Restored
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  restored: { type: integer }
+
+  /api/v1/mail_scheduled_messages/trash/bulk:
+    delete:
+      tags:
+        - MailScheduledMessages
+      summary: Bulk permanently-delete MailScheduledMessages from trash by ids (atomic)
+      operationId: bulkPermanentDeleteMailScheduledMessages
+      requestBody:
+        $ref: '#/components/requestBodies/BatchIds'
+      responses:
+        '200':
+          description: Permanently deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  permanently_deleted: { type: integer }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
   /api/v1/smses:
     get:
       tags:
@@ -8837,6 +10677,348 @@ components:
         meta:
           $ref: '#/components/schemas/PaginationMeta'
 
+    MailAttachment:
+      type: object
+      required:
+        - id
+        - name
+        - metadata
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        mimetype:
+          nullable: true
+          type: string
+        size:
+          nullable: true
+          type: integer
+          format: int32
+        datas:
+          nullable: true
+          type: string
+        checksum:
+          nullable: true
+          type: string
+        access_token:
+          nullable: true
+          type: string
+          format: uuid
+        owner_party_id:
+          nullable: true
+          type: string
+          format: uuid
+        owner_guest_id:
+          nullable: true
+          type: string
+          format: uuid
+        metadata:
+          type: object
+
+    MailAttachmentBulkResult:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/MailAttachment'
+        total: { type: integer }
+        failed: { type: integer }
+        errors:
+          type: array
+          items: { type: string }
+
+    CreateMailAttachmentRequest:
+      type: object
+      required:
+        - name
+        - metadata
+      properties:
+        name:
+          type: string
+        mimetype:
+          nullable: true
+          type: string
+        size:
+          nullable: true
+          type: integer
+          format: int32
+        datas:
+          nullable: true
+          type: string
+        checksum:
+          nullable: true
+          type: string
+        access_token:
+          nullable: true
+          type: string
+          format: uuid
+        owner_party_id:
+          nullable: true
+          type: string
+          format: uuid
+        owner_guest_id:
+          nullable: true
+          type: string
+          format: uuid
+        metadata:
+          type: object
+
+    UpdateMailAttachmentRequest:
+      type: object
+      required:
+        - name
+        - metadata
+      properties:
+        name:
+          type: string
+        mimetype:
+          nullable: true
+          type: string
+        size:
+          nullable: true
+          type: integer
+          format: int32
+        datas:
+          nullable: true
+          type: string
+        checksum:
+          nullable: true
+          type: string
+        access_token:
+          nullable: true
+          type: string
+          format: uuid
+        owner_party_id:
+          nullable: true
+          type: string
+          format: uuid
+        owner_guest_id:
+          nullable: true
+          type: string
+          format: uuid
+        metadata:
+          type: object
+
+    PatchMailAttachmentRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        mimetype:
+          nullable: true
+          type: string
+        size:
+          nullable: true
+          type: integer
+          format: int32
+        datas:
+          nullable: true
+          type: string
+        checksum:
+          nullable: true
+          type: string
+        access_token:
+          nullable: true
+          type: string
+          format: uuid
+        owner_party_id:
+          nullable: true
+          type: string
+          format: uuid
+        owner_guest_id:
+          nullable: true
+          type: string
+          format: uuid
+        metadata:
+          type: object
+
+    MailAttachmentList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/MailAttachment'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+
+    MailMessageAttachment:
+      type: object
+      required:
+        - id
+        - message_id
+        - attachment_id
+        - metadata
+      properties:
+        id:
+          type: string
+          format: uuid
+        message_id:
+          type: string
+          format: uuid
+        attachment_id:
+          type: string
+          format: uuid
+        metadata:
+          type: object
+
+    MailMessageAttachmentBulkResult:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/MailMessageAttachment'
+        total: { type: integer }
+        failed: { type: integer }
+        errors:
+          type: array
+          items: { type: string }
+
+    CreateMailMessageAttachmentRequest:
+      type: object
+      required:
+        - message_id
+        - attachment_id
+        - metadata
+      properties:
+        message_id:
+          type: string
+          format: uuid
+        attachment_id:
+          type: string
+          format: uuid
+        metadata:
+          type: object
+
+    UpdateMailMessageAttachmentRequest:
+      type: object
+      required:
+        - message_id
+        - attachment_id
+        - metadata
+      properties:
+        message_id:
+          type: string
+          format: uuid
+        attachment_id:
+          type: string
+          format: uuid
+        metadata:
+          type: object
+
+    PatchMailMessageAttachmentRequest:
+      type: object
+      properties:
+        message_id:
+          type: string
+          format: uuid
+        attachment_id:
+          type: string
+          format: uuid
+        metadata:
+          type: object
+
+    MailMessageAttachmentList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/MailMessageAttachment'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+
+    MailMessageStar:
+      type: object
+      required:
+        - id
+        - partner_id
+        - message_id
+        - metadata
+      properties:
+        id:
+          type: string
+          format: uuid
+        partner_id:
+          type: string
+          format: uuid
+        message_id:
+          type: string
+          format: uuid
+        metadata:
+          type: object
+
+    MailMessageStarBulkResult:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/MailMessageStar'
+        total: { type: integer }
+        failed: { type: integer }
+        errors:
+          type: array
+          items: { type: string }
+
+    CreateMailMessageStarRequest:
+      type: object
+      required:
+        - partner_id
+        - message_id
+        - metadata
+      properties:
+        partner_id:
+          type: string
+          format: uuid
+        message_id:
+          type: string
+          format: uuid
+        metadata:
+          type: object
+
+    UpdateMailMessageStarRequest:
+      type: object
+      required:
+        - partner_id
+        - message_id
+        - metadata
+      properties:
+        partner_id:
+          type: string
+          format: uuid
+        message_id:
+          type: string
+          format: uuid
+        metadata:
+          type: object
+
+    PatchMailMessageStarRequest:
+      type: object
+      properties:
+        partner_id:
+          type: string
+          format: uuid
+        message_id:
+          type: string
+          format: uuid
+        metadata:
+          type: object
+
+    MailMessageStarList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/MailMessageStar'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+
     MailMessage:
       type: object
       required:
@@ -8909,6 +11091,10 @@ components:
           nullable: true
           type: number
           format: float
+        pinned_at:
+          nullable: true
+          type: string
+          format: date-time
         metadata:
           type: object
 
@@ -8993,6 +11179,10 @@ components:
           nullable: true
           type: number
           format: float
+        pinned_at:
+          nullable: true
+          type: string
+          format: date-time
         metadata:
           type: object
 
@@ -9064,6 +11254,10 @@ components:
           nullable: true
           type: number
           format: float
+        pinned_at:
+          nullable: true
+          type: string
+          format: date-time
         metadata:
           type: object
 
@@ -9127,6 +11321,10 @@ components:
           nullable: true
           type: number
           format: float
+        pinned_at:
+          nullable: true
+          type: string
+          format: date-time
         metadata:
           type: object
 
@@ -10541,6 +12739,29 @@ components:
         fold_state:
           nullable: true
           type: string
+        fetched_message_id:
+          nullable: true
+          type: string
+          format: uuid
+        new_message_separator:
+          nullable: true
+          type: string
+          format: uuid
+        custom_notifications:
+          nullable: true
+          type: string
+        mute_until_dt:
+          nullable: true
+          type: string
+          format: date-time
+        unpin_dt:
+          nullable: true
+          type: string
+          format: date-time
+        last_seen_dt:
+          nullable: true
+          type: string
+          format: date-time
         message_unread_counter:
           type: integer
           format: int32
@@ -10600,6 +12821,29 @@ components:
         fold_state:
           nullable: true
           type: string
+        fetched_message_id:
+          nullable: true
+          type: string
+          format: uuid
+        new_message_separator:
+          nullable: true
+          type: string
+          format: uuid
+        custom_notifications:
+          nullable: true
+          type: string
+        mute_until_dt:
+          nullable: true
+          type: string
+          format: date-time
+        unpin_dt:
+          nullable: true
+          type: string
+          format: date-time
+        last_seen_dt:
+          nullable: true
+          type: string
+          format: date-time
         message_unread_counter:
           type: integer
           format: int32
@@ -10646,6 +12890,29 @@ components:
         fold_state:
           nullable: true
           type: string
+        fetched_message_id:
+          nullable: true
+          type: string
+          format: uuid
+        new_message_separator:
+          nullable: true
+          type: string
+          format: uuid
+        custom_notifications:
+          nullable: true
+          type: string
+        mute_until_dt:
+          nullable: true
+          type: string
+          format: date-time
+        unpin_dt:
+          nullable: true
+          type: string
+          format: date-time
+        last_seen_dt:
+          nullable: true
+          type: string
+          format: date-time
         message_unread_counter:
           type: integer
           format: int32
@@ -10685,6 +12952,29 @@ components:
         fold_state:
           nullable: true
           type: string
+        fetched_message_id:
+          nullable: true
+          type: string
+          format: uuid
+        new_message_separator:
+          nullable: true
+          type: string
+          format: uuid
+        custom_notifications:
+          nullable: true
+          type: string
+        mute_until_dt:
+          nullable: true
+          type: string
+          format: date-time
+        unpin_dt:
+          nullable: true
+          type: string
+          format: date-time
+        last_seen_dt:
+          nullable: true
+          type: string
+          format: date-time
         message_unread_counter:
           type: integer
           format: int32
@@ -10825,6 +13115,300 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/MailGuest'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+
+    MailMessageSchedule:
+      type: object
+      required:
+        - id
+        - mail_message_id
+        - scheduled_datetime
+        - metadata
+      properties:
+        id:
+          type: string
+          format: uuid
+        mail_message_id:
+          type: string
+          format: uuid
+        notification_parameters:
+          nullable: true
+          type: string
+        scheduled_datetime:
+          type: string
+          format: date-time
+        metadata:
+          type: object
+
+    MailMessageScheduleBulkResult:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/MailMessageSchedule'
+        total: { type: integer }
+        failed: { type: integer }
+        errors:
+          type: array
+          items: { type: string }
+
+    CreateMailMessageScheduleRequest:
+      type: object
+      required:
+        - mail_message_id
+        - scheduled_datetime
+        - metadata
+      properties:
+        mail_message_id:
+          type: string
+          format: uuid
+        notification_parameters:
+          nullable: true
+          type: string
+        scheduled_datetime:
+          type: string
+          format: date-time
+        metadata:
+          type: object
+
+    UpdateMailMessageScheduleRequest:
+      type: object
+      required:
+        - mail_message_id
+        - scheduled_datetime
+        - metadata
+      properties:
+        mail_message_id:
+          type: string
+          format: uuid
+        notification_parameters:
+          nullable: true
+          type: string
+        scheduled_datetime:
+          type: string
+          format: date-time
+        metadata:
+          type: object
+
+    PatchMailMessageScheduleRequest:
+      type: object
+      properties:
+        mail_message_id:
+          type: string
+          format: uuid
+        notification_parameters:
+          nullable: true
+          type: string
+        scheduled_datetime:
+          type: string
+          format: date-time
+        metadata:
+          type: object
+
+    MailMessageScheduleList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/MailMessageSchedule'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+
+    MailScheduledMessage:
+      type: object
+      required:
+        - id
+        - body
+        - scheduled_date
+        - model
+        - res_id
+        - author_party_id
+        - is_note
+        - metadata
+      properties:
+        id:
+          type: string
+          format: uuid
+        subject:
+          nullable: true
+          type: string
+        body:
+          type: string
+        scheduled_date:
+          type: string
+          format: date-time
+        composition_comment_option:
+          nullable: true
+          type: string
+        model:
+          type: string
+        res_id:
+          type: string
+          format: uuid
+        author_party_id:
+          type: string
+          format: uuid
+        recipient_party_ids:
+          nullable: true
+          type: object
+        is_note:
+          type: boolean
+        notification_parameters:
+          nullable: true
+          type: string
+        send_context:
+          nullable: true
+          type: object
+        metadata:
+          type: object
+
+    MailScheduledMessageBulkResult:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/MailScheduledMessage'
+        total: { type: integer }
+        failed: { type: integer }
+        errors:
+          type: array
+          items: { type: string }
+
+    CreateMailScheduledMessageRequest:
+      type: object
+      required:
+        - body
+        - scheduled_date
+        - model
+        - res_id
+        - author_party_id
+        - is_note
+        - metadata
+      properties:
+        subject:
+          nullable: true
+          type: string
+        body:
+          type: string
+        scheduled_date:
+          type: string
+          format: date-time
+        composition_comment_option:
+          nullable: true
+          type: string
+        model:
+          type: string
+        res_id:
+          type: string
+          format: uuid
+        author_party_id:
+          type: string
+          format: uuid
+        recipient_party_ids:
+          nullable: true
+          type: object
+        is_note:
+          type: boolean
+        notification_parameters:
+          nullable: true
+          type: string
+        send_context:
+          nullable: true
+          type: object
+        metadata:
+          type: object
+
+    UpdateMailScheduledMessageRequest:
+      type: object
+      required:
+        - body
+        - scheduled_date
+        - model
+        - res_id
+        - author_party_id
+        - is_note
+        - metadata
+      properties:
+        subject:
+          nullable: true
+          type: string
+        body:
+          type: string
+        scheduled_date:
+          type: string
+          format: date-time
+        composition_comment_option:
+          nullable: true
+          type: string
+        model:
+          type: string
+        res_id:
+          type: string
+          format: uuid
+        author_party_id:
+          type: string
+          format: uuid
+        recipient_party_ids:
+          nullable: true
+          type: object
+        is_note:
+          type: boolean
+        notification_parameters:
+          nullable: true
+          type: string
+        send_context:
+          nullable: true
+          type: object
+        metadata:
+          type: object
+
+    PatchMailScheduledMessageRequest:
+      type: object
+      properties:
+        subject:
+          nullable: true
+          type: string
+        body:
+          type: string
+        scheduled_date:
+          type: string
+          format: date-time
+        composition_comment_option:
+          nullable: true
+          type: string
+        model:
+          type: string
+        res_id:
+          type: string
+          format: uuid
+        author_party_id:
+          type: string
+          format: uuid
+        recipient_party_ids:
+          nullable: true
+          type: object
+        is_note:
+          type: boolean
+        notification_parameters:
+          nullable: true
+          type: string
+        send_context:
+          nullable: true
+          type: object
+        metadata:
+          type: object
+
+    MailScheduledMessageList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/MailScheduledMessage'
         meta:
           $ref: '#/components/schemas/PaginationMeta'
 

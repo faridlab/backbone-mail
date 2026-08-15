@@ -113,6 +113,27 @@ models:
       fold_state:
         type: SidebarFoldState?
         description: "The member's sidebar fold state for this channel (open/closed/null=undefined)."
+      fetched_message_id:
+        type: uuid?
+        attributes: ["@foreign_key(MailMessage.fetched_in_members)", "@exclude_from_foreign_key_check", "@indexed"]
+        description: "Last fetched message pointer (the channel_fetched write target — advanced under FOR NO KEY UPDATE SKIP LOCKED) # logical FK to MailMessage.id"
+      new_message_separator:
+        type: uuid?
+        attributes: ["@foreign_key(MailMessage.separator_in_members)", "@exclude_from_foreign_key_check"]
+        description: "The first 'new' message for this member — the separator boundary (MAIL-M38). Odoo stores an INTEGER message id compared with id >= separator; the port's uuid PKs have no ordering, so the boundary is the message id itself and 'newer-than' comparisons order by created_at in the repository (documented int→uuid adaptation)."
+      custom_notifications:
+        type: MemberCustomNotifications?
+        description: "Per-channel notification override (MAIL-M38): all / mentions / no_notif. Null = inherit the user's global setting."
+      mute_until_dt:
+        type: datetime?
+        description: "Mute notifications until this instant (MAIL-M38). 'Until unmuted' is stored as timestamptz '+infinity' (Odoo's -1 sentinel adapted); NULL = not muted."
+      unpin_dt:
+        type: datetime?
+        attributes: ["@indexed"]
+        description: "When the member unpinned the channel (drives re-pin-vs-stay-unpinned UX)."
+      last_seen_dt:
+        type: datetime?
+        description: "Last seen date (the member's liveness pointer)."
       message_unread_counter:
         type: integer
         attributes: ["@default(0)"]
@@ -149,6 +170,9 @@ models:
         fields: [channel_id, guest_id]
         where: "guest_id IS NOT NULL"
         name: discuss_channel_member_guest_uniq
+      - type: index
+        fields: [channel_id, partner_id, seen_message_id]
+        name: discuss_channel_member_seen_idx
 
   # ===========================================================================
   # mail.guest — the anonymous discuss identity (M43).
@@ -204,3 +228,14 @@ enums:
         default: true
       - name: closed
         description: "Collapsed in the sidebar"
+
+  - name: MemberCustomNotifications
+    description: "discuss.channel.member.custom_notifications — per-channel notification override (null = inherit user setting)."
+    variants:
+      - name: all
+        description: "All messages"
+        default: true
+      - name: mentions
+        description: "Mentions only"
+      - name: no_notif
+        description: "Nothing"

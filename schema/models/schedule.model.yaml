@@ -1,0 +1,123 @@
+# =============================================================================
+# Module: backbone-mail — Area: SCHEDULED MESSAGES (MAIL-M8/M9).
+# Ported from addons/mail/models/{mail_message_schedule,mail_scheduled_message}.py
+# (source-verified 2026-08-15 against playground/odoo @ b9eb72eb).
+#
+# TWO distinct deferral mechanisms, easily conflated:
+#  - M8 mail.message.schedule  = POST NOW, NOTIFY LATER (message exists; the
+#    notify fan-out is delayed). Dispatch UNLINKS the row after sending —
+#    there is NO state column in Odoo and the port keeps that shape; claim
+#    safety comes from FOR UPDATE SKIP LOCKED pickup (ADR-0020), not a state
+#    marker. Self-arms the mail-scheduled-notification job (increment 1
+#    declared the job + MailMessageScheduleCreated event ahead of the model).
+#  - M9 mail.scheduled.message = COMPOSE NOW, POST LATER (the composer's post
+#    values held until scheduled_date; nothing exists in mail.message yet).
+#    Dispatch posts via the message_post pump AS THE CREATOR (permission
+#    re-check at fire time) and unlinks; on failure it notifies the author
+#    instead of raising (cron path). Self-arms mail-post-scheduled-message.
+#
+# INCREMENT-2 adaptations (documented deltas):
+#  - M9's author/partner ids are LOGICAL refs to party.Party (cross-module,
+#    no FK) per module convention; recipient list is a json array of uuids
+#    (short-lived composer values, not a relation worth a join table).
+#  - M9's `_check_model` (target must be a mail.thread model) becomes a
+#    ThreadAccessResolver::can_post check at write time (MAIL-B1 seam).
+#  - M9's scheduled_date-in-past constraint is service-enforced (create path
+#    validates); a DB CHECK against now() would break the row the moment the
+#    clock passes it.
+# =============================================================================
+
+models:
+
+  # ===========================================================================
+  # mail.message.schedule — notify-later queue (MAIL-M8).
+  # ===========================================================================
+  - name: MailMessageSchedule
+    collection: mail_message_schedules
+    description: "mail.message.schedule — delays the NOTIFICATION of an already-posted mail.message (MAIL-M8). The message exists; the bus/notify fan-out is held until scheduled_datetime. Dispatch deletes the row (Odoo has no state column; the port keeps delete-on-dispatch and takes claim safety from FOR UPDATE SKIP LOCKED per ADR-0020)."
+    fields:
+      id:
+        type: uuid
+        attributes: ["@id", "@default(uuid)"]
+        description: "Primary key"
+      mail_message_id:
+        type: uuid
+        attributes: ["@required", "@foreign_key(MailMessage.schedules)", "@exclude_from_foreign_key_check", "@indexed"]
+        description: "The posted message whose notifications are delayed # logical FK to MailMessage.id (Odoo: cascade)"
+      notification_parameters:
+        type: string?
+        description: "JSON-encoded notify kwargs propagated to the notify pump at fire time (Odoo: Text)."
+      scheduled_datetime:
+        type: datetime
+        attributes: ["@required"]
+        description: "When the notification fan-out should fire."
+      metadata:
+        type: Metadata
+        attributes: ["@audit_metadata"]
+        description: "Audit metadata (created_at, updated_at, deleted_at, created_by, updated_by, deleted_by)"
+    indexes:
+      - type: index
+        fields: [scheduled_datetime]
+        name: mail_message_schedule_due_idx
+
+  # ===========================================================================
+  # mail.scheduled.message — post-later composer values (MAIL-M9).
+  # ===========================================================================
+  - name: MailScheduledMessage
+    collection: mail_scheduled_messages
+    description: "mail.scheduled.message — holds the COMPOSER'S post values to delay the POSTING of a message (MAIL-M9; nothing exists in mail.message until it fires). Dispatch re-checks the creator's post permission on the target document (via the ThreadAccessResolver seam, MAIL-B1), posts through the message_post pump as the creator, and unlinks; the cron path notifies the author instead of raising on failure. Target (model,res_id) is immutable after create (Odoo raises on write)."
+    fields:
+      id:
+        type: uuid
+        attributes: ["@id", "@default(uuid)"]
+        description: "Primary key"
+      subject:
+        type: string?
+        description: "Message subject (composer value)."
+      body:
+        type: string
+        attributes: ["@required"]
+        description: "HTML body (sanitized on write — composer value)."
+      scheduled_date:
+        type: datetime
+        attributes: ["@required"]
+        description: "When the post should fire (service-validated not-in-past at create/write)."
+      composition_comment_option:
+        type: string?
+        description: "Comment mode marker: reply_all | forward (plain string — no lifecycle semantics)."
+      model:
+        type: string
+        attributes: ["@required", "@indexed"]
+        description: "Target document model (must be a chatter host — checked via ThreadAccessResolver at write time; immutable after create)."
+      res_id:
+        type: uuid
+        attributes: ["@required", "@exclude_from_foreign_key_check"]
+        description: "Target document id (immutable after create). LOGICAL column, no cross-module FK."
+      author_party_id:
+        type: uuid
+        attributes: ["@required", "@foreign_key(party.Party.scheduled_messages)", "@exclude_from_foreign_key_check"]
+        description: "Author partner # logical FK to party.Party.id"
+      recipient_party_ids:
+        type: json?
+        description: "Recipient partner ids as a JSON array (Odoo m2m res.partner; short-lived composer values — a join table is not worth a cross-module relation here)."
+      is_note:
+        type: boolean
+        attributes: ["@default(false)"]
+        description: "Whether the message will be posted as a note (subtype mt_note instead of mt_comment)."
+      notification_parameters:
+        type: string?
+        description: "JSON-encoded notify kwargs whitelist (email_from, message_type, reply_to, ...) applied at post time."
+      send_context:
+        type: json?
+        description: "Posting context JSON (e.g. trigger document state changes on send)."
+      metadata:
+        type: Metadata
+        attributes: ["@audit_metadata"]
+        description: "Audit metadata (created_at, updated_at, deleted_at, created_by, updated_by, deleted_by)"
+    indexes:
+      - type: index
+        fields: [scheduled_date]
+        name: mail_scheduled_message_due_idx
+      - type: index
+        fields: [model, res_id]
+        name: mail_scheduled_message_target_idx

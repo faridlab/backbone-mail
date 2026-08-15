@@ -111,6 +111,9 @@ models:
       rating_value:
         type: float?
         description: "Rating value placeholder (populated by the rating overlay; kept as a logical column)."
+      pinned_at:
+        type: datetime?
+        description: "When this message was pinned in its channel (MAIL-M37 adjunct — source-verified: Odoo puts pinned_at ON mail.message; the channel's pinned list is the one2many over (model='discuss.channel', res_id=channel, pinned_at != null). The pin/unpin write is a raw UPDATE that deliberately does NOT bump updated_at — see channel_member repository)."
       metadata:
         type: Metadata
         attributes: ["@audit_metadata"]

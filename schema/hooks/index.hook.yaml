@@ -15,6 +15,10 @@
 #   discuss_channel_member.hook.yaml G-MAIL-8
 #   sms.hook.yaml                   SmsHooks (machine + G-SM1)
 #   sms_tracker.hook.yaml           G-SM2 + SM-B6 monotonic-trigger intent
+#
+# Increment-2 additions live here (index-level): jobs sms-stuck-process-sweep
+# (SM-B13), mail-presence-gc, mail-guest-gc, mail-post-scheduled-message
+# (M9); events SmsStuckProcessDetected, MailScheduledMessageCreated.
 # =============================================================================
 
 module: messaging
@@ -193,7 +197,7 @@ events:
       - { name: state, type: string, description: "Initial state (outgoing)" }
 
   MailMessageScheduleCreated:
-    description: "A scheduled notification was armed (a mail.message.schedule row minted — the model itself is DEFERRED to a later increment; the event and the mail-scheduled-notification job contract are pinned now so the emitter can land against them). Derived port vocabulary. (Docs: none — port addition for SJ mail-scheduled-notification.)"
+    description: "A scheduled notification was armed (a mail.message.schedule row minted — MAIL-M8, model landed in Increment 2). Arms the self-arming mail-scheduled-notification job. Derived port vocabulary. (Docs: none — port addition for SJ mail-scheduled-notification.)"
     aggregate: MailMessageSchedule
     version: 1
     storage:
@@ -201,10 +205,37 @@ events:
       retention: "365_days"
       index_fields: [scheduled_datetime]
     fields:
-      - { name: schedule_id, type: uuid, description: "The schedule row id (model deferred — see description)" }
+      - { name: schedule_id, type: uuid, description: "The schedule row id" }
       - { name: mail_message_id, type: "uuid?", description: "The message to send when the schedule fires" }
       - { name: notification_ids, type: "array<uuid>", description: "The notifications armed by this schedule" }
       - { name: scheduled_datetime, type: datetime, description: "When the send should fire" }
+
+  MailScheduledMessageCreated:
+    description: "A post-later composer draft was minted (a mail.scheduled.message row — MAIL-M9, Increment 2). Arms the self-arming mail-post-scheduled-message job. Derived port vocabulary. (Docs: none — port addition for the M9 dispatch cron.)"
+    aggregate: MailScheduledMessage
+    version: 1
+    storage:
+      store: true
+      retention: "365_days"
+      index_fields: [scheduled_date]
+    fields:
+      - { name: scheduled_message_id, type: uuid, description: "The MailScheduledMessage row id" }
+      - { name: model, type: string, description: "Target document model" }
+      - { name: res_id, type: uuid, description: "Target document id" }
+      - { name: author_party_id, type: uuid, description: "The composer partner (permission re-checked at fire time)" }
+      - { name: scheduled_date, type: datetime, description: "When the post should fire" }
+
+  SmsStuckProcessDetected:
+    description: "The stuck-process sweep found Sms rows sitting in state 'process' longer than the threshold (SM-B13) — the queue's drainer died mid-flight. The sweep emits this alert and (bounded) re-queues the rows for pickup. Derived port vocabulary. (Docs: SM-B13 is Odoo's vacuum-in-code; the port makes it an observable event.)"
+    aggregate: Sms
+    version: 1
+    storage:
+      store: true
+      retention: "90_days"
+    fields:
+      - { name: sms_ids, type: "array<uuid>", description: "The stuck Sms row ids (one event per sweep batch)" }
+      - { name: stuck_for_minutes, type: integer, description: "How long the oldest row had been in 'process'" }
+      - { name: requeued, type: boolean, description: "Whether the sweep re-queued the rows (bounded — rows re-stuck beyond the bound are NOT re-queued again)" }
 
 # =============================================================================
 # Scheduled jobs (ADR-0020 postures)
@@ -233,6 +264,10 @@ scheduled_jobs:
     commit_policy: commit_per_batch
     pickup_lock: true
 
+  # MAIL-B8 (Increment-2 change): reap ALL mail.notification rows past the age
+  # bound. Odoo carves out portal-shared rows (partner_share flag); the port
+  # has no partner_share, so the carve-out is dropped and every row is
+  # reaped by age — a deliberate, documented delta (port-notes §increment-2).
   mail-notification-gc:
     schedule: "0 3 * * *"
     handler: "mail_notification::gc"
@@ -252,5 +287,46 @@ scheduled_jobs:
     handler: "mail_scheduled_notification::dispatch_due"
     posture: self_arming
     triggers: ["MailMessageScheduleCreated"]
+    commit_policy: commit_per_batch
+    pickup_lock: true
+
+  # --- Increment-2 additions --------------------------------------------------
+
+  # SM-B13: sweep Sms rows stuck in 'process' (drainer died mid-flight) —
+  # emit SmsStuckProcessDetected + bounded re-queue so the rows are picked
+  # up again. Pull posture (no arming event for a stuck row, by definition).
+  sms-stuck-process-sweep:
+    schedule: "*/10 * * * *"
+    handler: "sms::sweep_stuck_process"
+    posture: pull
+    commit_policy: commit_per_batch
+    pickup_lock: true
+
+  # MAIL-M11 adjunct: reap MailPresence rows whose last_poll went stale
+  # (Odoo vacuum-in-code; 12h per config/application.yml presence.stale_after_hours).
+  mail-presence-gc:
+    schedule: "*/30 * * * *"
+    handler: "mail_presence::gc"
+    posture: autovacuum_ride
+    commit_policy: single_transaction
+    pickup_lock: true
+
+  # M43: archive guests whose last_connection_dt went stale (auth_gc analog;
+  # 60min per config/application.yml guest.gc_after_minutes).
+  mail-guest-gc:
+    schedule: "*/15 * * * *"
+    handler: "mail_guest::gc"
+    posture: autovacuum_ride
+    commit_policy: single_transaction
+    pickup_lock: true
+
+  # MAIL-M9: post-later dispatch — fire due mail.scheduled.message rows
+  # through the message_post pump as their creator (permission re-checked at
+  # fire time); notify the author instead of raising on failure (cron path).
+  mail-post-scheduled-message:
+    schedule: "*/5 * * * *"
+    handler: "mail_post_scheduled_message::dispatch_due"
+    posture: self_arming
+    triggers: ["MailScheduledMessageCreated"]
     commit_policy: commit_per_batch
     pickup_lock: true
