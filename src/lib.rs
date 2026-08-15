@@ -56,6 +56,9 @@ pub use application::service::MailTrackingValueService;
 pub use application::service::DiscussChannelService;
 pub use application::service::DiscussChannelMemberService;
 pub use application::service::MailGuestService;
+pub use application::service::MailServerService;
+pub use application::service::FetchmailServerService;
+pub use application::service::MailGatewayAllowedService;
 pub use application::service::MailMessageScheduleService;
 pub use application::service::MailScheduledMessageService;
 pub use application::service::SmsService;
@@ -117,6 +120,9 @@ pub struct MessagingModule {
     pub(crate) discuss_channel_service: Arc<DiscussChannelService>,
     pub(crate) discuss_channel_member_service: Arc<DiscussChannelMemberService>,
     pub(crate) mail_guest_service: Arc<MailGuestService>,
+    pub(crate) mail_server_service: Arc<MailServerService>,
+    pub(crate) fetchmail_server_service: Arc<FetchmailServerService>,
+    pub(crate) mail_gateway_allowed_service: Arc<MailGatewayAllowedService>,
     pub(crate) mail_message_schedule_service: Arc<MailMessageScheduleService>,
     pub(crate) mail_scheduled_message_service: Arc<MailScheduledMessageService>,
     pub(crate) sms_service: Arc<SmsService>,
@@ -198,6 +204,9 @@ impl MessagingModule {
             create_discuss_channel_routes,
             create_discuss_channel_member_routes,
             create_mail_guest_routes,
+            create_mail_server_routes,
+            create_fetchmail_server_routes,
+            create_mail_gateway_allowed_routes,
             create_mail_message_schedule_routes,
             create_mail_scheduled_message_routes,
             create_sms_routes,
@@ -227,6 +236,9 @@ impl MessagingModule {
             .merge(create_discuss_channel_routes(self.discuss_channel_service.clone()))
             .merge(create_discuss_channel_member_routes(self.discuss_channel_member_service.clone()))
             .merge(create_mail_guest_routes(self.mail_guest_service.clone()))
+            .merge(create_mail_server_routes(self.mail_server_service.clone()))
+            .merge(create_fetchmail_server_routes(self.fetchmail_server_service.clone()))
+            .merge(create_mail_gateway_allowed_routes(self.mail_gateway_allowed_service.clone()))
             .merge(create_mail_message_schedule_routes(self.mail_message_schedule_service.clone()))
             .merge(create_mail_scheduled_message_routes(self.mail_scheduled_message_service.clone()))
             .merge(create_sms_routes(self.sms_service.clone()))
@@ -272,6 +284,9 @@ impl MessagingModule {
             create_discuss_channel_read_routes,
             create_discuss_channel_member_read_routes,
             create_mail_guest_read_routes,
+            create_mail_server_read_routes,
+            create_fetchmail_server_read_routes,
+            create_mail_gateway_allowed_read_routes,
             create_mail_message_schedule_read_routes,
             create_mail_scheduled_message_read_routes,
             create_sms_read_routes,
@@ -301,6 +316,9 @@ impl MessagingModule {
             .merge(create_discuss_channel_read_routes(self.discuss_channel_service.clone()))
             .merge(create_discuss_channel_member_read_routes(self.discuss_channel_member_service.clone()))
             .merge(create_mail_guest_read_routes(self.mail_guest_service.clone()))
+            .merge(create_mail_server_read_routes(self.mail_server_service.clone()))
+            .merge(create_fetchmail_server_read_routes(self.fetchmail_server_service.clone()))
+            .merge(create_mail_gateway_allowed_read_routes(self.mail_gateway_allowed_service.clone()))
             .merge(create_mail_message_schedule_read_routes(self.mail_message_schedule_service.clone()))
             .merge(create_mail_scheduled_message_read_routes(self.mail_scheduled_message_service.clone()))
             .merge(create_sms_read_routes(self.sms_service.clone()))
@@ -499,6 +517,18 @@ impl MessagingModuleBuilder {
         let mail_guest_repository = Arc::new(MailGuestRepository::new(db_pool.clone()));
         let mail_guest_service = Arc::new(MailGuestService::with_repository(mail_guest_repository.clone()));
 
+        // MailServer service
+        let mail_server_repository = Arc::new(MailServerRepository::new(db_pool.clone()));
+        let mail_server_service = Arc::new(MailServerService::with_repository(mail_server_repository.clone()));
+
+        // FetchmailServer service
+        let fetchmail_server_repository = Arc::new(FetchmailServerRepository::new(db_pool.clone()));
+        let fetchmail_server_service = Arc::new(FetchmailServerService::with_repository(fetchmail_server_repository.clone()));
+
+        // MailGatewayAllowed service
+        let mail_gateway_allowed_repository = Arc::new(MailGatewayAllowedRepository::new(db_pool.clone()));
+        let mail_gateway_allowed_service = Arc::new(MailGatewayAllowedService::with_repository(mail_gateway_allowed_repository.clone()));
+
         // MailMessageSchedule service
         let mail_message_schedule_repository = Arc::new(MailMessageScheduleRepository::new(db_pool.clone()));
         let mail_message_schedule_service = Arc::new(MailMessageScheduleService::with_repository(mail_message_schedule_repository.clone()));
@@ -577,6 +607,9 @@ impl MessagingModuleBuilder {
             discuss_channel_service,
             discuss_channel_member_service,
             mail_guest_service,
+            mail_server_service,
+            fetchmail_server_service,
+            mail_gateway_allowed_service,
             mail_message_schedule_service,
             mail_scheduled_message_service,
             sms_service,

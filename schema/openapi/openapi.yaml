@@ -53,6 +53,12 @@ tags:
     description: DiscussChannelMember management endpoints
   - name: MailGuests
     description: MailGuest management endpoints
+  - name: MailServers
+    description: MailServer management endpoints
+  - name: FetchmailServers
+    description: FetchmailServer management endpoints
+  - name: MailGatewayAlloweds
+    description: MailGatewayAllowed management endpoints
   - name: MailMessageSchedules
     description: MailMessageSchedule management endpoints
   - name: MailScheduledMessages
@@ -7751,6 +7757,1104 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
+  /api/v1/mail_servers:
+    get:
+      tags:
+        - MailServers
+      summary: List MailServers
+      description: Get a paginated list of MailServers with optional filtering and sorting
+      operationId: listMailServers
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PerPageParam'
+        - $ref: '#/components/parameters/SortByParam'
+        - $ref: '#/components/parameters/SortOrderParam'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailServerList'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      tags:
+        - MailServers
+      summary: Create MailServer
+      description: Create a new MailServer
+      operationId: createMailServer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateMailServerRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailServer'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/v1/mail_servers/{id}:
+    parameters:
+      - $ref: '#/components/parameters/IdParam'
+
+    get:
+      tags:
+        - MailServers
+      summary: Get MailServer by ID
+      operationId: getMailServer
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailServer'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags:
+        - MailServers
+      summary: Update MailServer (full)
+      operationId: updateMailServer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateMailServerRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailServer'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      tags:
+        - MailServers
+      summary: Update MailServer (partial)
+      operationId: patchMailServer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchMailServerRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailServer'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags:
+        - MailServers
+      summary: Delete MailServer (soft)
+      operationId: deleteMailServer
+      responses:
+        '204':
+          description: Deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/mail_servers/bulk:
+    post:
+      tags:
+        - MailServers
+      summary: Bulk create MailServers
+      operationId: bulkCreateMailServers
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/CreateMailServerRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MailServer'
+    put:
+      tags:
+        - MailServers
+      summary: Bulk update MailServers (full, atomic)
+      operationId: bulkUpdateMailServers
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                allOf:
+                  - type: object
+                    required: [id]
+                    properties:
+                      id:
+                        type: string
+                  - $ref: '#/components/schemas/UpdateMailServerRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailServerBulkResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+    patch:
+      tags:
+        - MailServers
+      summary: Bulk partial-update MailServers (atomic)
+      operationId: bulkPatchMailServers
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - type: object
+                  required: [ids, patch]
+                  properties:
+                    ids:
+                      type: array
+                      items: { type: string }
+                    patch:
+                      type: object
+                      additionalProperties: true
+                - type: object
+                  required: [items]
+                  properties:
+                    items:
+                      type: array
+                      items:
+                        type: object
+                        required: [id, patch]
+                        properties:
+                          id: { type: string }
+                          patch: { type: object, additionalProperties: true }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailServerBulkResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/mail_servers/upsert:
+    post:
+      tags:
+        - MailServers
+      summary: Upsert MailServer
+      operationId: upsertMailServer
+      parameters:
+        - name: key_field
+          in: query
+          schema:
+            type: string
+        - name: key_value
+          in: query
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateMailServerRequest'
+      responses:
+        '200':
+          description: Upserted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailServer'
+
+  /api/v1/mail_servers/trash:
+    get:
+      tags:
+        - MailServers
+      summary: List deleted MailServers
+      operationId: listDeletedMailServers
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PerPageParam'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailServerList'
+
+  /api/v1/mail_servers/{id}/restore:
+    parameters:
+      - $ref: '#/components/parameters/IdParam'
+    post:
+      tags:
+        - MailServers
+      summary: Restore deleted MailServer
+      operationId: restoreMailServer
+      responses:
+        '200':
+          description: Restored
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailServer'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/mail_servers/empty:
+    delete:
+      tags:
+        - MailServers
+      summary: Empty trash for MailServers
+      operationId: emptyTrashMailServers
+      responses:
+        '200':
+          description: Trash emptied
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  deleted_count:
+                    type: integer
+
+  /api/v1/mail_servers/delete/bulk:
+    post:
+      tags:
+        - MailServers
+      summary: Bulk soft-delete MailServers by ids (atomic)
+      operationId: bulkDeleteMailServers
+      requestBody:
+        $ref: '#/components/requestBodies/BatchIds'
+      responses:
+        '200':
+          description: Soft-deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  soft_deleted: { type: integer }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/mail_servers/restore/bulk:
+    post:
+      tags:
+        - MailServers
+      summary: Bulk restore MailServers by ids (atomic)
+      operationId: bulkRestoreMailServers
+      requestBody:
+        $ref: '#/components/requestBodies/BatchIds'
+      responses:
+        '200':
+          description: Restored
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailServerBulkResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/mail_servers/restore/all:
+    post:
+      tags:
+        - MailServers
+      summary: Restore all soft-deleted MailServers
+      operationId: restoreAllMailServers
+      responses:
+        '200':
+          description: Restored
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  restored: { type: integer }
+
+  /api/v1/mail_servers/trash/bulk:
+    delete:
+      tags:
+        - MailServers
+      summary: Bulk permanently-delete MailServers from trash by ids (atomic)
+      operationId: bulkPermanentDeleteMailServers
+      requestBody:
+        $ref: '#/components/requestBodies/BatchIds'
+      responses:
+        '200':
+          description: Permanently deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  permanently_deleted: { type: integer }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/fetchmail_servers:
+    get:
+      tags:
+        - FetchmailServers
+      summary: List FetchmailServers
+      description: Get a paginated list of FetchmailServers with optional filtering and sorting
+      operationId: listFetchmailServers
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PerPageParam'
+        - $ref: '#/components/parameters/SortByParam'
+        - $ref: '#/components/parameters/SortOrderParam'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FetchmailServerList'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      tags:
+        - FetchmailServers
+      summary: Create FetchmailServer
+      description: Create a new FetchmailServer
+      operationId: createFetchmailServer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateFetchmailServerRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FetchmailServer'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/v1/fetchmail_servers/{id}:
+    parameters:
+      - $ref: '#/components/parameters/IdParam'
+
+    get:
+      tags:
+        - FetchmailServers
+      summary: Get FetchmailServer by ID
+      operationId: getFetchmailServer
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FetchmailServer'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags:
+        - FetchmailServers
+      summary: Update FetchmailServer (full)
+      operationId: updateFetchmailServer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateFetchmailServerRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FetchmailServer'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      tags:
+        - FetchmailServers
+      summary: Update FetchmailServer (partial)
+      operationId: patchFetchmailServer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchFetchmailServerRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FetchmailServer'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags:
+        - FetchmailServers
+      summary: Delete FetchmailServer (soft)
+      operationId: deleteFetchmailServer
+      responses:
+        '204':
+          description: Deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/fetchmail_servers/bulk:
+    post:
+      tags:
+        - FetchmailServers
+      summary: Bulk create FetchmailServers
+      operationId: bulkCreateFetchmailServers
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/CreateFetchmailServerRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FetchmailServer'
+    put:
+      tags:
+        - FetchmailServers
+      summary: Bulk update FetchmailServers (full, atomic)
+      operationId: bulkUpdateFetchmailServers
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                allOf:
+                  - type: object
+                    required: [id]
+                    properties:
+                      id:
+                        type: string
+                  - $ref: '#/components/schemas/UpdateFetchmailServerRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FetchmailServerBulkResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+    patch:
+      tags:
+        - FetchmailServers
+      summary: Bulk partial-update FetchmailServers (atomic)
+      operationId: bulkPatchFetchmailServers
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - type: object
+                  required: [ids, patch]
+                  properties:
+                    ids:
+                      type: array
+                      items: { type: string }
+                    patch:
+                      type: object
+                      additionalProperties: true
+                - type: object
+                  required: [items]
+                  properties:
+                    items:
+                      type: array
+                      items:
+                        type: object
+                        required: [id, patch]
+                        properties:
+                          id: { type: string }
+                          patch: { type: object, additionalProperties: true }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FetchmailServerBulkResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/fetchmail_servers/upsert:
+    post:
+      tags:
+        - FetchmailServers
+      summary: Upsert FetchmailServer
+      operationId: upsertFetchmailServer
+      parameters:
+        - name: key_field
+          in: query
+          schema:
+            type: string
+        - name: key_value
+          in: query
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateFetchmailServerRequest'
+      responses:
+        '200':
+          description: Upserted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FetchmailServer'
+
+  /api/v1/fetchmail_servers/trash:
+    get:
+      tags:
+        - FetchmailServers
+      summary: List deleted FetchmailServers
+      operationId: listDeletedFetchmailServers
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PerPageParam'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FetchmailServerList'
+
+  /api/v1/fetchmail_servers/{id}/restore:
+    parameters:
+      - $ref: '#/components/parameters/IdParam'
+    post:
+      tags:
+        - FetchmailServers
+      summary: Restore deleted FetchmailServer
+      operationId: restoreFetchmailServer
+      responses:
+        '200':
+          description: Restored
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FetchmailServer'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/fetchmail_servers/empty:
+    delete:
+      tags:
+        - FetchmailServers
+      summary: Empty trash for FetchmailServers
+      operationId: emptyTrashFetchmailServers
+      responses:
+        '200':
+          description: Trash emptied
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  deleted_count:
+                    type: integer
+
+  /api/v1/fetchmail_servers/delete/bulk:
+    post:
+      tags:
+        - FetchmailServers
+      summary: Bulk soft-delete FetchmailServers by ids (atomic)
+      operationId: bulkDeleteFetchmailServers
+      requestBody:
+        $ref: '#/components/requestBodies/BatchIds'
+      responses:
+        '200':
+          description: Soft-deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  soft_deleted: { type: integer }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/fetchmail_servers/restore/bulk:
+    post:
+      tags:
+        - FetchmailServers
+      summary: Bulk restore FetchmailServers by ids (atomic)
+      operationId: bulkRestoreFetchmailServers
+      requestBody:
+        $ref: '#/components/requestBodies/BatchIds'
+      responses:
+        '200':
+          description: Restored
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FetchmailServerBulkResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/fetchmail_servers/restore/all:
+    post:
+      tags:
+        - FetchmailServers
+      summary: Restore all soft-deleted FetchmailServers
+      operationId: restoreAllFetchmailServers
+      responses:
+        '200':
+          description: Restored
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  restored: { type: integer }
+
+  /api/v1/fetchmail_servers/trash/bulk:
+    delete:
+      tags:
+        - FetchmailServers
+      summary: Bulk permanently-delete FetchmailServers from trash by ids (atomic)
+      operationId: bulkPermanentDeleteFetchmailServers
+      requestBody:
+        $ref: '#/components/requestBodies/BatchIds'
+      responses:
+        '200':
+          description: Permanently deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  permanently_deleted: { type: integer }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/mail_gateway_alloweds:
+    get:
+      tags:
+        - MailGatewayAlloweds
+      summary: List MailGatewayAlloweds
+      description: Get a paginated list of MailGatewayAlloweds with optional filtering and sorting
+      operationId: listMailGatewayAlloweds
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PerPageParam'
+        - $ref: '#/components/parameters/SortByParam'
+        - $ref: '#/components/parameters/SortOrderParam'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailGatewayAllowedList'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      tags:
+        - MailGatewayAlloweds
+      summary: Create MailGatewayAllowed
+      description: Create a new MailGatewayAllowed
+      operationId: createMailGatewayAllowed
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateMailGatewayAllowedRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailGatewayAllowed'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/v1/mail_gateway_alloweds/{id}:
+    parameters:
+      - $ref: '#/components/parameters/IdParam'
+
+    get:
+      tags:
+        - MailGatewayAlloweds
+      summary: Get MailGatewayAllowed by ID
+      operationId: getMailGatewayAllowed
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailGatewayAllowed'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags:
+        - MailGatewayAlloweds
+      summary: Update MailGatewayAllowed (full)
+      operationId: updateMailGatewayAllowed
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateMailGatewayAllowedRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailGatewayAllowed'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      tags:
+        - MailGatewayAlloweds
+      summary: Update MailGatewayAllowed (partial)
+      operationId: patchMailGatewayAllowed
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchMailGatewayAllowedRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailGatewayAllowed'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags:
+        - MailGatewayAlloweds
+      summary: Delete MailGatewayAllowed (soft)
+      operationId: deleteMailGatewayAllowed
+      responses:
+        '204':
+          description: Deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/mail_gateway_alloweds/bulk:
+    post:
+      tags:
+        - MailGatewayAlloweds
+      summary: Bulk create MailGatewayAlloweds
+      operationId: bulkCreateMailGatewayAlloweds
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/CreateMailGatewayAllowedRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MailGatewayAllowed'
+    put:
+      tags:
+        - MailGatewayAlloweds
+      summary: Bulk update MailGatewayAlloweds (full, atomic)
+      operationId: bulkUpdateMailGatewayAlloweds
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                allOf:
+                  - type: object
+                    required: [id]
+                    properties:
+                      id:
+                        type: string
+                  - $ref: '#/components/schemas/UpdateMailGatewayAllowedRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailGatewayAllowedBulkResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+    patch:
+      tags:
+        - MailGatewayAlloweds
+      summary: Bulk partial-update MailGatewayAlloweds (atomic)
+      operationId: bulkPatchMailGatewayAlloweds
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - type: object
+                  required: [ids, patch]
+                  properties:
+                    ids:
+                      type: array
+                      items: { type: string }
+                    patch:
+                      type: object
+                      additionalProperties: true
+                - type: object
+                  required: [items]
+                  properties:
+                    items:
+                      type: array
+                      items:
+                        type: object
+                        required: [id, patch]
+                        properties:
+                          id: { type: string }
+                          patch: { type: object, additionalProperties: true }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailGatewayAllowedBulkResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/mail_gateway_alloweds/upsert:
+    post:
+      tags:
+        - MailGatewayAlloweds
+      summary: Upsert MailGatewayAllowed
+      operationId: upsertMailGatewayAllowed
+      parameters:
+        - name: key_field
+          in: query
+          schema:
+            type: string
+        - name: key_value
+          in: query
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateMailGatewayAllowedRequest'
+      responses:
+        '200':
+          description: Upserted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailGatewayAllowed'
+
+  /api/v1/mail_gateway_alloweds/trash:
+    get:
+      tags:
+        - MailGatewayAlloweds
+      summary: List deleted MailGatewayAlloweds
+      operationId: listDeletedMailGatewayAlloweds
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PerPageParam'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailGatewayAllowedList'
+
+  /api/v1/mail_gateway_alloweds/{id}/restore:
+    parameters:
+      - $ref: '#/components/parameters/IdParam'
+    post:
+      tags:
+        - MailGatewayAlloweds
+      summary: Restore deleted MailGatewayAllowed
+      operationId: restoreMailGatewayAllowed
+      responses:
+        '200':
+          description: Restored
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailGatewayAllowed'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/mail_gateway_alloweds/empty:
+    delete:
+      tags:
+        - MailGatewayAlloweds
+      summary: Empty trash for MailGatewayAlloweds
+      operationId: emptyTrashMailGatewayAlloweds
+      responses:
+        '200':
+          description: Trash emptied
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  deleted_count:
+                    type: integer
+
+  /api/v1/mail_gateway_alloweds/delete/bulk:
+    post:
+      tags:
+        - MailGatewayAlloweds
+      summary: Bulk soft-delete MailGatewayAlloweds by ids (atomic)
+      operationId: bulkDeleteMailGatewayAlloweds
+      requestBody:
+        $ref: '#/components/requestBodies/BatchIds'
+      responses:
+        '200':
+          description: Soft-deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  soft_deleted: { type: integer }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/mail_gateway_alloweds/restore/bulk:
+    post:
+      tags:
+        - MailGatewayAlloweds
+      summary: Bulk restore MailGatewayAlloweds by ids (atomic)
+      operationId: bulkRestoreMailGatewayAlloweds
+      requestBody:
+        $ref: '#/components/requestBodies/BatchIds'
+      responses:
+        '200':
+          description: Restored
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailGatewayAllowedBulkResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/mail_gateway_alloweds/restore/all:
+    post:
+      tags:
+        - MailGatewayAlloweds
+      summary: Restore all soft-deleted MailGatewayAlloweds
+      operationId: restoreAllMailGatewayAlloweds
+      responses:
+        '200':
+          description: Restored
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  restored: { type: integer }
+
+  /api/v1/mail_gateway_alloweds/trash/bulk:
+    delete:
+      tags:
+        - MailGatewayAlloweds
+      summary: Bulk permanently-delete MailGatewayAlloweds from trash by ids (atomic)
+      operationId: bulkPermanentDeleteMailGatewayAlloweds
+      requestBody:
+        $ref: '#/components/requestBodies/BatchIds'
+      responses:
+        '200':
+          description: Permanently deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  permanently_deleted: { type: integer }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
   /api/v1/mail_message_schedules:
     get:
       tags:
@@ -13115,6 +14219,462 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/MailGuest'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+
+    MailServer:
+      type: object
+      required:
+        - id
+        - name
+        - smtp_host
+        - smtp_port
+        - smtp_authentication
+        - smtp_encryption
+        - smtp_debug
+        - sequence
+        - active
+        - metadata
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        from_filter:
+          nullable: true
+          type: string
+        smtp_host:
+          type: string
+        smtp_port:
+          type: integer
+          format: int32
+        smtp_authentication:
+          type: string
+        smtp_user:
+          nullable: true
+          type: string
+        smtp_pass_ref:
+          nullable: true
+          type: string
+        smtp_encryption:
+          type: string
+        smtp_debug:
+          type: boolean
+        sequence:
+          type: integer
+          format: int32
+        active:
+          type: boolean
+        metadata:
+          type: object
+
+    MailServerBulkResult:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/MailServer'
+        total: { type: integer }
+        failed: { type: integer }
+        errors:
+          type: array
+          items: { type: string }
+
+    CreateMailServerRequest:
+      type: object
+      required:
+        - name
+        - smtp_host
+        - smtp_port
+        - smtp_authentication
+        - smtp_encryption
+        - smtp_debug
+        - sequence
+        - active
+        - metadata
+      properties:
+        name:
+          type: string
+        from_filter:
+          nullable: true
+          type: string
+        smtp_host:
+          type: string
+        smtp_port:
+          type: integer
+          format: int32
+        smtp_authentication:
+          type: string
+        smtp_user:
+          nullable: true
+          type: string
+        smtp_pass_ref:
+          nullable: true
+          type: string
+        smtp_encryption:
+          type: string
+        smtp_debug:
+          type: boolean
+        sequence:
+          type: integer
+          format: int32
+        active:
+          type: boolean
+        metadata:
+          type: object
+
+    UpdateMailServerRequest:
+      type: object
+      required:
+        - name
+        - smtp_host
+        - smtp_port
+        - smtp_authentication
+        - smtp_encryption
+        - smtp_debug
+        - sequence
+        - active
+        - metadata
+      properties:
+        name:
+          type: string
+        from_filter:
+          nullable: true
+          type: string
+        smtp_host:
+          type: string
+        smtp_port:
+          type: integer
+          format: int32
+        smtp_authentication:
+          type: string
+        smtp_user:
+          nullable: true
+          type: string
+        smtp_pass_ref:
+          nullable: true
+          type: string
+        smtp_encryption:
+          type: string
+        smtp_debug:
+          type: boolean
+        sequence:
+          type: integer
+          format: int32
+        active:
+          type: boolean
+        metadata:
+          type: object
+
+    PatchMailServerRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        from_filter:
+          nullable: true
+          type: string
+        smtp_host:
+          type: string
+        smtp_port:
+          type: integer
+          format: int32
+        smtp_authentication:
+          type: string
+        smtp_user:
+          nullable: true
+          type: string
+        smtp_pass_ref:
+          nullable: true
+          type: string
+        smtp_encryption:
+          type: string
+        smtp_debug:
+          type: boolean
+        sequence:
+          type: integer
+          format: int32
+        active:
+          type: boolean
+        metadata:
+          type: object
+
+    MailServerList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/MailServer'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+
+    FetchmailServer:
+      type: object
+      required:
+        - id
+        - name
+        - active
+        - state
+        - priority
+        - token_hash
+        - metadata
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        active:
+          type: boolean
+        state:
+          type: string
+        default_thread_model:
+          nullable: true
+          type: string
+        priority:
+          type: integer
+          format: int32
+        token_hash:
+          type: string
+        last_fetch_at:
+          nullable: true
+          type: string
+          format: date-time
+        error_at:
+          nullable: true
+          type: string
+          format: date-time
+        error_message:
+          nullable: true
+          type: string
+        metadata:
+          type: object
+
+    FetchmailServerBulkResult:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/FetchmailServer'
+        total: { type: integer }
+        failed: { type: integer }
+        errors:
+          type: array
+          items: { type: string }
+
+    CreateFetchmailServerRequest:
+      type: object
+      required:
+        - name
+        - active
+        - state
+        - priority
+        - token_hash
+        - metadata
+      properties:
+        name:
+          type: string
+        active:
+          type: boolean
+        state:
+          type: string
+        default_thread_model:
+          nullable: true
+          type: string
+        priority:
+          type: integer
+          format: int32
+        token_hash:
+          type: string
+        last_fetch_at:
+          nullable: true
+          type: string
+          format: date-time
+        error_at:
+          nullable: true
+          type: string
+          format: date-time
+        error_message:
+          nullable: true
+          type: string
+        metadata:
+          type: object
+
+    UpdateFetchmailServerRequest:
+      type: object
+      required:
+        - name
+        - active
+        - state
+        - priority
+        - token_hash
+        - metadata
+      properties:
+        name:
+          type: string
+        active:
+          type: boolean
+        state:
+          type: string
+        default_thread_model:
+          nullable: true
+          type: string
+        priority:
+          type: integer
+          format: int32
+        token_hash:
+          type: string
+        last_fetch_at:
+          nullable: true
+          type: string
+          format: date-time
+        error_at:
+          nullable: true
+          type: string
+          format: date-time
+        error_message:
+          nullable: true
+          type: string
+        metadata:
+          type: object
+
+    PatchFetchmailServerRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        active:
+          type: boolean
+        state:
+          type: string
+        default_thread_model:
+          nullable: true
+          type: string
+        priority:
+          type: integer
+          format: int32
+        token_hash:
+          type: string
+        last_fetch_at:
+          nullable: true
+          type: string
+          format: date-time
+        error_at:
+          nullable: true
+          type: string
+          format: date-time
+        error_message:
+          nullable: true
+          type: string
+        metadata:
+          type: object
+
+    FetchmailServerList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/FetchmailServer'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+
+    MailGatewayAllowed:
+      type: object
+      required:
+        - id
+        - pattern
+        - active
+        - metadata
+      properties:
+        id:
+          type: string
+          format: uuid
+        fetchmail_server_id:
+          nullable: true
+          type: string
+          format: uuid
+        pattern:
+          type: string
+        active:
+          type: boolean
+        metadata:
+          type: object
+
+    MailGatewayAllowedBulkResult:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/MailGatewayAllowed'
+        total: { type: integer }
+        failed: { type: integer }
+        errors:
+          type: array
+          items: { type: string }
+
+    CreateMailGatewayAllowedRequest:
+      type: object
+      required:
+        - pattern
+        - active
+        - metadata
+      properties:
+        fetchmail_server_id:
+          nullable: true
+          type: string
+          format: uuid
+        pattern:
+          type: string
+        active:
+          type: boolean
+        metadata:
+          type: object
+
+    UpdateMailGatewayAllowedRequest:
+      type: object
+      required:
+        - pattern
+        - active
+        - metadata
+      properties:
+        fetchmail_server_id:
+          nullable: true
+          type: string
+          format: uuid
+        pattern:
+          type: string
+        active:
+          type: boolean
+        metadata:
+          type: object
+
+    PatchMailGatewayAllowedRequest:
+      type: object
+      properties:
+        fetchmail_server_id:
+          nullable: true
+          type: string
+          format: uuid
+        pattern:
+          type: string
+        active:
+          type: boolean
+        metadata:
+          type: object
+
+    MailGatewayAllowedList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/MailGatewayAllowed'
         meta:
           $ref: '#/components/schemas/PaginationMeta'
 

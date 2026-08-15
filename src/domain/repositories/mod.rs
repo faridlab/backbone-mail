@@ -27,6 +27,9 @@ pub mod mail_tracking_value_repository;
 pub mod discuss_channel_repository;
 pub mod discuss_channel_member_repository;
 pub mod mail_guest_repository;
+pub mod mail_server_repository;
+pub mod fetchmail_server_repository;
+pub mod mail_gateway_allowed_repository;
 pub mod mail_message_schedule_repository;
 pub mod mail_scheduled_message_repository;
 pub mod sms_repository;
@@ -159,6 +162,24 @@ pub use mail_guest_repository::{
     MailGuestPaginationParams,
     MailGuestPaginatedResult,
     MailGuestFilter,
+};
+pub use mail_server_repository::{
+    MailServerRepository,
+    MailServerPaginationParams,
+    MailServerPaginatedResult,
+    MailServerFilter,
+};
+pub use fetchmail_server_repository::{
+    FetchmailServerRepository,
+    FetchmailServerPaginationParams,
+    FetchmailServerPaginatedResult,
+    FetchmailServerFilter,
+};
+pub use mail_gateway_allowed_repository::{
+    MailGatewayAllowedRepository,
+    MailGatewayAllowedPaginationParams,
+    MailGatewayAllowedPaginatedResult,
+    MailGatewayAllowedFilter,
 };
 pub use mail_message_schedule_repository::{
     MailMessageScheduleRepository,

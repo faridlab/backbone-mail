@@ -578,6 +578,87 @@ pub struct MailGuestDeletedEvent {
 }
 
 // ============================================================================
+// MAILSERVER EVENTS
+// ============================================================================
+
+/// Event published when a MailServer is created
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailServerCreatedEvent {
+    pub id: MailServerId,
+    pub data: MailServerDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a MailServer is updated
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailServerUpdatedEvent {
+    pub id: MailServerId,
+    pub data: MailServerDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a MailServer is deleted
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailServerDeletedEvent {
+    pub id: MailServerId,
+    pub occurred_at: DateTime<Utc>,
+}
+
+// ============================================================================
+// FETCHMAILSERVER EVENTS
+// ============================================================================
+
+/// Event published when a FetchmailServer is created
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FetchmailServerCreatedEvent {
+    pub id: FetchmailServerId,
+    pub data: FetchmailServerDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a FetchmailServer is updated
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FetchmailServerUpdatedEvent {
+    pub id: FetchmailServerId,
+    pub data: FetchmailServerDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a FetchmailServer is deleted
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FetchmailServerDeletedEvent {
+    pub id: FetchmailServerId,
+    pub occurred_at: DateTime<Utc>,
+}
+
+// ============================================================================
+// MAILGATEWAYALLOWED EVENTS
+// ============================================================================
+
+/// Event published when a MailGatewayAllowed is created
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailGatewayAllowedCreatedEvent {
+    pub id: MailGatewayAllowedId,
+    pub data: MailGatewayAllowedDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a MailGatewayAllowed is updated
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailGatewayAllowedUpdatedEvent {
+    pub id: MailGatewayAllowedId,
+    pub data: MailGatewayAllowedDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a MailGatewayAllowed is deleted
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailGatewayAllowedDeletedEvent {
+    pub id: MailGatewayAllowedId,
+    pub occurred_at: DateTime<Utc>,
+}
+
+// ============================================================================
 // MAILMESSAGESCHEDULE EVENTS
 // ============================================================================
 
@@ -783,6 +864,15 @@ pub enum MessagingEvent {
     MailGuestCreated(MailGuestCreatedEvent),
     MailGuestUpdated(MailGuestUpdatedEvent),
     MailGuestDeleted(MailGuestDeletedEvent),
+    MailServerCreated(MailServerCreatedEvent),
+    MailServerUpdated(MailServerUpdatedEvent),
+    MailServerDeleted(MailServerDeletedEvent),
+    FetchmailServerCreated(FetchmailServerCreatedEvent),
+    FetchmailServerUpdated(FetchmailServerUpdatedEvent),
+    FetchmailServerDeleted(FetchmailServerDeletedEvent),
+    MailGatewayAllowedCreated(MailGatewayAllowedCreatedEvent),
+    MailGatewayAllowedUpdated(MailGatewayAllowedUpdatedEvent),
+    MailGatewayAllowedDeleted(MailGatewayAllowedDeletedEvent),
     MailMessageScheduleCreated(MailMessageScheduleCreatedEvent),
     MailMessageScheduleUpdated(MailMessageScheduleUpdatedEvent),
     MailMessageScheduleDeleted(MailMessageScheduleDeletedEvent),

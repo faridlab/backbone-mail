@@ -26,6 +26,9 @@ pub mod mail_tracking_value_dto;
 pub mod discuss_channel_dto;
 pub mod discuss_channel_member_dto;
 pub mod mail_guest_dto;
+pub mod mail_server_dto;
+pub mod fetchmail_server_dto;
+pub mod mail_gateway_allowed_dto;
 pub mod mail_message_schedule_dto;
 pub mod mail_scheduled_message_dto;
 pub mod sms_dto;
@@ -200,6 +203,30 @@ pub use mail_guest_dto::{
     MailGuestResponseDto,
     MailGuestListResponseDto,
     MailGuestSummaryDto,
+};
+pub use mail_server_dto::{
+    CreateMailServerDto,
+    UpdateMailServerDto,
+    PatchMailServerDto,
+    MailServerResponseDto,
+    MailServerListResponseDto,
+    MailServerSummaryDto,
+};
+pub use fetchmail_server_dto::{
+    CreateFetchmailServerDto,
+    UpdateFetchmailServerDto,
+    PatchFetchmailServerDto,
+    FetchmailServerResponseDto,
+    FetchmailServerListResponseDto,
+    FetchmailServerSummaryDto,
+};
+pub use mail_gateway_allowed_dto::{
+    CreateMailGatewayAllowedDto,
+    UpdateMailGatewayAllowedDto,
+    PatchMailGatewayAllowedDto,
+    MailGatewayAllowedResponseDto,
+    MailGatewayAllowedListResponseDto,
+    MailGatewayAllowedSummaryDto,
 };
 pub use mail_message_schedule_dto::{
     CreateMailMessageScheduleDto,

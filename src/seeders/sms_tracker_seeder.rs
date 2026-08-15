@@ -36,7 +36,7 @@ impl Seeder for SeedSmsTrackerSeeder {
     }
 
     fn order(&self) -> i32 {
-        25
+        28
     }
 
     async fn should_run(&self, pool: &PgPool) -> Result<bool> {

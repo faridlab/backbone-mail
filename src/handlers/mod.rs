@@ -30,6 +30,9 @@ use crate::application::service::MailTrackingValueService;
 use crate::application::service::DiscussChannelService;
 use crate::application::service::DiscussChannelMemberService;
 use crate::application::service::MailGuestService;
+use crate::application::service::MailServerService;
+use crate::application::service::FetchmailServerService;
+use crate::application::service::MailGatewayAllowedService;
 use crate::application::service::MailMessageScheduleService;
 use crate::application::service::MailScheduledMessageService;
 use crate::application::service::SmsService;
@@ -96,6 +99,12 @@ pub struct AppState {
     pub discuss_channel_member_service: Arc<DiscussChannelMemberService>,
     /// MailGuest service
     pub mail_guest_service: Arc<MailGuestService>,
+    /// MailServer service
+    pub mail_server_service: Arc<MailServerService>,
+    /// FetchmailServer service
+    pub fetchmail_server_service: Arc<FetchmailServerService>,
+    /// MailGatewayAllowed service
+    pub mail_gateway_allowed_service: Arc<MailGatewayAllowedService>,
     /// MailMessageSchedule service
     pub mail_message_schedule_service: Arc<MailMessageScheduleService>,
     /// MailScheduledMessage service
@@ -132,6 +141,9 @@ impl AppState {
         discuss_channel_service: Arc<DiscussChannelService>,
         discuss_channel_member_service: Arc<DiscussChannelMemberService>,
         mail_guest_service: Arc<MailGuestService>,
+        mail_server_service: Arc<MailServerService>,
+        fetchmail_server_service: Arc<FetchmailServerService>,
+        mail_gateway_allowed_service: Arc<MailGatewayAllowedService>,
         mail_message_schedule_service: Arc<MailMessageScheduleService>,
         mail_scheduled_message_service: Arc<MailScheduledMessageService>,
         sms_service: Arc<SmsService>,
@@ -160,6 +172,9 @@ impl AppState {
             discuss_channel_service,
             discuss_channel_member_service,
             mail_guest_service,
+            mail_server_service,
+            fetchmail_server_service,
+            mail_gateway_allowed_service,
             mail_message_schedule_service,
             mail_scheduled_message_service,
             sms_service,
@@ -192,6 +207,9 @@ impl AppState {
             discuss_channel_service: module.discuss_channel_service.clone(),
             discuss_channel_member_service: module.discuss_channel_member_service.clone(),
             mail_guest_service: module.mail_guest_service.clone(),
+            mail_server_service: module.mail_server_service.clone(),
+            fetchmail_server_service: module.fetchmail_server_service.clone(),
+            mail_gateway_allowed_service: module.mail_gateway_allowed_service.clone(),
             mail_message_schedule_service: module.mail_message_schedule_service.clone(),
             mail_scheduled_message_service: module.mail_scheduled_message_service.clone(),
             sms_service: module.sms_service.clone(),
@@ -227,6 +245,9 @@ pub struct AppStateBuilder {
     discuss_channel_service: Option<Arc<DiscussChannelService>>,
     discuss_channel_member_service: Option<Arc<DiscussChannelMemberService>>,
     mail_guest_service: Option<Arc<MailGuestService>>,
+    mail_server_service: Option<Arc<MailServerService>>,
+    fetchmail_server_service: Option<Arc<FetchmailServerService>>,
+    mail_gateway_allowed_service: Option<Arc<MailGatewayAllowedService>>,
     mail_message_schedule_service: Option<Arc<MailMessageScheduleService>>,
     mail_scheduled_message_service: Option<Arc<MailScheduledMessageService>>,
     sms_service: Option<Arc<SmsService>>,
@@ -366,6 +387,24 @@ impl AppStateBuilder {
         self
     }
 
+    /// Set the MailServer service.
+    pub fn with_mail_server_service(mut self, service: Arc<MailServerService>) -> Self {
+        self.mail_server_service = Some(service);
+        self
+    }
+
+    /// Set the FetchmailServer service.
+    pub fn with_fetchmail_server_service(mut self, service: Arc<FetchmailServerService>) -> Self {
+        self.fetchmail_server_service = Some(service);
+        self
+    }
+
+    /// Set the MailGatewayAllowed service.
+    pub fn with_mail_gateway_allowed_service(mut self, service: Arc<MailGatewayAllowedService>) -> Self {
+        self.mail_gateway_allowed_service = Some(service);
+        self
+    }
+
     /// Set the MailMessageSchedule service.
     pub fn with_mail_message_schedule_service(mut self, service: Arc<MailMessageScheduleService>) -> Self {
         self.mail_message_schedule_service = Some(service);
@@ -424,6 +463,9 @@ impl AppStateBuilder {
             discuss_channel_service: self.discuss_channel_service.expect("discuss_channel_service is required"),
             discuss_channel_member_service: self.discuss_channel_member_service.expect("discuss_channel_member_service is required"),
             mail_guest_service: self.mail_guest_service.expect("mail_guest_service is required"),
+            mail_server_service: self.mail_server_service.expect("mail_server_service is required"),
+            fetchmail_server_service: self.fetchmail_server_service.expect("fetchmail_server_service is required"),
+            mail_gateway_allowed_service: self.mail_gateway_allowed_service.expect("mail_gateway_allowed_service is required"),
             mail_message_schedule_service: self.mail_message_schedule_service.expect("mail_message_schedule_service is required"),
             mail_scheduled_message_service: self.mail_scheduled_message_service.expect("mail_scheduled_message_service is required"),
             sms_service: self.sms_service.expect("sms_service is required"),

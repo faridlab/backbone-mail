@@ -89,7 +89,7 @@ user_owned:
   - "src/application/service/mail_ports.rs"
   - "src/application/service/mail_server_query_service.rs"
   - "src/application/service/mail_inbound_service.rs"
-  - "src/infrastructure/persistence/mail_server_repository.rs"
+  - "src/infrastructure/persistence/smtp_selection_repository.rs"
   - "src/infrastructure/persistence/inbound_repository.rs"
   - "src/presentation/http/inbound_routes.rs"
 

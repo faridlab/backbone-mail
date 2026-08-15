@@ -1309,6 +1309,190 @@ pub struct MailGuestRef {
 }
 
 // ============================================================================
+// MAILSERVER TYPES
+// ============================================================================
+
+/// Type-safe ID for MailServer
+///
+/// Use this instead of raw Uuid for type safety across modules.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub struct MailServerId(pub Uuid);
+
+impl MailServerId {
+    pub fn new(id: Uuid) -> Self {
+        Self(id)
+    }
+
+    pub fn into_inner(self) -> Uuid {
+        self.0
+    }
+}
+
+impl From<Uuid> for MailServerId {
+    fn from(id: Uuid) -> Self {
+        Self(id)
+    }
+}
+
+impl From<MailServerId> for Uuid {
+    fn from(id: MailServerId) -> Self {
+        id.0
+    }
+}
+
+/// Data transfer object for MailServer
+///
+/// This is the public representation of MailServer for other modules.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailServerDto {
+    pub id: MailServerId,
+    pub name: String,
+    pub from_filter: Option<String>,
+    pub smtp_host: String,
+    pub smtp_port: i32,
+    pub smtp_authentication: SmtpAuthentication,
+    pub smtp_user: Option<String>,
+    pub smtp_pass_ref: Option<String>,
+    pub smtp_encryption: SmtpEncryption,
+    pub smtp_debug: bool,
+    pub sequence: i32,
+    pub active: bool,
+    pub metadata: serde_json::Value,
+}
+
+/// Summary view of MailServer for list displays
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailServerSummary {
+    pub id: MailServerId,
+    pub name: String,
+}
+
+/// Reference to MailServer for foreign key relationships
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailServerRef {
+    pub id: MailServerId,
+}
+
+// ============================================================================
+// FETCHMAILSERVER TYPES
+// ============================================================================
+
+/// Type-safe ID for FetchmailServer
+///
+/// Use this instead of raw Uuid for type safety across modules.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub struct FetchmailServerId(pub Uuid);
+
+impl FetchmailServerId {
+    pub fn new(id: Uuid) -> Self {
+        Self(id)
+    }
+
+    pub fn into_inner(self) -> Uuid {
+        self.0
+    }
+}
+
+impl From<Uuid> for FetchmailServerId {
+    fn from(id: Uuid) -> Self {
+        Self(id)
+    }
+}
+
+impl From<FetchmailServerId> for Uuid {
+    fn from(id: FetchmailServerId) -> Self {
+        id.0
+    }
+}
+
+/// Data transfer object for FetchmailServer
+///
+/// This is the public representation of FetchmailServer for other modules.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FetchmailServerDto {
+    pub id: FetchmailServerId,
+    pub name: String,
+    pub active: bool,
+    pub state: FetchmailState,
+    pub default_thread_model: Option<String>,
+    pub priority: i32,
+    pub token_hash: String,
+    pub last_fetch_at: Option<DateTime<Utc>>,
+    pub error_at: Option<DateTime<Utc>>,
+    pub error_message: Option<String>,
+    pub metadata: serde_json::Value,
+}
+
+/// Summary view of FetchmailServer for list displays
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FetchmailServerSummary {
+    pub id: FetchmailServerId,
+    pub name: String,
+}
+
+/// Reference to FetchmailServer for foreign key relationships
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FetchmailServerRef {
+    pub id: FetchmailServerId,
+}
+
+// ============================================================================
+// MAILGATEWAYALLOWED TYPES
+// ============================================================================
+
+/// Type-safe ID for MailGatewayAllowed
+///
+/// Use this instead of raw Uuid for type safety across modules.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub struct MailGatewayAllowedId(pub Uuid);
+
+impl MailGatewayAllowedId {
+    pub fn new(id: Uuid) -> Self {
+        Self(id)
+    }
+
+    pub fn into_inner(self) -> Uuid {
+        self.0
+    }
+}
+
+impl From<Uuid> for MailGatewayAllowedId {
+    fn from(id: Uuid) -> Self {
+        Self(id)
+    }
+}
+
+impl From<MailGatewayAllowedId> for Uuid {
+    fn from(id: MailGatewayAllowedId) -> Self {
+        id.0
+    }
+}
+
+/// Data transfer object for MailGatewayAllowed
+///
+/// This is the public representation of MailGatewayAllowed for other modules.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailGatewayAllowedDto {
+    pub id: MailGatewayAllowedId,
+    pub fetchmail_server_id: Option<Uuid>,
+    pub pattern: String,
+    pub active: bool,
+    pub metadata: serde_json::Value,
+}
+
+/// Summary view of MailGatewayAllowed for list displays
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailGatewayAllowedSummary {
+    pub id: MailGatewayAllowedId,
+}
+
+/// Reference to MailGatewayAllowed for foreign key relationships
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MailGatewayAllowedRef {
+    pub id: MailGatewayAllowedId,
+}
+
+// ============================================================================
 // MAILMESSAGESCHEDULE TYPES
 // ============================================================================
 

@@ -30,6 +30,9 @@ use super::{
     discuss_channel_handler::create_discuss_channel_routes,
     discuss_channel_member_handler::create_discuss_channel_member_routes,
     mail_guest_handler::create_mail_guest_routes,
+    mail_server_handler::create_mail_server_routes,
+    fetchmail_server_handler::create_fetchmail_server_routes,
+    mail_gateway_allowed_handler::create_mail_gateway_allowed_routes,
     mail_message_schedule_handler::create_mail_message_schedule_routes,
     mail_scheduled_message_handler::create_mail_scheduled_message_routes,
     sms_handler::create_sms_routes,
@@ -59,6 +62,9 @@ use crate::application::service::{
     DiscussChannelService,
     DiscussChannelMemberService,
     MailGuestService,
+    MailServerService,
+    FetchmailServerService,
+    MailGatewayAllowedService,
     MailMessageScheduleService,
     MailScheduledMessageService,
     SmsService,
@@ -89,6 +95,9 @@ pub struct HttpServices {
     pub discuss_channel: Arc<DiscussChannelService>,
     pub discuss_channel_member: Arc<DiscussChannelMemberService>,
     pub mail_guest: Arc<MailGuestService>,
+    pub mail_server: Arc<MailServerService>,
+    pub fetchmail_server: Arc<FetchmailServerService>,
+    pub mail_gateway_allowed: Arc<MailGatewayAllowedService>,
     pub mail_message_schedule: Arc<MailMessageScheduleService>,
     pub mail_scheduled_message: Arc<MailScheduledMessageService>,
     pub sms: Arc<SmsService>,
@@ -155,6 +164,12 @@ pub fn configure_routes(services: HttpServices) -> Router {
         .merge(create_discuss_channel_member_routes(services.discuss_channel_member))
         // MailGuest routes (12 Backbone endpoints)
         .merge(create_mail_guest_routes(services.mail_guest))
+        // MailServer routes (12 Backbone endpoints)
+        .merge(create_mail_server_routes(services.mail_server))
+        // FetchmailServer routes (12 Backbone endpoints)
+        .merge(create_fetchmail_server_routes(services.fetchmail_server))
+        // MailGatewayAllowed routes (12 Backbone endpoints)
+        .merge(create_mail_gateway_allowed_routes(services.mail_gateway_allowed))
         // MailMessageSchedule routes (12 Backbone endpoints)
         .merge(create_mail_message_schedule_routes(services.mail_message_schedule))
         // MailScheduledMessage routes (12 Backbone endpoints)
@@ -253,6 +268,18 @@ pub mod individual {
 
     pub fn mail_guest_routes(service: Arc<MailGuestService>) -> Router {
         create_mail_guest_routes(service)
+    }
+
+    pub fn mail_server_routes(service: Arc<MailServerService>) -> Router {
+        create_mail_server_routes(service)
+    }
+
+    pub fn fetchmail_server_routes(service: Arc<FetchmailServerService>) -> Router {
+        create_fetchmail_server_routes(service)
+    }
+
+    pub fn mail_gateway_allowed_routes(service: Arc<MailGatewayAllowedService>) -> Router {
+        create_mail_gateway_allowed_routes(service)
     }
 
     pub fn mail_message_schedule_routes(service: Arc<MailMessageScheduleService>) -> Router {

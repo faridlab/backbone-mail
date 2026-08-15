@@ -90,6 +90,15 @@ pub use events::*;
 /// - `MailGuestDto` - Data transfer object for MailGuest
 /// - `MailGuestSummary` - Summary view of MailGuest
 /// - `MailGuestId` - Type-safe ID wrapper
+/// - `MailServerDto` - Data transfer object for MailServer
+/// - `MailServerSummary` - Summary view of MailServer
+/// - `MailServerId` - Type-safe ID wrapper
+/// - `FetchmailServerDto` - Data transfer object for FetchmailServer
+/// - `FetchmailServerSummary` - Summary view of FetchmailServer
+/// - `FetchmailServerId` - Type-safe ID wrapper
+/// - `MailGatewayAllowedDto` - Data transfer object for MailGatewayAllowed
+/// - `MailGatewayAllowedSummary` - Summary view of MailGatewayAllowed
+/// - `MailGatewayAllowedId` - Type-safe ID wrapper
 /// - `MailMessageScheduleDto` - Data transfer object for MailMessageSchedule
 /// - `MailMessageScheduleSummary` - Summary view of MailMessageSchedule
 /// - `MailMessageScheduleId` - Type-safe ID wrapper
@@ -170,6 +179,15 @@ pub use events::*;
 /// - `MailGuestCreatedEvent` - Published when MailGuest is created
 /// - `MailGuestUpdatedEvent` - Published when MailGuest is updated
 /// - `MailGuestDeletedEvent` - Published when MailGuest is deleted
+/// - `MailServerCreatedEvent` - Published when MailServer is created
+/// - `MailServerUpdatedEvent` - Published when MailServer is updated
+/// - `MailServerDeletedEvent` - Published when MailServer is deleted
+/// - `FetchmailServerCreatedEvent` - Published when FetchmailServer is created
+/// - `FetchmailServerUpdatedEvent` - Published when FetchmailServer is updated
+/// - `FetchmailServerDeletedEvent` - Published when FetchmailServer is deleted
+/// - `MailGatewayAllowedCreatedEvent` - Published when MailGatewayAllowed is created
+/// - `MailGatewayAllowedUpdatedEvent` - Published when MailGatewayAllowed is updated
+/// - `MailGatewayAllowedDeletedEvent` - Published when MailGatewayAllowed is deleted
 /// - `MailMessageScheduleCreatedEvent` - Published when MailMessageSchedule is created
 /// - `MailMessageScheduleUpdatedEvent` - Published when MailMessageSchedule is updated
 /// - `MailMessageScheduleDeletedEvent` - Published when MailMessageSchedule is deleted
