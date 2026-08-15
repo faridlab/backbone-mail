@@ -1,0 +1,202 @@
+# =============================================================================
+# Module: backbone-mail — Area: GATEWAY CORE (MAIL-M26/M27/M28, increment 3).
+# Ported from odoo/addons/base/models/ir_mail_server.py and
+# addons/mail/models/{fetchmail,mail_gateway}.py
+# (source-verified 2026-08-15 against playground/odoo @ b9eb72eb).
+#
+# Increment-3 design deltas (documented, see port-notes §8):
+#  - CREDENTIALS: Odoo stores smtp_pass / fetchmail password as DB columns.
+#    The port keeps SMTP passwords as env-var REFERENCES (smtp_pass_ref =
+#    env var NAME, resolved by the composing app — ADR-0024 interim). The
+#    inbound webhook token is per-row and unsuited to env vars, so the row
+#    stores only its SHA-256 hash (token_hash); the route hashes the
+#    presented token and consteq's. No plaintext secret in the DB.
+#  - INBOUND SHAPE: webhook (POST /mail/inbound/:server_id, token consteq —
+#    the /sms/status ADR-0021 playbook). IMAP/POP transport fields are
+#    deliberately absent; the 3b poller (if ever needed) adds them behind
+#    the same MailInboundService.
+#  - MAIL-B6: Odoo dedups inbound via pg_try_advisory_xact_lock on
+#    hashtext(message_id) (32-bit collision hazard). The port replaces the
+#    lock with the UNIQUE partial index on mail_message.message_id — see the
+#    core.model.yaml change shipped in this same increment.
+#  - Odoo access is group_system-only across all three models → generated
+#    CRUD mounts behind the app's IsAdmin gate; no custom routes needed.
+# =============================================================================
+
+models:
+
+  # ===========================================================================
+  # ir.mail_server — outbound SMTP config + selection (MAIL-M26).
+  # ===========================================================================
+  - name: MailServer
+    collection: mail_servers
+    description: "ir.mail_server — the outbound SMTP server registry (MAIL-M26). Selection ladder at send time (Odoo _find_mail_server): exact from_filter address match → domain match → server without from_filter → first by sequence. Passwords are env-var REFERENCES (smtp_pass_ref), never literals — the app resolves them at send time."
+    fields:
+      id:
+        type: uuid
+        attributes: ["@id", "@default(uuid)"]
+        description: "Primary key"
+      name:
+        type: string
+        attributes: ["@required", "@indexed"]
+        description: "Server display name."
+      from_filter:
+        type: string?
+        description: "Comma-separated addresses/domains this server may send for (drives the selection ladder). Null = wildcard (no from_filter)."
+      smtp_host:
+        type: string
+        attributes: ["@required"]
+        description: "SMTP hostname or IP."
+      smtp_port:
+        type: integer
+        attributes: ["@default(25)"]
+        description: "SMTP port (Odoo default 25; 587 for STARTTLS, 465 for SSL)."
+      smtp_authentication:
+        type: SmtpAuthentication
+        attributes: ["@default(login)"]
+        description: "Auth method. `certificate` is declared for parity but UNSUPPORTED — the send path rejects it (client certs need a file-based secret store; registered debt)."
+      smtp_user:
+        type: string?
+        description: "SMTP username."
+      smtp_pass_ref:
+        type: string?
+        description: "ENV VAR NAME holding the SMTP password (ADR-0024 interim — a reference, never the secret). The app resolves it at send time; the module never reads env."
+      smtp_encryption:
+        type: SmtpEncryption
+        attributes: ["@default(none)"]
+        description: "Transport encryption. Strict always — the port has no lenient variants (Odoo's non-_strict starttls/ssl are trap options)."
+      smtp_debug:
+        type: boolean
+        attributes: ["@default(false)"]
+        description: "Verbose SMTP protocol logging."
+      sequence:
+        type: integer
+        attributes: ["@default(10)"]
+        description: "Selection priority — lower wins (the ladder's last rung)."
+      active:
+        type: boolean
+        attributes: ["@default(true)", "@indexed"]
+        description: "Archived servers leave the selection pool."
+      metadata:
+        type: Metadata
+        attributes: ["@audit_metadata"]
+        description: "Audit metadata (created_at, updated_at, deleted_at, created_by, updated_by, deleted_by)"
+    indexes:
+      - type: index
+        fields: [sequence]
+        name: mail_server_sequence_idx
+
+  # ===========================================================================
+  # fetchmail.server — inbound gateway config, WEBHOOK MODE (MAIL-M27).
+  # ===========================================================================
+  - name: FetchmailServer
+    collection: fetchmail_servers
+    description: "fetchmail.server — the inbound email gateway registry (MAIL-M27), ported in WEBHOOK mode: an upstream relay (SES/SendGrid-style inbound parse) POSTs to /mail/inbound/:server_id with a bearer token whose SHA-256 hash is the only secret stored here. Odoo's IMAP/POP transport fields are deliberately absent until a 3b poller needs them. MAIL-B2 fixed downstream: one transaction per message, dedup-guarded."
+    fields:
+      id:
+        type: uuid
+        attributes: ["@id", "@default(uuid)"]
+        description: "Primary key"
+      name:
+        type: string
+        attributes: ["@required", "@indexed"]
+        description: "Server display name."
+      active:
+        type: boolean
+        attributes: ["@default(true)", "@indexed"]
+        description: "Inactive servers reject inbound posts."
+      state:
+        type: FetchmailState
+        attributes: ["@required", "@default(draft)"]
+        lifecycle: hand_set
+        description: "Odoo draft/done — hand-set confirmation state (done = verified with the upstream relay)."
+      default_thread_model:
+        type: string?
+        description: "Fallback chatter model for messages that match no thread and no alias (routed via the MAIL-B1 resolver's can_post)."
+      priority:
+        type: integer
+        attributes: ["@default(5)"]
+        description: "Processing priority (kept for parity; webhook mode routes per-server, no polling order)."
+      token_hash:
+        type: string
+        attributes: ["@required", "@indexed"]
+        description: "SHA-256 hex of the inbound bearer token. The PLAINTEXT IS NEVER STORED — the route hashes the presented token and consteq's (deliberate ADR-0024 deviation, port-notes §8: per-row tokens don't fit env refs, and a hash beats Odoo's plaintext column)."
+      last_fetch_at:
+        type: datetime?
+        description: "Last successful inbound processing (progress tracking — Odoo `date`)."
+      error_at:
+        type: datetime?
+        description: "Last failed inbound processing."
+      error_message:
+        type: string?
+        description: "Last error detail (bounded, overwritten — not a log)."
+      metadata:
+        type: Metadata
+        attributes: ["@audit_metadata"]
+        description: "Audit metadata (created_at, updated_at, deleted_at, created_by, updated_by, deleted_by)"
+    indexes:
+      - type: unique
+        fields: [token_hash]
+        name: fetchmail_server_token_hash_uniq
+
+  # ===========================================================================
+  # mail.gateway.allowed — who may create messages via the gateway (MAIL-M28).
+  # ===========================================================================
+  - name: MailGatewayAllowed
+    collection: mail_gateway_allowed
+    description: "mail.gateway.allowed — the inbound allowlist (MAIL-M28): envelope senders that may create documents/threads through the gateway. Patterns: exact address (a@b.c), @domain (any local part), or bare domain (b.c). A null fetchmail_server_id row applies to ALL servers."
+    fields:
+      id:
+        type: uuid
+        attributes: ["@id", "@default(uuid)"]
+        description: "Primary key"
+      fetchmail_server_id:
+        type: uuid?
+        attributes: ["@foreign_key(FetchmailServer.gateway_allowlist)", "@exclude_from_foreign_key_check", "@indexed"]
+        description: "Server this pattern scopes to # logical FK to FetchmailServer.id; null = applies to every server."
+      pattern:
+        type: string
+        attributes: ["@required"]
+        description: "Exact address, '@domain', or bare domain."
+      active:
+        type: boolean
+        attributes: ["@default(true)"]
+        description: "Disabled patterns stop matching without deletion."
+      metadata:
+        type: Metadata
+        attributes: ["@audit_metadata"]
+        description: "Audit metadata (created_at, updated_at, deleted_at, created_by, updated_by, deleted_by)"
+    indexes:
+      - type: unique
+        fields: [fetchmail_server_id, pattern]
+        name: mail_gateway_allowed_server_pattern_uniq
+
+enums:
+  - name: SmtpAuthentication
+    description: "ir.mail_server.smtp_authentication. Only `login` is implemented; `certificate` is declared for schema parity and rejected by the send path (needs a file-based secret store — registered debt)."
+    variants:
+      - name: login
+        description: "USER/PASS auth"
+        default: true
+      - name: certificate
+        description: "TLS client-certificate auth (UNSUPPORTED — send path rejects)"
+
+  - name: SmtpEncryption
+    description: "ir.mail_server.smtp_encryption, strict-only port (Odoo's non-_strict variants silently downgrade; the port refuses them)."
+    variants:
+      - name: none
+        description: "Plaintext (port 25)"
+        default: true
+      - name: starttls
+        description: "STARTTLS upgrade, certificate verified"
+      - name: ssl
+        description: "Implicit TLS (port 465)"
+
+  - name: FetchmailState
+    description: "fetchmail.server.state — Odoo draft/done, hand-set."
+    variants:
+      - name: draft
+        description: "Configured but not yet verified with the relay"
+        default: true
+      - name: done
+        description: "Verified — inbound accepted"

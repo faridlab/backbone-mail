@@ -33,7 +33,7 @@ models:
   # ===========================================================================
   - name: MailMessage
     collection: mail_messages
-    description: "mail.message — THE message record: every chatter post, notification, email and note is a row here (MAIL-M1). Polymorphic parent via (model, res_id); the (model,res_id) pair is the chatter hot path (two raw-SQL indexes in Odoo). No uniqueness — duplicate messages allowed by design; inbound dedup is by message_id + advisory lock, not a unique index."
+    description: "mail.message — THE message record: every chatter post, notification, email and note is a row here (MAIL-M1). Polymorphic parent via (model, res_id); the (model,res_id) pair is the chatter hot path (two raw-SQL indexes in Odoo). Duplicate LOCAL posts allowed by design; inbound dedup is the UNIQUE partial index on message_id (MAIL-B6 fixed at increment 3 — replaces Odoo's advisory-lock-on-hashtext, which had a 32-bit collision hazard)."
     fields:
       id:
         type: uuid
@@ -78,7 +78,7 @@ models:
       message_id:
         type: string?
         attributes: ["@indexed", "@exclude_from_foreign_key_check"]
-        description: "RFC 822 Message-ID header. THE inbound-routing dedup key (Odoo serializes duplicates via pg_try_advisory_xact_lock on its hash — MAIL-B6). Generated for outbound."
+        description: "RFC 822 Message-ID header. THE inbound-routing dedup key (MAIL-B6 fixed: a UNIQUE partial index replaces Odoo's pg_try_advisory_xact_lock-on-hashtext — the 32-bit hash could collide). Generated for outbound."
       reply_to:
         type: string?
         description: "Reply-To header (per-thread, defaults to the thread's alias reply-to)."
@@ -125,9 +125,10 @@ models:
       - type: index
         fields: [model, res_id, id]
         name: mail_message_model_res_id_id_idx
-      - type: index
+      - type: unique
         fields: [message_id]
-        name: mail_message_message_id_idx
+        where: "message_id IS NOT NULL"
+        name: mail_message_message_id_uniq
 
   # ===========================================================================
   # mail.mail — the outgoing-EMAIL send-queue row (MAIL-M2). _inherits
