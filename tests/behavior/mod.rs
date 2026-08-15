@@ -11,3 +11,4 @@ pub mod proofs;
 pub mod increment2;
 pub mod routes;
 pub mod sse;
+pub mod gateway;
