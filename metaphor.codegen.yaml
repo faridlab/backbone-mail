@@ -15,10 +15,36 @@ user_owned:
   # - "src/application/service/onboarding_service.rs"
   # - "src/presentation/http/guarded_routes.rs"
 
+  # --- messaging increment-1 hand-written behavior (Agent B) -------------------
+  # The bus-derived platform constants: the ADR-0014 posture-4 nil-sentinel company
+  # id, the server-side channel-key constructors, and the in-tx outbox stage helper.
+  - "src/domain/event/constants.rs"
+
+  # Hand-authored write services (the message_post notify pump MAIL-M16/B, follower
+  # policies MAIL-M10, activity chaining MAIL-M17, the sms queue SM-M1/2 + MMB-4,
+  # the mail queue MAIL-M2 + MMB-4, alias resolution MAIL-M33).
+  - "src/application/service/sms_ports.rs"
+  - "src/application/service/message_write_service.rs"
+  - "src/application/service/follower_write_service.rs"
+  - "src/application/service/activity_write_service.rs"
+  - "src/application/service/sms_write_service.rs"
+  - "src/application/service/mail_queue_write_service.rs"
+  - "src/application/service/alias_write_service.rs"
+
+  # Hand-written messaging SQL (services orchestrate, repositories hold SQL — the
+  # module rule). Distinct names from the generated per-entity repositories; these
+  # are raw-SQL runtime queries (no sqlx macros, so no .sqlx cache needed).
+  - "src/infrastructure/persistence/message_pipeline_repository.rs"
+  - "src/infrastructure/persistence/follower_repository.rs"
+  - "src/infrastructure/persistence/activity_repository.rs"
+  - "src/infrastructure/persistence/sms_queue_repository.rs"
+  - "src/infrastructure/persistence/mail_queue_repository.rs"
+  - "src/infrastructure/persistence/alias_resolution_repository.rs"
+
   # Behavior tests (the golden cases / oracle) + BDD features.
+  - "tests/behavior_tests.rs"
+  - "tests/behavior/**"
   - "tests/features/**"
-  # - "tests/*_golden_cases.rs"
-  # - "tests/integrity_probes.rs"
 
   # Hand-authored module documentation.
   - "docs/**"

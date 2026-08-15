@@ -10,3 +10,30 @@ pub use error::{ServiceError, ServiceResult};
 mod example_service;
 
 pub use example_service::ExampleService;
+
+// <<< CUSTOM
+// Hand-authored messaging write services (increment 1; user-owned files declared in
+// metaphor.codegen.yaml — regen never touches them).
+pub mod sms_ports;
+pub mod message_write_service;
+pub mod follower_write_service;
+pub mod activity_write_service;
+pub mod sms_write_service;
+pub mod mail_queue_write_service;
+pub mod alias_write_service;
+
+pub use alias_write_service::{AliasError, AliasWriteService};
+pub use follower_write_service::{FollowerError, FollowerWriteService};
+pub use message_write_service::{
+    MailError, MessagePostCommand, MessageWriteService, NotificationChannel, PostRecipient,
+    PostedMessage,
+};
+pub use activity_write_service::{ActivityError, ActivityWriteService, ScheduleActivity};
+pub use mail_queue_write_service::{MailDrainOutcome, MailQueueError, MailQueueWriteService};
+pub use sms_ports::{
+    NoopSmsApi, SmsApiPort, SmsSendFailure, SmsSendOutcome, SmsSendRequest,
+};
+pub use sms_write_service::{DrainOutcome, SmsError, SmsWriteService};
+pub use crate::infrastructure::persistence::follower_repository::ExistingPolicy;
+pub use crate::infrastructure::persistence::follower_repository::SubscribeOutcome;
+// END CUSTOM

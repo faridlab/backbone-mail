@@ -7,3 +7,15 @@
 mod example_repository_impl;
 
 pub use example_repository_impl::{ExampleRepository, TABLE_NAME as EXAMPLES_TABLE};
+
+// <<< CUSTOM
+// Hand-written messaging SQL (increment 1; user-owned files declared in
+// metaphor.codegen.yaml). Distinct names from the generated per-entity
+// repositories — these hold the write-path SQL the services above orchestrate.
+pub mod message_pipeline_repository;
+pub mod follower_repository;
+pub mod activity_repository;
+pub mod sms_queue_repository;
+pub mod mail_queue_repository;
+pub mod alias_resolution_repository;
+// END CUSTOM

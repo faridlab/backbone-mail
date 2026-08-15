@@ -4,5 +4,6 @@
 
 pub mod entity;
 pub mod repositories;
+pub mod event;
 
 pub use entity::*;
