@@ -27,6 +27,10 @@ backbone-messaging = { git = "https://github.com/faridlab/backbone-framework", t
 backbone-outbox = { git = "https://github.com/faridlab/backbone-framework", tag = "v2.7.4" }
 # Queue-drainer scheduler for the sms/mail queues (ADR-0020 postures).
 backbone-jobs = { git = "https://github.com/faridlab/backbone-framework", tag = "v2.7.0" }
+# Gateway transport adapters (ADR-0024 seam) — see src/infrastructure/gateway/.
+# Opt-in via the `gateway-smtp` / `gateway-sms-http` features so the crate stays
+# transport-free by default (promoted from backbone-messaging-app, increment 3).
+backbone-email = { git = "https://github.com/faridlab/backbone-framework", tag = "v2.7.7", optional = true }
 
 # Core async runtime and serialization
 tokio = { version = "1.0", features = ["full"] }
@@ -49,6 +53,10 @@ sqlx = { version = "0.8", features = ["runtime-tokio-rustls", "postgres", "uuid"
 axum = { version = "0.7", features = ["macros"] }
 tower = "0.4"
 tower-http = { version = "0.5", features = ["cors", "trace"] }
+
+# Gateway SMS transport (`gateway-sms-http` feature only) — the IAP-shaped
+# provider client promoted from backbone-messaging-app.
+reqwest = { version = "0.12", features = ["json", "rustls-tls"], default-features = false, optional = true }
 
 # Logging
 tracing = "0.1"
@@ -81,6 +89,10 @@ auth = []
 grpc = []
 openapi = []
 validation = []
+# Transport adapters under src/infrastructure/gateway/ (ADR-0024 seam). Off by
+# default — the composing service opts in; the module core stays transport-free.
+gateway-smtp = ["dep:backbone-email"]
+gateway-sms-http = ["dep:reqwest"]
 
 [build-dependencies]
 tonic-build = "0.12"

@@ -5,4 +5,8 @@
 pub mod persistence;
 
 // <<< CUSTOM
+// Gateway transport adapters (ADR-0024 seam) — feature-gated so the module
+// builds transport-free unless the composing service opts in.
+#[cfg(any(feature = "gateway-smtp", feature = "gateway-sms-http"))]
+pub mod gateway;
 // END CUSTOM

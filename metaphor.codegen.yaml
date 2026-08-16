@@ -93,6 +93,12 @@ user_owned:
   - "src/infrastructure/persistence/inbound_repository.rs"
   - "src/presentation/http/inbound_routes.rs"
 
+  # --- gateway transport adapters (promoted from backbone-messaging-app) -------
+  # The SMTP port impl (over backbone-email, `gateway-smtp` feature) and the
+  # IAP-shaped HTTP JSON SMS provider (`gateway-sms-http`). Feature-gated; see
+  # src/infrastructure/gateway/.
+  - "src/infrastructure/gateway/**"
+
   # Behavior tests (the golden cases / oracle) + BDD features.
   - "tests/behavior_tests.rs"
   - "tests/behavior/**"
