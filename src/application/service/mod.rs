@@ -38,6 +38,7 @@ pub mod sms_template_service;
 pub mod sms_tracker_service;
 
 // <<< CUSTOM
+pub mod relay_b7;
 // END CUSTOM
 
 pub use mail_activity_service::MailActivityService;

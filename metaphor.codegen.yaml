@@ -89,6 +89,9 @@ user_owned:
   - "src/application/service/mail_ports.rs"
   - "src/application/service/mail_server_query_service.rs"
   - "src/application/service/mail_inbound_service.rs"
+  # MAIL-B7 relay consumer (promoted from backbone-messaging-app): the
+  # previous-address security email on UserEmailChanged.
+  - "src/application/service/relay_b7.rs"
   - "src/infrastructure/persistence/smtp_selection_repository.rs"
   - "src/infrastructure/persistence/inbound_repository.rs"
   - "src/presentation/http/inbound_routes.rs"
