@@ -251,11 +251,18 @@ impl SmsWriteService {
         Ok(if advanced { applied_when_new } else { OutcomeApplied::Replay })
     }
 
-    /// Advance an sms's state from OUTSIDE the drainer (the increment-2 webhook /
-    /// cancel seams' entry): `canceled` from any non-terminal state, `pending→sent`
-    /// on a delivery report. Runs the same pump as the drainer so notification
-    /// status, tracker, and the bus event stay in lockstep. A regression is a
-    /// `Replay` (the map + rank guard + DB trigger all refuse).
+    /// Advance an sms's state from OUTSIDE the drainer (the webhook / late-verdict
+    /// seam's entry). Legal sources are `process` and `pending`: a verdict that
+    /// races the drainer's own outcome lands from `'process'` exactly as before,
+    /// while the DELIVERY REPORT (`pending → sent`, the provider's second
+    /// callback) is the transition this seam exists for. An `'outgoing'` row has
+    /// not been dispatched — no external verdict can be true for it yet — and a
+    /// regression or a re-assertion matches zero rows (`Replay`).
+    ///
+    /// Runs the same pump as the drainer so notification status, tracker, and
+    /// the bus event stay in lockstep; for rows with no linked notification the
+    /// TRACKER mirror is the durable delivery fact (the mass-mailing SMS
+    /// overlay's pump reads it from the other module — cross-schema, read-only).
     pub async fn advance_state(
         &self,
         sms_uuid: &str,
@@ -272,8 +279,9 @@ impl SmsWriteService {
         .await?
         .ok_or_else(|| SmsError::Invalid(format!("no sms with uuid {sms_uuid}")))?;
 
-        let advanced = SmsQueueRepository::apply_outcome(
-            &mut tx, id, target_state, failure_type, error_message, None)
+        let advanced = SmsQueueRepository::apply_outcome_from(
+            &mut tx, id, target_state, failure_type, error_message, None,
+            &["process", "pending"])
             .await?;
         if advanced {
             let mapped = sms_state_to_notification_status(target_state);

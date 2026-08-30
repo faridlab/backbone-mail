@@ -406,6 +406,104 @@ async fn webhook_fail_closed_and_replay_semantics() {
         .ok();
 }
 
+/// The delivery-report flow: drainer accepted the message (`pending`) BEFORE
+/// the provider's delivered callback arrives. The report must land from
+/// `'pending'` — `pending → sent` is the transition the advance seam exists
+/// for — and the tracker mirror must carry it (the tracker is the durable
+/// delivery fact for rows with no linked notification, e.g. the mass-mailing
+/// overlay's). An undispatched (`outgoing`) row refuses: no external verdict
+/// can be true for a message nobody sent yet.
+#[tokio::test]
+async fn webhook_delivery_report_lands_from_pending_and_mirrors_tracker() {
+    let Some(pool) = common::test_pool().await else {
+        common::skipped("webhook pending→sent");
+        return;
+    };
+    let _drain_guard = common::DRAIN_LOCK.lock().await;
+    common::sweep_queues(&pool).await;
+    let secret = "test-webhook-secret";
+    let svc = SmsStatusWebhookService::new(pool.clone(), secret);
+    let sms = backbone_mail::application::service::sms_write_service::SmsWriteService::new(
+        pool.clone(),
+    );
+    let (sms_id, sms_uuid) = sms
+        .enqueue("+628110000111", "delivery-report probe", None, None, None, None)
+        .await
+        .expect("enqueue mints the queue row + its tracker");
+
+    async fn tracker_state(pool: &sqlx::PgPool, sms_uuid: &str) -> String {
+        sqlx::query_scalar::<_, String>(
+            "SELECT state::text FROM messaging.sms_trackers WHERE sms_uuid = $1",
+        )
+        .bind(sms_uuid)
+        .fetch_one(pool)
+        .await
+        .expect("tracker row")
+    }
+
+    let signed = |status: &str, uuid: &str| -> (Vec<u8>, String) {
+        let raw = format!(
+            r#"{{"timestamp":"{}","sms_uuid":"{uuid}","status":"{status}"}}"#,
+            chrono::Utc::now().to_rfc3339()
+        );
+        let sig = hex_sig(secret.as_bytes(), raw.as_bytes());
+        (raw.into_bytes(), sig)
+    };
+
+    // First callback: provider ACCEPTED (row still 'outgoing' — undispatched,
+    // the report cannot be true yet). Refused as a replay, nothing written.
+    let (raw, sig) = signed("pending", &sms_uuid);
+    assert_eq!(
+        svc.handle(&raw, Some(&sig)).await.unwrap(),
+        WebhookOutcome::Replay,
+        "an undispatched row refuses an external verdict"
+    );
+
+    // The drainer's own outcome: claim flips it to 'process'. The same
+    // accepted-verdict now lands from 'process'.
+    backbone_mail::infrastructure::persistence::sms_queue_repository::SmsQueueRepository::claim_batch_for_drain(
+        &mut *pool.acquire().await.expect("conn"),
+        10,
+    )
+    .await
+    .expect("drain claim");
+    let (raw, sig) = signed("pending", &sms_uuid);
+    assert_eq!(svc.handle(&raw, Some(&sig)).await.unwrap(), WebhookOutcome::Advanced);
+    let state: String = sqlx::query_scalar("SELECT state::text FROM messaging.sms WHERE id = $1")
+        .bind(sms_id)
+        .fetch_one(&pool)
+        .await
+        .expect("state");
+    assert_eq!(state, "pending");
+    assert_eq!(tracker_state(&pool, &sms_uuid).await, "pending");
+
+    // THE delivery report: delivered arrives while the row sits at 'pending'.
+    let (raw, sig) = signed("sent", &sms_uuid);
+    assert_eq!(svc.handle(&raw, Some(&sig)).await.unwrap(), WebhookOutcome::Advanced);
+    let state: String = sqlx::query_scalar("SELECT state::text FROM messaging.sms WHERE id = $1")
+        .bind(sms_id)
+        .fetch_one(&pool)
+        .await
+        .expect("state");
+    assert_eq!(state, "sent");
+    assert_eq!(tracker_state(&pool, &sms_uuid).await, "sent");
+
+    // Provider retry of the same report: idempotent replay.
+    let (raw, sig) = signed("sent", &sms_uuid);
+    assert_eq!(svc.handle(&raw, Some(&sig)).await.unwrap(), WebhookOutcome::Replay);
+
+    sqlx::query("DELETE FROM messaging.sms WHERE id = $1")
+        .bind(sms_id)
+        .execute(&pool)
+        .await
+        .ok();
+    sqlx::query("DELETE FROM messaging.sms_trackers WHERE sms_uuid = $1")
+        .bind(&sms_uuid)
+        .execute(&pool)
+        .await
+        .ok();
+}
+
 fn hex_sig(secret: &[u8], body: &[u8]) -> String {
     use hmac::Mac;
     let mut mac = hmac::Hmac::<sha2::Sha256>::new_from_slice(secret).unwrap();

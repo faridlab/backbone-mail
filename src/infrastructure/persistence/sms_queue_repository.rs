@@ -140,6 +140,49 @@ impl SmsQueueRepository {
         Ok(updated.is_some())
     }
 
+    /// The advance-seam outcome write: same shape as [`Self::apply_outcome`],
+    /// but the state guard is a legal-source SET instead of the drainer's
+    /// single `'process'` arm. `advance_state` (the webhook / late-verdict
+    /// entry) uses this with `['process','pending']` so the DELIVERY REPORT
+    /// transition `pending → sent` — the documented contract of that seam —
+    /// actually lands; the drainer itself keeps calling `apply_outcome`, whose
+    /// single-source guard is exactly right between claim and first outcome.
+    ///
+    /// `AND state <> $2` keeps a re-assertion of the CURRENT state a replay
+    /// (`Ok(false)`): a provider retry of a verdict the row already carries
+    /// matches zero rows, exactly like the drainer's guard does.
+    #[allow(clippy::too_many_arguments)]
+    pub async fn apply_outcome_from(
+        conn: &mut PgConnection,
+        id: Uuid,
+        target_state: &str,
+        failure_type: Option<&str>,
+        error_message: Option<&str>,
+        iap_status_code: Option<i32>,
+        from_states: &[&str],
+    ) -> Result<bool, sqlx::Error> {
+        let updated = sqlx::query_scalar::<_, Uuid>(
+            r#"UPDATE messaging.sms
+               SET state = $2::sms_state,
+                   failure_type = $3::sms_failure_type,
+                   error_message = $4,
+                   iap_status_code = $5
+               WHERE id = $1
+                 AND state = ANY($6::sms_state[])
+                 AND state <> $2::sms_state
+               RETURNING id"#,
+        )
+        .bind(id)
+        .bind(target_state)
+        .bind(failure_type)
+        .bind(error_message)
+        .bind(iap_status_code)
+        .bind(from_states)
+        .fetch_optional(&mut *conn)
+        .await?;
+        Ok(updated.is_some())
+    }
+
     /// Set the tracker's state to mirror the sms row's (the tracker is the
     /// notification pump's bridge; its `state` column starts 'process').
     pub async fn mirror_tracker_state(
