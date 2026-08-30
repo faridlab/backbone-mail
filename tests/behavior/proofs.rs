@@ -21,6 +21,12 @@ async fn proof_monotonic_guard_rejects_regression_at_the_db() {
         common::skipped("SM-B6 monotonic-guard proof");
         return;
     };
+    // Serialize against concurrent queue sweeps: this proof's fresh row is
+    // born state='outgoing', and another test's sweep_queues GC-deletes
+    // 'outgoing' rows — without the lock the row can vanish inside this
+    // test's insert-to-'sent' window and the regression UPDATE matches
+    // zero rows.
+    let _drain_guard = common::DRAIN_LOCK.lock().await;
 
     // --- sms.state: sent → pending must fail ---------------------------------
     let id = Uuid::new_v4();
