@@ -240,4 +240,3 @@ impl backbone_core::ApplyUpdateDto<UpdateMailMessageStarDto> for MailMessageStar
 // Add custom DTOs specific to MailMessageStar here.
 // This section will be preserved during regeneration.
 // >>> END CUSTOM DTOs
-

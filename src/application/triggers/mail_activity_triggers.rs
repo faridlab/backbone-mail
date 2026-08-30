@@ -23,4 +23,3 @@ pub fn mail_activity_trigger_registry() -> MailActivityTriggerRegistry {
     TriggerRegistry::build(|r| {
     })
 }
-

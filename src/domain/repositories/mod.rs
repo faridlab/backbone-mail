@@ -30,6 +30,7 @@ pub mod mail_guest_repository;
 pub mod mail_server_repository;
 pub mod fetchmail_server_repository;
 pub mod mail_gateway_allowed_repository;
+pub mod phone_blacklist_repository;
 pub mod mail_message_schedule_repository;
 pub mod mail_scheduled_message_repository;
 pub mod sms_repository;
@@ -180,6 +181,12 @@ pub use mail_gateway_allowed_repository::{
     MailGatewayAllowedPaginationParams,
     MailGatewayAllowedPaginatedResult,
     MailGatewayAllowedFilter,
+};
+pub use phone_blacklist_repository::{
+    PhoneBlacklistRepository,
+    PhoneBlacklistPaginationParams,
+    PhoneBlacklistPaginatedResult,
+    PhoneBlacklistFilter,
 };
 pub use mail_message_schedule_repository::{
     MailMessageScheduleRepository,

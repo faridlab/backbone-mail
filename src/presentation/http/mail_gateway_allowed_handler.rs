@@ -185,4 +185,3 @@ pub fn create_protected_mail_gateway_allowed_routes<A: AuthMiddleware + Send + S
             }
         }))
 }
-

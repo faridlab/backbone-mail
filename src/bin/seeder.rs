@@ -36,6 +36,7 @@ use backbone_mail::seeders::SeedMailGuestSeeder;
 use backbone_mail::seeders::SeedMailServerSeeder;
 use backbone_mail::seeders::SeedFetchmailServerSeeder;
 use backbone_mail::seeders::SeedMailGatewayAllowedSeeder;
+use backbone_mail::seeders::SeedPhoneBlacklistSeeder;
 use backbone_mail::seeders::SeedMailMessageScheduleSeeder;
 use backbone_mail::seeders::SeedMailScheduledMessageSeeder;
 use backbone_mail::seeders::SeedSmsSeeder;
@@ -93,6 +94,7 @@ async fn main() -> Result<()> {
     seeders.push(Box::new(SeedMailServerSeeder::new()));
     seeders.push(Box::new(SeedFetchmailServerSeeder::new()));
     seeders.push(Box::new(SeedMailGatewayAllowedSeeder::new()));
+    seeders.push(Box::new(SeedPhoneBlacklistSeeder::new()));
     seeders.push(Box::new(SeedMailMessageScheduleSeeder::new()));
     seeders.push(Box::new(SeedMailScheduledMessageSeeder::new()));
     seeders.push(Box::new(SeedSmsSeeder::new()));

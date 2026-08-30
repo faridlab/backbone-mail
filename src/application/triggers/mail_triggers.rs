@@ -25,4 +25,3 @@ pub fn mail_trigger_registry() -> MailTriggerRegistry {
     TriggerRegistry::build(|r| {
     })
 }
-

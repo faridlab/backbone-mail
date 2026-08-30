@@ -30,6 +30,7 @@ pub mod mail_guest_specification;
 pub mod mail_server_specification;
 pub mod fetchmail_server_specification;
 pub mod mail_gateway_allowed_specification;
+pub mod phone_blacklist_specification;
 pub mod mail_message_schedule_specification;
 pub mod mail_scheduled_message_specification;
 pub mod sms_specification;

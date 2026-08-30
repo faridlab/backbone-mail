@@ -186,4 +186,3 @@ pub fn create_protected_mail_message_schedule_routes<A: AuthMiddleware + Send + 
             }
         }))
 }
-

@@ -353,4 +353,3 @@ impl backbone_core::ApplyUpdateDto<UpdateMailScheduledMessageDto> for MailSchedu
 // Add custom DTOs specific to MailScheduledMessage here.
 // This section will be preserved during regeneration.
 // >>> END CUSTOM DTOs
-

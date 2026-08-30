@@ -34,6 +34,8 @@ use crate::domain::entity::AuditMetadata;
 pub struct CreateMailBlacklistDto {
     #[cfg_attr(feature = "openapi", schema(example = "example"))]
     pub email: String,
+    #[serde(default, skip_serializing_if = "Option::is_none", alias = "opt_out_reason_id")]
+    pub opt_out_reason_id: Option<Uuid>,
     #[cfg_attr(feature = "openapi", schema(example = true))]
     pub active: bool,
 }
@@ -53,6 +55,8 @@ pub struct CreateMailBlacklistDto {
 pub struct UpdateMailBlacklistDto {
     #[cfg_attr(feature = "openapi", schema(example = "example"))]
     pub email: String,
+    #[serde(default, skip_serializing_if = "Option::is_none", alias = "opt_out_reason_id")]
+    pub opt_out_reason_id: Option<Uuid>,
     #[cfg_attr(feature = "openapi", schema(example = true))]
     pub active: bool,
 }
@@ -73,6 +77,8 @@ pub struct PatchMailBlacklistDto {
     #[cfg_attr(feature = "openapi", schema(example = "example"))]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub email: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none", alias = "opt_out_reason_id")]
+    pub opt_out_reason_id: Option<Uuid>,
     #[cfg_attr(feature = "openapi", schema(example = true))]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub active: Option<bool>,
@@ -81,7 +87,7 @@ pub struct PatchMailBlacklistDto {
 impl PatchMailBlacklistDto {
     /// Check if any field is set
     pub fn has_changes(&self) -> bool {
-        self.email.is_some() || self.active.is_some()
+        self.email.is_some() || self.opt_out_reason_id.is_some() || self.active.is_some()
     }
 }
 
@@ -101,6 +107,7 @@ pub struct MailBlacklistResponseDto {
     pub id: Uuid,
     #[cfg_attr(feature = "openapi", schema(example = "example"))]
     pub email: String,
+    pub opt_out_reason_id: Option<Uuid>,
     #[cfg_attr(feature = "openapi", schema(example = true))]
     pub active: bool,
     pub metadata: AuditMetadata,
@@ -161,6 +168,7 @@ impl MailBlacklistListResponseDto {
 pub struct MailBlacklistSummaryDto {
     pub id: Uuid,
     pub email: String,
+    pub opt_out_reason_id: Option<Uuid>,
     pub active: bool,
     pub created_at: Option<DateTime<Utc>>,
 }
@@ -174,6 +182,7 @@ impl From<MailBlacklist> for MailBlacklistResponseDto {
         Self {
             id: entity.id,
             email: entity.email,
+            opt_out_reason_id: entity.opt_out_reason_id,
             active: entity.active,
             metadata: entity.metadata,
         }
@@ -186,6 +195,7 @@ impl From<MailBlacklist> for MailBlacklistSummaryDto {
         Self {
             id: entity.id,
             email: entity.email,
+            opt_out_reason_id: entity.opt_out_reason_id,
             active: entity.active,
             created_at,
         }
@@ -197,6 +207,7 @@ impl From<CreateMailBlacklistDto> for MailBlacklist {
         Self {
             id: Uuid::new_v4(),
             email: dto.email,
+            opt_out_reason_id: dto.opt_out_reason_id,
             active: dto.active,
             metadata: AuditMetadata::default(),
         }
@@ -208,6 +219,7 @@ impl From<&MailBlacklist> for MailBlacklistResponseDto {
         Self {
             id: entity.id.clone(),
             email: entity.email.clone(),
+            opt_out_reason_id: entity.opt_out_reason_id.clone(),
             active: entity.active.clone(),
             metadata: entity.metadata.clone(),
         }
@@ -223,6 +235,7 @@ impl backbone_core::FromCreateDto<CreateMailBlacklistDto> for MailBlacklist {
 impl backbone_core::ApplyUpdateDto<UpdateMailBlacklistDto> for MailBlacklist {
     fn apply_update(mut self, dto: UpdateMailBlacklistDto) -> backbone_core::ServiceResult<Self> {
         self.email = dto.email;
+        self.opt_out_reason_id = dto.opt_out_reason_id;
         self.active = dto.active;
         Ok(self)
     }
@@ -236,4 +249,3 @@ impl backbone_core::ApplyUpdateDto<UpdateMailBlacklistDto> for MailBlacklist {
 // Add custom DTOs specific to MailBlacklist here.
 // This section will be preserved during regeneration.
 // >>> END CUSTOM DTOs
-

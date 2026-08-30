@@ -284,4 +284,3 @@ impl backbone_core::ApplyUpdateDto<UpdateSmsTemplateDto> for SmsTemplate {
 // Add custom DTOs specific to SmsTemplate here.
 // This section will be preserved during regeneration.
 // >>> END CUSTOM DTOs
-

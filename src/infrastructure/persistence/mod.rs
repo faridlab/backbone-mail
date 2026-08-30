@@ -28,6 +28,7 @@ mod mail_guest_repository;
 mod mail_server_repository;
 mod fetchmail_server_repository;
 mod mail_gateway_allowed_repository;
+mod phone_blacklist_repository;
 mod mail_message_schedule_repository;
 mod mail_scheduled_message_repository;
 mod sms_repository;
@@ -35,48 +36,6 @@ mod sms_template_repository;
 mod sms_tracker_repository;
 
 // Custom persistence modules
-// <<< CUSTOM
-// END CUSTOM
-
-// Re-exports
-pub use mail_activity_repository::MailActivityRepository;
-pub use mail_activity_type_repository::MailActivityTypeRepository;
-pub use mail_activity_plan_repository::MailActivityPlanRepository;
-pub use mail_activity_plan_template_repository::MailActivityPlanTemplateRepository;
-pub use mail_alias_domain_repository::MailAliasDomainRepository;
-pub use mail_alias_repository::MailAliasRepository;
-pub use mail_attachment_repository::MailAttachmentRepository;
-pub use mail_message_attachment_repository::MailMessageAttachmentRepository;
-pub use mail_message_star_repository::MailMessageStarRepository;
-pub use mail_message_repository::MailMessageRepository;
-pub use mail_repository::MailRepository;
-pub use mail_notification_repository::MailNotificationRepository;
-pub use mail_message_subtype_repository::MailMessageSubtypeRepository;
-pub use mail_message_reaction_repository::MailMessageReactionRepository;
-pub use mail_followers_repository::MailFollowersRepository;
-pub use mail_presence_repository::MailPresenceRepository;
-pub use mail_blacklist_repository::MailBlacklistRepository;
-pub use mail_tracking_value_repository::MailTrackingValueRepository;
-pub use discuss_channel_repository::DiscussChannelRepository;
-pub use discuss_channel_member_repository::DiscussChannelMemberRepository;
-pub use mail_guest_repository::MailGuestRepository;
-pub use mail_server_repository::MailServerRepository;
-pub use fetchmail_server_repository::FetchmailServerRepository;
-pub use mail_gateway_allowed_repository::MailGatewayAllowedRepository;
-pub use mail_message_schedule_repository::MailMessageScheduleRepository;
-pub use mail_scheduled_message_repository::MailScheduledMessageRepository;
-pub use sms_repository::SmsRepository;
-pub use sms_template_repository::SmsTemplateRepository;
-pub use sms_tracker_repository::SmsTrackerRepository;
-
-// Re-export backbone-orm types
-pub use backbone_orm::repository::{
-    DatabaseOperations, PostgresRepository,
-    PaginationParams, PaginationInfo, PaginatedResult,
-    FilterParams, FilterCondition, SortParams, SortDirection,
-};
-
-// Re-export custom persistence types
 // <<< CUSTOM
 // Hand-written messaging SQL (increment 1; user-owned files declared in
 // metaphor.codegen.yaml). Distinct names from the generated per-entity
@@ -105,4 +64,52 @@ pub mod chatter_repository;
 // (_find_mail_server) and the inbound pipeline reads/writes.
 pub mod smtp_selection_repository;
 pub mod inbound_repository;
+
+// Phone-validation opener SQL (user-owned): the phone-blacklist verbs —
+// canonical upsert add, conditional archive remove, point/batch membership.
+// Distinct path from the generated per-entity phone_blacklist_repository.
+pub mod phone_blacklist_verb_repository;
+// END CUSTOM
+
+// Re-exports
+pub use mail_activity_repository::MailActivityRepository;
+pub use mail_activity_type_repository::MailActivityTypeRepository;
+pub use mail_activity_plan_repository::MailActivityPlanRepository;
+pub use mail_activity_plan_template_repository::MailActivityPlanTemplateRepository;
+pub use mail_alias_domain_repository::MailAliasDomainRepository;
+pub use mail_alias_repository::MailAliasRepository;
+pub use mail_attachment_repository::MailAttachmentRepository;
+pub use mail_message_attachment_repository::MailMessageAttachmentRepository;
+pub use mail_message_star_repository::MailMessageStarRepository;
+pub use mail_message_repository::MailMessageRepository;
+pub use mail_repository::MailRepository;
+pub use mail_notification_repository::MailNotificationRepository;
+pub use mail_message_subtype_repository::MailMessageSubtypeRepository;
+pub use mail_message_reaction_repository::MailMessageReactionRepository;
+pub use mail_followers_repository::MailFollowersRepository;
+pub use mail_presence_repository::MailPresenceRepository;
+pub use mail_blacklist_repository::MailBlacklistRepository;
+pub use mail_tracking_value_repository::MailTrackingValueRepository;
+pub use discuss_channel_repository::DiscussChannelRepository;
+pub use discuss_channel_member_repository::DiscussChannelMemberRepository;
+pub use mail_guest_repository::MailGuestRepository;
+pub use mail_server_repository::MailServerRepository;
+pub use fetchmail_server_repository::FetchmailServerRepository;
+pub use mail_gateway_allowed_repository::MailGatewayAllowedRepository;
+pub use phone_blacklist_repository::PhoneBlacklistRepository;
+pub use mail_message_schedule_repository::MailMessageScheduleRepository;
+pub use mail_scheduled_message_repository::MailScheduledMessageRepository;
+pub use sms_repository::SmsRepository;
+pub use sms_template_repository::SmsTemplateRepository;
+pub use sms_tracker_repository::SmsTrackerRepository;
+
+// Re-export backbone-orm types
+pub use backbone_orm::repository::{
+    DatabaseOperations, PostgresRepository,
+    PaginationParams, PaginationInfo, PaginatedResult,
+    FilterParams, FilterCondition, SortParams, SortDirection,
+};
+
+// Re-export custom persistence types
+// <<< CUSTOM
 // END CUSTOM

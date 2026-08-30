@@ -185,4 +185,3 @@ pub fn create_protected_mail_attachment_routes<A: AuthMiddleware + Send + Sync +
             }
         }))
 }
-

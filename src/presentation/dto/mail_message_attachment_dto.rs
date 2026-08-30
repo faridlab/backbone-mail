@@ -240,4 +240,3 @@ impl backbone_core::ApplyUpdateDto<UpdateMailMessageAttachmentDto> for MailMessa
 // Add custom DTOs specific to MailMessageAttachment here.
 // This section will be preserved during regeneration.
 // >>> END CUSTOM DTOs
-

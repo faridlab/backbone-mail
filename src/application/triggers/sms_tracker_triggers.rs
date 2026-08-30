@@ -23,4 +23,3 @@ pub fn sms_tracker_trigger_registry() -> SmsTrackerTriggerRegistry {
     TriggerRegistry::build(|r| {
     })
 }
-

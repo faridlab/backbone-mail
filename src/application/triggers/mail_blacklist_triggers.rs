@@ -23,4 +23,3 @@ pub fn mail_blacklist_trigger_registry() -> MailBlacklistTriggerRegistry {
     TriggerRegistry::build(|r| {
     })
 }
-

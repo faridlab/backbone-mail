@@ -361,4 +361,3 @@ impl backbone_core::ApplyUpdateDto<UpdateMailTrackingValueDto> for MailTrackingV
 // Add custom DTOs specific to MailTrackingValue here.
 // This section will be preserved during regeneration.
 // >>> END CUSTOM DTOs
-

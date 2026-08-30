@@ -23,4 +23,3 @@ pub fn mail_followers_trigger_registry() -> MailFollowersTriggerRegistry {
     TriggerRegistry::build(|r| {
     })
 }
-

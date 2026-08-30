@@ -298,4 +298,3 @@ impl backbone_core::ApplyUpdateDto<UpdateMailActivityPlanTemplateDto> for MailAc
 // Add custom DTOs specific to MailActivityPlanTemplate here.
 // This section will be preserved during regeneration.
 // >>> END CUSTOM DTOs
-

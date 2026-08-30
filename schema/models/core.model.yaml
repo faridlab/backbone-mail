@@ -448,6 +448,10 @@ models:
         type: string
         attributes: ["@required", "@unique"]
         description: "The blacklisted address, STORED LOWERCASED (case-folding is app-layer on write). G-MAIL-2 unique(email) — fires on raw SQL."
+      opt_out_reason_id:
+        type: uuid?
+        attributes: ["@exclude_from_foreign_key_check"]
+        description: "Why the address was blacklisted # logical FK to the mailing module's OptOutReason catalog (cross-module, no FK — the inventory service_project_id logical-ref class). Mail treats it as opaque; the reason-forces-opt_out write rule lives on the mailing module's subscription."
       active:
         type: boolean
         attributes: ["@default(true)"]

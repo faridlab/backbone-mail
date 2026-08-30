@@ -1033,6 +1033,7 @@ impl From<MailBlacklistId> for Uuid {
 pub struct MailBlacklistDto {
     pub id: MailBlacklistId,
     pub email: String,
+    pub opt_out_reason_id: Option<Uuid>,
     pub active: bool,
     pub metadata: serde_json::Value,
 }
@@ -1490,6 +1491,61 @@ pub struct MailGatewayAllowedSummary {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct MailGatewayAllowedRef {
     pub id: MailGatewayAllowedId,
+}
+
+// ============================================================================
+// PHONEBLACKLIST TYPES
+// ============================================================================
+
+/// Type-safe ID for PhoneBlacklist
+///
+/// Use this instead of raw Uuid for type safety across modules.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub struct PhoneBlacklistId(pub Uuid);
+
+impl PhoneBlacklistId {
+    pub fn new(id: Uuid) -> Self {
+        Self(id)
+    }
+
+    pub fn into_inner(self) -> Uuid {
+        self.0
+    }
+}
+
+impl From<Uuid> for PhoneBlacklistId {
+    fn from(id: Uuid) -> Self {
+        Self(id)
+    }
+}
+
+impl From<PhoneBlacklistId> for Uuid {
+    fn from(id: PhoneBlacklistId) -> Self {
+        id.0
+    }
+}
+
+/// Data transfer object for PhoneBlacklist
+///
+/// This is the public representation of PhoneBlacklist for other modules.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PhoneBlacklistDto {
+    pub id: PhoneBlacklistId,
+    pub number: String,
+    pub active: bool,
+    pub metadata: serde_json::Value,
+}
+
+/// Summary view of PhoneBlacklist for list displays
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PhoneBlacklistSummary {
+    pub id: PhoneBlacklistId,
+}
+
+/// Reference to PhoneBlacklist for foreign key relationships
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PhoneBlacklistRef {
+    pub id: PhoneBlacklistId,
 }
 
 // ============================================================================

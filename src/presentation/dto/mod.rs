@@ -29,6 +29,7 @@ pub mod mail_guest_dto;
 pub mod mail_server_dto;
 pub mod fetchmail_server_dto;
 pub mod mail_gateway_allowed_dto;
+pub mod phone_blacklist_dto;
 pub mod mail_message_schedule_dto;
 pub mod mail_scheduled_message_dto;
 pub mod sms_dto;
@@ -227,6 +228,14 @@ pub use mail_gateway_allowed_dto::{
     MailGatewayAllowedResponseDto,
     MailGatewayAllowedListResponseDto,
     MailGatewayAllowedSummaryDto,
+};
+pub use phone_blacklist_dto::{
+    CreatePhoneBlacklistDto,
+    UpdatePhoneBlacklistDto,
+    PatchPhoneBlacklistDto,
+    PhoneBlacklistResponseDto,
+    PhoneBlacklistListResponseDto,
+    PhoneBlacklistSummaryDto,
 };
 pub use mail_message_schedule_dto::{
     CreateMailMessageScheduleDto,

@@ -311,4 +311,3 @@ impl backbone_core::ApplyUpdateDto<UpdateMailNotificationDto> for MailNotificati
 // Add custom DTOs specific to MailNotification here.
 // This section will be preserved during regeneration.
 // >>> END CUSTOM DTOs
-

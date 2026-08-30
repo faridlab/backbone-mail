@@ -102,6 +102,22 @@ user_owned:
   # src/infrastructure/gateway/.
   - "src/infrastructure/gateway/**"
 
+  # --- phone-validation opener (user-owned) -------------------------------------
+  # The E.164 sanitize contract: the recipient-candidate port (PhoneBookPort +
+  # the fail-closed slot), the typed formatter service (E164Number /
+  # phone_format / the first-valid-wins walk), and the phone.blacklist verbs
+  # (canonical upsert add, archive remove, point/batch membership checks).
+  # Declared BEFORE any file lands (regen-safety contract).
+  - "src/application/service/phone_ports.rs"
+  - "src/application/service/phone_validation_service.rs"
+  - "src/application/service/phone_blacklist_write_service.rs"
+  # NOTE: the verb repository sits at phone_blacklist_verb_repository.rs — a
+  # name DISTINCT from the generated per-entity repository
+  # (phone_blacklist_repository.rs, emitted for the PhoneBlacklist entity);
+  # the module rule requires the split, and a user_owned entry on the
+  # generated path would suppress the entity repository itself.
+  - "src/infrastructure/persistence/phone_blacklist_verb_repository.rs"
+
   # Behavior tests (the golden cases / oracle) + BDD features.
   - "tests/behavior_tests.rs"
   - "tests/behavior/**"

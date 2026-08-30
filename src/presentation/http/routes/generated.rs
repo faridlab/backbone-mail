@@ -33,6 +33,7 @@ use super::{
     mail_server_handler::create_mail_server_routes,
     fetchmail_server_handler::create_fetchmail_server_routes,
     mail_gateway_allowed_handler::create_mail_gateway_allowed_routes,
+    phone_blacklist_handler::create_phone_blacklist_routes,
     mail_message_schedule_handler::create_mail_message_schedule_routes,
     mail_scheduled_message_handler::create_mail_scheduled_message_routes,
     sms_handler::create_sms_routes,
@@ -65,6 +66,7 @@ use crate::application::service::{
     MailServerService,
     FetchmailServerService,
     MailGatewayAllowedService,
+    PhoneBlacklistService,
     MailMessageScheduleService,
     MailScheduledMessageService,
     SmsService,
@@ -98,6 +100,7 @@ pub struct HttpServices {
     pub mail_server: Arc<MailServerService>,
     pub fetchmail_server: Arc<FetchmailServerService>,
     pub mail_gateway_allowed: Arc<MailGatewayAllowedService>,
+    pub phone_blacklist: Arc<PhoneBlacklistService>,
     pub mail_message_schedule: Arc<MailMessageScheduleService>,
     pub mail_scheduled_message: Arc<MailScheduledMessageService>,
     pub sms: Arc<SmsService>,
@@ -170,6 +173,8 @@ pub fn configure_routes(services: HttpServices) -> Router {
         .merge(create_fetchmail_server_routes(services.fetchmail_server))
         // MailGatewayAllowed routes (12 Backbone endpoints)
         .merge(create_mail_gateway_allowed_routes(services.mail_gateway_allowed))
+        // PhoneBlacklist routes (12 Backbone endpoints)
+        .merge(create_phone_blacklist_routes(services.phone_blacklist))
         // MailMessageSchedule routes (12 Backbone endpoints)
         .merge(create_mail_message_schedule_routes(services.mail_message_schedule))
         // MailScheduledMessage routes (12 Backbone endpoints)
@@ -280,6 +285,10 @@ pub mod individual {
 
     pub fn mail_gateway_allowed_routes(service: Arc<MailGatewayAllowedService>) -> Router {
         create_mail_gateway_allowed_routes(service)
+    }
+
+    pub fn phone_blacklist_routes(service: Arc<PhoneBlacklistService>) -> Router {
+        create_phone_blacklist_routes(service)
     }
 
     pub fn mail_message_schedule_routes(service: Arc<MailMessageScheduleService>) -> Router {

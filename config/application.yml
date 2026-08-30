@@ -1,85 +1,270 @@
-# Messaging application configuration.
-# Copy and adjust for your deployment environment.
-#
-# CREDENTIAL POSTURE (ADR-0024 interim): secrets are ENV-VAR REFERENCES ONLY —
-# no literal secret material in this file, in schema seed data, or in migrations.
-# When the fenced credential store ships, these refs migrate to store reads
-# (registered debt; see docs/adr-notes/outbox-fence-and-credentials.md).
-
 server:
-  host: "0.0.0.0"
+  host: 0.0.0.0
   port: 8080
-
+  grpc_port: 50051
 database:
-  # Override at runtime via the DATABASE_URL environment variable.
-  url: "postgresql://root:password@localhost:5432/skeletondb"
+  url: postgresql://root:password@localhost:5432/skeletondb
   max_connections: 10
-
+  min_connections: 5
+  connect_timeout: 30
+  idle_timeout: 600
 logging:
-  level: "info"
-
-# SMS transport (Odoo `sms` port — sms.sms dispatch via the IAP-shaped gateway).
-# The provider endpoint is non-secret configuration; the token is a secret.
+  level: info
+  format: json
+  file: logs/messaging.log
 sms:
-  # Gateway base URL (non-secret; e.g. the IAP-shaped /api/sms/3/send provider).
-  endpoint: "${SMS_API_ENDPOINT}"
-  # Outbound sender identity (non-secret).
-  sender: "${SMS_SENDER}"
-  # Provider API token. ENV REF ONLY — never a literal here (ADR-0024 interim).
-  api_token: "${SMS_API_TOKEN}"
-  # The /sms/status webhook HMAC secret (ADR-0021 scheme: raw-body HMAC,
-  # fail-closed, no state writes before verification passes).
-  webhook_secret: "${SMS_WEBHOOK_SECRET}"
-
-# Outbox/inbox substrate (ADR-0017: Odoo's `bus` maps onto backbone-outbox).
+  endpoint: ${SMS_API_ENDPOINT}
+  sender: ${SMS_SENDER}
+  api_token: ${SMS_API_TOKEN}
+  webhook_secret: ${SMS_WEBHOOK_SECRET}
 outbox:
-  # Schema hosting outbox_events + inbox_consumed (this module's own schema).
-  schema: "messaging"
-  # ADR-0014 posture 4 (company_fence: none): messaging has no company dimension.
-  # outbox_events.company_id is NOT NULL, so every staged event carries the
-  # module-constant sentinel MESSAGING_PLATFORM_COMPANY_ID = Uuid::nil().
-  # Consumers key on channels, not companies — never filter these rows by
-  # company. See docs/adr-notes/outbox-fence-and-credentials.md.
-  company_id: "00000000-0000-0000-0000-000000000000"
-
-# Realtime (increment 2: SSE over the outbox — ADR-0017).
-# Every app replica runs a READ-ONLY tailer over outbox_events within this
-# window; the relay stays the carrier of record for durable consumers. The
-# window doubles as the reconnect replay buffer (Odoo's 50s catch-up analog).
+  schema: messaging
+  company_id: 00000000-0000-0000-0000-000000000000
 realtime:
   window_seconds: 55
   poll_ms: 1000
   max_channels_per_connection: 64
   keepalive_seconds: 15
-
-# Guest identity (mail.guest port — MAIL-M43).
 guest:
-  cookie: "dgid"
-  # Guests unseen for this long are reaped by the mail-guest-gc job.
+  cookie: dgid
   gc_after_minutes: 60
-
-# Presence (mail.presence port — MAIL-M11).
 presence:
-  # Rows not polled within this window are stale (offline) and reaped by
-  # mail-presence-gc (Odoo reaps at 12h).
   stale_after_hours: 12
-
-# Scheduled-job intervals (postures live in schema/hooks/index.hook.yaml;
-# these are the runner-side tick overrides for the app service).
 jobs:
   sms_process_queue_seconds: 300
   mail_send_queue_seconds: 300
   mail_scheduled_notification_seconds: 300
-  mail_notification_gc_cron: "0 3 * * *"
-  sms_gc_cron: "0 3 * * *"
-  mail_presence_gc_cron: "0 3 * * *"
-  mail_guest_gc_cron: "0 3 * * *"
+  mail_notification_gc_cron: 0 3 * * *
+  sms_gc_cron: 0 3 * * *
+  mail_presence_gc_cron: 0 3 * * *
+  mail_guest_gc_cron: 0 3 * * *
   sms_stuck_process_sweep_minutes: 10
-  # SM-B13: an sms row stuck in `process` longer than this is swept
-  # (alert event + bounded re-queue).
   sms_process_stuck_threshold_minutes: 30
-  # MAIL-B8: mail_notification reap-all age bound (Odoo's cleanup default).
   mail_notification_retention_days: 30
-  # M43: a guest whose last_connection_dt is older than this is soft-deleted
-  # by mail-guest-gc (possession of the dgid cookie was its only identity).
   guest_stale_minutes: 60
+module:
+  name: messaging
+  enabled: true
+features:
+  soft_delete: true
+  state_machines: true
+  workflows: false
+entities:
+  mail_activity:
+    collection: mail_activities
+    enabled: true
+    cache_ttl: 300
+    pagination:
+      default_limit: 20
+      max_limit: 100
+  mail_activity_type:
+    collection: mail_activity_types
+    enabled: true
+    cache_ttl: 300
+    pagination:
+      default_limit: 20
+      max_limit: 100
+  mail_activity_plan:
+    collection: mail_activity_plans
+    enabled: true
+    cache_ttl: 300
+    pagination:
+      default_limit: 20
+      max_limit: 100
+  mail_activity_plan_template:
+    collection: mail_activity_plan_templates
+    enabled: true
+    cache_ttl: 300
+    pagination:
+      default_limit: 20
+      max_limit: 100
+  mail_alias_domain:
+    collection: mail_alias_domains
+    enabled: true
+    cache_ttl: 300
+    pagination:
+      default_limit: 20
+      max_limit: 100
+  mail_alias:
+    collection: mail_aliases
+    enabled: true
+    cache_ttl: 300
+    pagination:
+      default_limit: 20
+      max_limit: 100
+  mail_attachment:
+    collection: mail_attachments
+    enabled: true
+    cache_ttl: 300
+    pagination:
+      default_limit: 20
+      max_limit: 100
+  mail_message_attachment:
+    collection: mail_message_attachments
+    enabled: true
+    cache_ttl: 300
+    pagination:
+      default_limit: 20
+      max_limit: 100
+  mail_message_star:
+    collection: mail_message_stars
+    enabled: true
+    cache_ttl: 300
+    pagination:
+      default_limit: 20
+      max_limit: 100
+  mail_message:
+    collection: mail_messages
+    enabled: true
+    cache_ttl: 300
+    pagination:
+      default_limit: 20
+      max_limit: 100
+  mail:
+    collection: mails
+    enabled: true
+    cache_ttl: 300
+    pagination:
+      default_limit: 20
+      max_limit: 100
+  mail_notification:
+    collection: mail_notifications
+    enabled: true
+    cache_ttl: 300
+    pagination:
+      default_limit: 20
+      max_limit: 100
+  mail_message_subtype:
+    collection: mail_message_subtypes
+    enabled: true
+    cache_ttl: 300
+    pagination:
+      default_limit: 20
+      max_limit: 100
+  mail_message_reaction:
+    collection: mail_message_reactions
+    enabled: true
+    cache_ttl: 300
+    pagination:
+      default_limit: 20
+      max_limit: 100
+  mail_followers:
+    collection: mail_followers
+    enabled: true
+    cache_ttl: 300
+    pagination:
+      default_limit: 20
+      max_limit: 100
+  mail_presence:
+    collection: mail_presences
+    enabled: true
+    cache_ttl: 300
+    pagination:
+      default_limit: 20
+      max_limit: 100
+  mail_blacklist:
+    collection: mail_blacklists
+    enabled: true
+    cache_ttl: 300
+    pagination:
+      default_limit: 20
+      max_limit: 100
+  mail_tracking_value:
+    collection: mail_tracking_values
+    enabled: true
+    cache_ttl: 300
+    pagination:
+      default_limit: 20
+      max_limit: 100
+  discuss_channel:
+    collection: discuss_channels
+    enabled: true
+    cache_ttl: 300
+    pagination:
+      default_limit: 20
+      max_limit: 100
+  discuss_channel_member:
+    collection: discuss_channel_members
+    enabled: true
+    cache_ttl: 300
+    pagination:
+      default_limit: 20
+      max_limit: 100
+  mail_guest:
+    collection: mail_guests
+    enabled: true
+    cache_ttl: 300
+    pagination:
+      default_limit: 20
+      max_limit: 100
+  mail_server:
+    collection: mail_servers
+    enabled: true
+    cache_ttl: 300
+    pagination:
+      default_limit: 20
+      max_limit: 100
+  fetchmail_server:
+    collection: fetchmail_servers
+    enabled: true
+    cache_ttl: 300
+    pagination:
+      default_limit: 20
+      max_limit: 100
+  mail_gateway_allowed:
+    collection: mail_gateway_allowed
+    enabled: true
+    cache_ttl: 300
+    pagination:
+      default_limit: 20
+      max_limit: 100
+  phone_blacklist:
+    collection: phone_blacklists
+    enabled: true
+    cache_ttl: 300
+    pagination:
+      default_limit: 20
+      max_limit: 100
+  mail_message_schedule:
+    collection: mail_message_schedules
+    enabled: true
+    cache_ttl: 300
+    pagination:
+      default_limit: 20
+      max_limit: 100
+  mail_scheduled_message:
+    collection: mail_scheduled_messages
+    enabled: true
+    cache_ttl: 300
+    pagination:
+      default_limit: 20
+      max_limit: 100
+  sms:
+    collection: sms
+    enabled: true
+    cache_ttl: 300
+    pagination:
+      default_limit: 20
+      max_limit: 100
+  sms_template:
+    collection: sms_templates
+    enabled: true
+    cache_ttl: 300
+    pagination:
+      default_limit: 20
+      max_limit: 100
+  sms_tracker:
+    collection: sms_trackers
+    enabled: true
+    cache_ttl: 300
+    pagination:
+      default_limit: 20
+      max_limit: 100
+tracing:
+  enabled: true
+  exporter: otlp
+  endpoint: http://localhost:4317
+metrics:
+  enabled: true
+  endpoint: /metrics
+  port: 9090

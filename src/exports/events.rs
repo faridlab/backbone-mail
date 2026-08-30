@@ -659,6 +659,33 @@ pub struct MailGatewayAllowedDeletedEvent {
 }
 
 // ============================================================================
+// PHONEBLACKLIST EVENTS
+// ============================================================================
+
+/// Event published when a PhoneBlacklist is created
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PhoneBlacklistCreatedEvent {
+    pub id: PhoneBlacklistId,
+    pub data: PhoneBlacklistDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a PhoneBlacklist is updated
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PhoneBlacklistUpdatedEvent {
+    pub id: PhoneBlacklistId,
+    pub data: PhoneBlacklistDto,
+    pub occurred_at: DateTime<Utc>,
+}
+
+/// Event published when a PhoneBlacklist is deleted
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PhoneBlacklistDeletedEvent {
+    pub id: PhoneBlacklistId,
+    pub occurred_at: DateTime<Utc>,
+}
+
+// ============================================================================
 // MAILMESSAGESCHEDULE EVENTS
 // ============================================================================
 
@@ -873,6 +900,9 @@ pub enum MessagingEvent {
     MailGatewayAllowedCreated(MailGatewayAllowedCreatedEvent),
     MailGatewayAllowedUpdated(MailGatewayAllowedUpdatedEvent),
     MailGatewayAllowedDeleted(MailGatewayAllowedDeletedEvent),
+    PhoneBlacklistCreated(PhoneBlacklistCreatedEvent),
+    PhoneBlacklistUpdated(PhoneBlacklistUpdatedEvent),
+    PhoneBlacklistDeleted(PhoneBlacklistDeletedEvent),
     MailMessageScheduleCreated(MailMessageScheduleCreatedEvent),
     MailMessageScheduleUpdated(MailMessageScheduleUpdatedEvent),
     MailMessageScheduleDeleted(MailMessageScheduleDeletedEvent),

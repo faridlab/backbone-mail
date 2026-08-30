@@ -23,4 +23,3 @@ pub fn mail_alias_domain_trigger_registry() -> MailAliasDomainTriggerRegistry {
     TriggerRegistry::build(|r| {
     })
 }
-

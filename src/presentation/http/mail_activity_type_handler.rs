@@ -249,4 +249,3 @@ pub fn create_mail_activity_type_transition_routes(service: Arc<MailActivityType
         .route("/mail_activity_types/:id/transitions/enable_trigger", post(enable_trigger_transition))
         .with_state(service)
 }
-

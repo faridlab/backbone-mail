@@ -99,6 +99,9 @@ pub use events::*;
 /// - `MailGatewayAllowedDto` - Data transfer object for MailGatewayAllowed
 /// - `MailGatewayAllowedSummary` - Summary view of MailGatewayAllowed
 /// - `MailGatewayAllowedId` - Type-safe ID wrapper
+/// - `PhoneBlacklistDto` - Data transfer object for PhoneBlacklist
+/// - `PhoneBlacklistSummary` - Summary view of PhoneBlacklist
+/// - `PhoneBlacklistId` - Type-safe ID wrapper
 /// - `MailMessageScheduleDto` - Data transfer object for MailMessageSchedule
 /// - `MailMessageScheduleSummary` - Summary view of MailMessageSchedule
 /// - `MailMessageScheduleId` - Type-safe ID wrapper
@@ -188,6 +191,9 @@ pub use events::*;
 /// - `MailGatewayAllowedCreatedEvent` - Published when MailGatewayAllowed is created
 /// - `MailGatewayAllowedUpdatedEvent` - Published when MailGatewayAllowed is updated
 /// - `MailGatewayAllowedDeletedEvent` - Published when MailGatewayAllowed is deleted
+/// - `PhoneBlacklistCreatedEvent` - Published when PhoneBlacklist is created
+/// - `PhoneBlacklistUpdatedEvent` - Published when PhoneBlacklist is updated
+/// - `PhoneBlacklistDeletedEvent` - Published when PhoneBlacklist is deleted
 /// - `MailMessageScheduleCreatedEvent` - Published when MailMessageSchedule is created
 /// - `MailMessageScheduleUpdatedEvent` - Published when MailMessageSchedule is updated
 /// - `MailMessageScheduleDeletedEvent` - Published when MailMessageSchedule is deleted

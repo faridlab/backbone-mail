@@ -353,4 +353,3 @@ impl backbone_core::ApplyUpdateDto<UpdateMailServerDto> for MailServer {
 // Add custom DTOs specific to MailServer here.
 // This section will be preserved during regeneration.
 // >>> END CUSTOM DTOs
-

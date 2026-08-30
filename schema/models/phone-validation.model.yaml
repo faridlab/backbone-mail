@@ -1,0 +1,75 @@
+# =============================================================================
+# Module: backbone-mail — Area: PHONE VALIDATION OPENER (phone_validation).
+# Ported from the Odoo `phone_validation` addon
+# (addons/phone_validation/models/phone_validation_mixin.py) — ONLY the
+# pieces the mass-mailing SMS cycle needs first: the E.164 sanitize contract
+# and `phone.blacklist`. The SMS channel overlay itself (composer state
+# classification, STOP routes, trace wiring) is a later increment and is
+# deliberately NOT here.
+#
+# ONE-HOME RULING (module council, 2026-08-29): backbone-mail is the single
+# home of phone validation. No other module synthesizes phone models —
+# `party_phones` is contact data, not validation; every consumer (sms
+# composer, mailing, crm_sms) reaches the formatter and the blacklist
+# through this module's services.
+#
+# FENCE POSTURE (deliberate, Odoo-faithful): `phone.blacklist` is a GLOBAL
+# consent list — a STOP suppresses sends regardless of company context
+# (mass_mailing_sms joins `bl_sms.active` with no company arm; see
+# docs/odoo/marketing/mass_mailing_sms/mass_mailing_sms-business-logic.md,
+# the mailing-list statistics section around the `bl_sms` join). This module
+# is company_fence: none (ADR-0014 posture 4), so the table ships without a
+# company column and without RLS — a recorded posture exception of the
+# global-consent class; the cross-company probe governs fenced family
+# entities, not this table. Routes over it stay operator-gated.
+#
+# CANONICAL-UNIQUE IMPROVEMENT over the email denylist: every write passes
+# the E.164 formatter first, so `number` is stored canonical and the unique
+# holds on the canonical form by construction — raw variants ("+62 812
+# 3456 7890", "+6281234567 890", national "0812…" + country hint) converge
+# to ONE row, closing the near-duplicate class the email blacklist
+# documents (case-folding is app-layer there; here the fold IS the schema).
+#
+# Spec anchors:
+#   - docs/odoo/marketing/mass_mailing_sms/mass_mailing_sms-business-logic.md
+#     (recipient sanitization + the `bl_sms.active` blacklist join; the STOP
+#     route table — `phone_validation.phone_format` is the validator, the
+#     unsubscribe effect calls `phone.blacklist.add`).
+#   - docs/odoo/messaging/sms/sms-business-logic.md §7.1 (the candidate
+#     walk: first valid sanitized wins; the blacklist load-all defect noted
+#     there is REFUSED by this port — membership checks go through a
+#     parameterized point/batch lookup, never an unbounded load-all).
+# =============================================================================
+
+models:
+
+  # ===========================================================================
+  # phone.blacklist — the phone-number denylist (global consent list).
+  # Odoo's phone.blacklist inherits mail.blacklist; the port mirrors the
+  # mail_blacklists substrate (append-only-archive: remove sets active=false,
+  # add reactivates — never a physical delete).
+  # ===========================================================================
+  - name: PhoneBlacklist
+    collection: phone_blacklists
+    description: "phone.blacklist — the phone-number denylist: E.164-canonical numbers that must never receive outbound SMS. GLOBAL consent list (a STOP suppresses sends regardless of company context — spec-faithful fence-none posture, operator-gated routes). number is stored CANONICAL: every write passes the E.164 formatter first, so the unique holds on the canonical form and raw variants converge to one row (the email-blacklist near-duplicate class is closed by construction). _add/_remove use the ARCHIVE pattern (active=false to remove — never a physical delete); a reason column is deliberately ABSENT (Odoo's phone.blacklist has none; STOP-context logging rides the SMS overlay increment)."
+    fields:
+      id:
+        type: uuid
+        attributes: ["@id", "@default(uuid)"]
+        description: "Primary key"
+      number:
+        type: string
+        attributes: ["@required", "@unique"]
+        description: "The blacklisted number, STORED E.164-CANONICAL (+NN...). The formatter is the only sanctioned write path, so the unique fires on the canonical form by construction."
+      active:
+        type: boolean
+        attributes: ["@default(true)"]
+        description: "Archive flag. remove sets active=false (archive, not delete); add reactivates the same row. The blacklist is append-only-archive."
+      metadata:
+        type: Metadata
+        attributes: ["@audit_metadata"]
+        description: "Audit metadata (created_at, updated_at, deleted_at, created_by, updated_by, deleted_by)"
+    indexes:
+      - type: index
+        fields: [active]
+        name: phone_blacklists_active_idx

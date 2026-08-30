@@ -49,6 +49,7 @@ impl std::ops::Deref for MailBlacklistId {
 pub struct MailBlacklist {
     pub id: Uuid,
     pub email: String,
+    pub opt_out_reason_id: Option<Uuid>,
     pub active: bool,
     #[serde(default)]
     #[sqlx(json)]
@@ -66,6 +67,7 @@ impl MailBlacklist {
         Self {
             id: Uuid::new_v4(),
             email,
+            opt_out_reason_id: None,
             active,
             metadata: AuditMetadata::default(),
         }
@@ -123,6 +125,16 @@ impl MailBlacklist {
 
 
     // ==========================================================
+    // Fluent Setters (with_* for optional fields)
+    // ==========================================================
+
+    /// Set the opt_out_reason_id field (chainable)
+    pub fn with_opt_out_reason_id(mut self, value: Uuid) -> Self {
+        self.opt_out_reason_id = Some(value);
+        self
+    }
+
+    // ==========================================================
     // Partial Update
     // ==========================================================
 
@@ -132,6 +144,9 @@ impl MailBlacklist {
             match key.as_str() {
                 "email" => {
                     if let Ok(v) = serde_json::from_value(value) { self.email = v; }
+                }
+                "opt_out_reason_id" => {
+                    if let Ok(v) = serde_json::from_value(value) { self.opt_out_reason_id = v; }
                 }
                 "active" => {
                     if let Ok(v) = serde_json::from_value(value) { self.active = v; }
@@ -190,6 +205,7 @@ impl backbone_orm::EntityRepoMeta for MailBlacklist {
     fn column_types() -> std::collections::HashMap<String, String> {
         let mut m = std::collections::HashMap::new();
         m.insert("id".to_string(), "uuid".to_string());
+        m.insert("opt_out_reason_id".to_string(), "uuid".to_string());
         m
     }
     fn search_fields() -> &'static [&'static str] {
@@ -204,6 +220,7 @@ impl backbone_orm::EntityRepoMeta for MailBlacklist {
 #[derive(Debug, Clone, Default)]
 pub struct MailBlacklistBuilder {
     email: Option<String>,
+    opt_out_reason_id: Option<Uuid>,
     active: Option<bool>,
 }
 
@@ -211,6 +228,12 @@ impl MailBlacklistBuilder {
     /// Set the email field (required)
     pub fn email(mut self, value: String) -> Self {
         self.email = Some(value);
+        self
+    }
+
+    /// Set the opt_out_reason_id field (optional)
+    pub fn opt_out_reason_id(mut self, value: Uuid) -> Self {
+        self.opt_out_reason_id = Some(value);
         self
     }
 
@@ -229,6 +252,7 @@ impl MailBlacklistBuilder {
         Ok(MailBlacklist {
             id: Uuid::new_v4(),
             email,
+            opt_out_reason_id: self.opt_out_reason_id,
             active: self.active.unwrap_or(true),
             metadata: AuditMetadata::default(),
         })

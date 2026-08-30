@@ -25,4 +25,3 @@ pub fn mail_presence_trigger_registry() -> MailPresenceTriggerRegistry {
     TriggerRegistry::build(|r| {
     })
 }
-

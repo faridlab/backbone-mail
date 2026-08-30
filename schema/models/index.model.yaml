@@ -79,6 +79,7 @@ imports:
   - schedule.model.yaml
   - attachment.model.yaml
   - sms.model.yaml
+  - phone-validation.model.yaml
 
 # =============================================================================
 # FLAG-ID COVERAGE — docs/odoo/messaging port (this module closes):
@@ -125,6 +126,16 @@ imports:
 #   MAIL-M45 MailAttachment (slim)     attachment.model.yaml (full ir.attachment port stays with `system`)
 #            MailMessageAttachment     attachment.model.yaml (message↔attachment join, unique)
 #            MailMessageStar           attachment.model.yaml (starred m2m materialized, unique partner+message)
+#
+# PHONE VALIDATION (docs/odoo/marketing/mass_mailing_sms opener; the addon
+# is Odoo's phone_validation — E.164 sanitize + phone.blacklist):
+#   phone.blacklist             phone-validation.model.yaml (GLOBAL consent list, fence none by declaration;
+#                              number stored E.164-canonical — formatter-gated writes close the email-blacklist
+#                              near-duplicate class; active-archive pattern, no reason column)
+#   MailBlacklist.opt_out_reason_id  core.model.yaml (nullable logical-uuid ref to the mailing module's
+#                              OptOutReason catalog — opaque here, the inventory service_project_id class)
+#                              The E164 formatter (phone_format / sanitize_candidates) and the
+#                              PhoneBookPort are hand-written services, not schema artifacts.
 #
 # NOT ported (by design — see module brief): framework extensions (ir.*/res.*,
 # G-MAIL-6 lives on res.users), wizards, mixins, push devices, RTC/gif/voice/

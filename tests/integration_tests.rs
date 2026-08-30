@@ -347,6 +347,20 @@ async fn test_mail_gateway_allowed_api() {
 }
 
 #[tokio::test]
+async fn test_phone_blacklist_api() {
+    let mut test = PhoneBlacklistApiTest::new();
+    let results = test.run_all().await;
+
+    let failed: Vec<_> = results.iter().filter(|r| !r.success).collect();
+    if !failed.is_empty() {
+        for f in &failed {
+            eprintln!("FAILED: {} - {}", f.test_name, f.details);
+        }
+        panic!("{} tests failed", failed.len());
+    }
+}
+
+#[tokio::test]
 async fn test_mail_message_schedule_api() {
     let mut test = MailMessageScheduleApiTest::new();
     let results = test.run_all().await;
@@ -415,4 +429,3 @@ async fn test_sms_tracker_api() {
         panic!("{} tests failed", failed.len());
     }
 }
-

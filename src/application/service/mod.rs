@@ -31,6 +31,7 @@ pub mod mail_guest_service;
 pub mod mail_server_service;
 pub mod fetchmail_server_service;
 pub mod mail_gateway_allowed_service;
+pub mod phone_blacklist_service;
 pub mod mail_message_schedule_service;
 pub mod mail_scheduled_message_service;
 pub mod sms_service;
@@ -65,6 +66,7 @@ pub use mail_guest_service::MailGuestService;
 pub use mail_server_service::MailServerService;
 pub use fetchmail_server_service::FetchmailServerService;
 pub use mail_gateway_allowed_service::MailGatewayAllowedService;
+pub use phone_blacklist_service::PhoneBlacklistService;
 pub use mail_message_schedule_service::MailMessageScheduleService;
 pub use mail_scheduled_message_service::MailScheduledMessageService;
 pub use sms_service::SmsService;
@@ -150,5 +152,24 @@ pub use mail_ports::{MailApiPort, MailSendFailure, MailSendOutcome, MailSendRequ
 pub use mail_server_query_service::{MailServerQueryError, MailServerQueryService};
 pub use mail_inbound_service::{
     InboundMessage, InboundOutcome, MailInboundError, MailInboundService,
+};
+
+// Phone-validation opener (user-owned): the recipient-candidate port + the
+// fail-closed slot, the typed E.164 formatter service, and the phone
+// blacklist verbs.
+pub mod phone_ports;
+pub mod phone_validation_service;
+pub mod phone_blacklist_write_service;
+
+pub use phone_ports::{
+    NoopPhoneBook, PhoneBookPort, PhoneBookSlot, PhoneCandidate, PhoneSourceError,
+    RefusingPhoneBook,
+};
+pub use phone_validation_service::{
+    E164Number, PhoneFormatError, PhoneValidationError, PhoneValidationService, SanitizeFailure,
+    SanitizedPhone, phone_format, sanitize_candidates,
+};
+pub use phone_blacklist_write_service::{
+    AddOutcome, PhoneBlacklistError, PhoneBlacklistWriteService, RemoveOutcome,
 };
 // END CUSTOM

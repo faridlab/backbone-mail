@@ -186,4 +186,3 @@ pub fn create_protected_mail_tracking_value_routes<A: AuthMiddleware + Send + Sy
             }
         }))
 }
-

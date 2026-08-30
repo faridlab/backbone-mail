@@ -185,4 +185,3 @@ pub fn create_protected_mail_activity_plan_routes<A: AuthMiddleware + Send + Syn
             }
         }))
 }
-

@@ -25,4 +25,3 @@ pub fn sms_trigger_registry() -> SmsTriggerRegistry {
     TriggerRegistry::build(|r| {
     })
 }
-

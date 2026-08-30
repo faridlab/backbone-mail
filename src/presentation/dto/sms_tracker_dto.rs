@@ -293,4 +293,3 @@ impl backbone_core::ApplyUpdateDto<UpdateSmsTrackerDto> for SmsTracker {
 // Add custom DTOs specific to SmsTracker here.
 // This section will be preserved during regeneration.
 // >>> END CUSTOM DTOs
-

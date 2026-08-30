@@ -564,4 +564,3 @@ pub fn create_mail_notification_transition_routes(service: Arc<MailNotificationS
         .route("/mail_notifications/:id/transitions/canceled", post(canceled_transition))
         .with_state(service)
 }
-

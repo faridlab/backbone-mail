@@ -37,3 +37,9 @@
 - mail_scheduled_message_seed
 - mail_message_schedule_seed
 - mail_message_star_seed
+
+# Newly added seeds (preserve manual order above):
+- mail_server_seed
+- fetchmail_server_seed
+- mail_gateway_allowed_seed
+- phone_blacklist_seed

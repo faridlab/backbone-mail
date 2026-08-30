@@ -352,4 +352,3 @@ pub fn create_mail_presence_transition_routes(service: Arc<MailPresenceService>)
         .route("/mail_presences/:id/transitions/go_offline", post(go_offline_transition))
         .with_state(service)
 }
-

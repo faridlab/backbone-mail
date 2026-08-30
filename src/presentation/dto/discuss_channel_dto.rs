@@ -340,4 +340,3 @@ impl backbone_core::ApplyUpdateDto<UpdateDiscussChannelDto> for DiscussChannel {
 // Add custom DTOs specific to DiscussChannel here.
 // This section will be preserved during regeneration.
 // >>> END CUSTOM DTOs
-

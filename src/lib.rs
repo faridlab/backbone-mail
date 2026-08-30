@@ -59,6 +59,7 @@ pub use application::service::MailGuestService;
 pub use application::service::MailServerService;
 pub use application::service::FetchmailServerService;
 pub use application::service::MailGatewayAllowedService;
+pub use application::service::PhoneBlacklistService;
 pub use application::service::MailMessageScheduleService;
 pub use application::service::MailScheduledMessageService;
 pub use application::service::SmsService;
@@ -77,6 +78,7 @@ use crate::application::service::{
     ActivityWriteService, AliasWriteService, AttachmentWriteService, ChannelMemberWriteService,
     ChannelQueryService, ChannelWriteService, FollowerWriteService, GuestWriteService,
     MailQueueWriteService, MessageEditService, MessageQueryService, MessageWriteService,
+    PhoneBlacklistWriteService, PhoneBookPort, PhoneBookSlot, PhoneValidationService,
     PresenceWriteService, ReactionWriteService, RecipientQueryService, ScheduleWriteService,
     SmsStatusWebhookService, SmsWriteService, StaticThreadAccess, ThreadAclSlot,
     ThreadAccessResolver, ThreadChatterService, TypingService,
@@ -123,6 +125,7 @@ pub struct MessagingModule {
     pub(crate) mail_server_service: Arc<MailServerService>,
     pub(crate) fetchmail_server_service: Arc<FetchmailServerService>,
     pub(crate) mail_gateway_allowed_service: Arc<MailGatewayAllowedService>,
+    pub(crate) phone_blacklist_service: Arc<PhoneBlacklistService>,
     pub(crate) mail_message_schedule_service: Arc<MailMessageScheduleService>,
     pub(crate) mail_scheduled_message_service: Arc<MailScheduledMessageService>,
     pub(crate) sms_service: Arc<SmsService>,
@@ -167,6 +170,15 @@ pub struct MessagingModule {
     /// host app spawns the outbox tailer onto THIS same instance — the
     /// identity between the two is what makes post→stream delivery work.
     pub realtime_registry: std::sync::Arc<realtime::RealtimeRegistry>,
+    /// The phone-validation opener (user-owned): the blacklist verbs and the
+    /// live sanitized-for verb over the swappable phone-book slot.
+    pub phone_blacklist_write_service: Arc<PhoneBlacklistWriteService>,
+    /// The swappable recipient-candidate slot — install a host's phone book
+    /// with [`MessagingModule::set_phone_book`]. Defaults to the refusing
+    /// (fail-closed) book.
+    pub phone_book: PhoneBookSlot,
+    /// The live read-side verb: candidates → E.164 → blacklist standing.
+    pub phone_validation_service: Arc<PhoneValidationService>,
     // END CUSTOM
 }
 
@@ -207,6 +219,7 @@ impl MessagingModule {
             create_mail_server_routes,
             create_fetchmail_server_routes,
             create_mail_gateway_allowed_routes,
+            create_phone_blacklist_routes,
             create_mail_message_schedule_routes,
             create_mail_scheduled_message_routes,
             create_sms_routes,
@@ -239,6 +252,7 @@ impl MessagingModule {
             .merge(create_mail_server_routes(self.mail_server_service.clone()))
             .merge(create_fetchmail_server_routes(self.fetchmail_server_service.clone()))
             .merge(create_mail_gateway_allowed_routes(self.mail_gateway_allowed_service.clone()))
+            .merge(create_phone_blacklist_routes(self.phone_blacklist_service.clone()))
             .merge(create_mail_message_schedule_routes(self.mail_message_schedule_service.clone()))
             .merge(create_mail_scheduled_message_routes(self.mail_scheduled_message_service.clone()))
             .merge(create_sms_routes(self.sms_service.clone()))
@@ -287,6 +301,7 @@ impl MessagingModule {
             create_mail_server_read_routes,
             create_fetchmail_server_read_routes,
             create_mail_gateway_allowed_read_routes,
+            create_phone_blacklist_read_routes,
             create_mail_message_schedule_read_routes,
             create_mail_scheduled_message_read_routes,
             create_sms_read_routes,
@@ -319,6 +334,7 @@ impl MessagingModule {
             .merge(create_mail_server_read_routes(self.mail_server_service.clone()))
             .merge(create_fetchmail_server_read_routes(self.fetchmail_server_service.clone()))
             .merge(create_mail_gateway_allowed_read_routes(self.mail_gateway_allowed_service.clone()))
+            .merge(create_phone_blacklist_read_routes(self.phone_blacklist_service.clone()))
             .merge(create_mail_message_schedule_read_routes(self.mail_message_schedule_service.clone()))
             .merge(create_mail_scheduled_message_read_routes(self.mail_scheduled_message_service.clone()))
             .merge(create_sms_read_routes(self.sms_service.clone()))
@@ -332,6 +348,15 @@ impl MessagingModule {
     /// the resolver from the next call. Idempotent (last install wins).
     pub fn set_thread_acl(&self, resolver: std::sync::Arc<dyn ThreadAccessResolver>) {
         self.thread_acl.install(resolver);
+    }
+
+    /// Register the host's phone book — the recipient-candidate walk for
+    /// `PhoneValidationService::sanitized_for` over another module's
+    /// records. Installs into the shared slot; until called, every lookup
+    /// refuses (fail-closed, never a silent empty). Idempotent (last
+    /// install wins).
+    pub fn set_phone_book(&self, book: std::sync::Arc<dyn PhoneBookPort>) {
+        self.phone_book.install(book);
     }
 
     /// Convenience: open a static set of document models to every
@@ -538,6 +563,10 @@ impl MessagingModuleBuilder {
         let mail_gateway_allowed_repository = Arc::new(MailGatewayAllowedRepository::new(db_pool.clone()));
         let mail_gateway_allowed_service = Arc::new(MailGatewayAllowedService::with_repository(mail_gateway_allowed_repository.clone()));
 
+        // PhoneBlacklist service
+        let phone_blacklist_repository = Arc::new(PhoneBlacklistRepository::new(db_pool.clone()));
+        let phone_blacklist_service = Arc::new(PhoneBlacklistService::with_repository(phone_blacklist_repository.clone()));
+
         // MailMessageSchedule service
         let mail_message_schedule_repository = Arc::new(MailMessageScheduleRepository::new(db_pool.clone()));
         let mail_message_schedule_service = Arc::new(MailMessageScheduleService::with_repository(mail_message_schedule_repository.clone()));
@@ -592,6 +621,18 @@ impl MessagingModuleBuilder {
         // The replica-local SSE fan-out point (Stage 4). One per process;
         // the host app's tailer publishes into it, the stream route reads.
         let realtime_registry = std::sync::Arc::new(realtime::RealtimeRegistry::new());
+
+        // The phone-validation opener: the blacklist verbs + the live
+        // sanitized-for verb over the fail-closed phone-book slot (hosts
+        // install a real book via set_phone_book post-build).
+        let phone_blacklist_write_service =
+            Arc::new(PhoneBlacklistWriteService::new(db_pool.clone()));
+        let phone_book = PhoneBookSlot::default();
+        let phone_validation_service = Arc::new(PhoneValidationService::new(
+            db_pool.clone(),
+            phone_book.clone(),
+            phone_blacklist_write_service.clone(),
+        ));
         // END CUSTOM
 
         Ok(MessagingModule {
@@ -619,6 +660,7 @@ impl MessagingModuleBuilder {
             mail_server_service,
             fetchmail_server_service,
             mail_gateway_allowed_service,
+            phone_blacklist_service,
             mail_message_schedule_service,
             mail_scheduled_message_service,
             sms_service,
@@ -647,6 +689,9 @@ impl MessagingModuleBuilder {
             recipient_query_service,
             pool: db_pool.clone(),
             realtime_registry,
+            phone_blacklist_write_service,
+            phone_book,
+            phone_validation_service,
             // END CUSTOM
         })
     }

@@ -50,6 +50,8 @@ pub mod fetchmail_server_events;
 pub mod fetchmail_server_event_handlers;
 pub mod mail_gateway_allowed_events;
 pub mod mail_gateway_allowed_event_handlers;
+pub mod phone_blacklist_events;
+pub mod phone_blacklist_event_handlers;
 pub mod mail_message_schedule_events;
 pub mod mail_message_schedule_event_handlers;
 pub mod mail_scheduled_message_events;
@@ -109,6 +111,8 @@ pub use fetchmail_server_events::{FetchmailServerEvent, FetchmailServerEventPubl
 pub use fetchmail_server_event_handlers::FetchmailServerEventHandler;
 pub use mail_gateway_allowed_events::{MailGatewayAllowedEvent, MailGatewayAllowedEventPublisher, NoopMailGatewayAllowedEventPublisher};
 pub use mail_gateway_allowed_event_handlers::MailGatewayAllowedEventHandler;
+pub use phone_blacklist_events::{PhoneBlacklistEvent, PhoneBlacklistEventPublisher, NoopPhoneBlacklistEventPublisher};
+pub use phone_blacklist_event_handlers::PhoneBlacklistEventHandler;
 pub use mail_message_schedule_events::{MailMessageScheduleEvent, MailMessageScheduleEventPublisher, NoopMailMessageScheduleEventPublisher};
 pub use mail_message_schedule_event_handlers::MailMessageScheduleEventHandler;
 pub use mail_scheduled_message_events::{MailScheduledMessageEvent, MailScheduledMessageEventPublisher, NoopMailScheduledMessageEventPublisher};

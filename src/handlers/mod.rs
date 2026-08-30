@@ -33,6 +33,7 @@ use crate::application::service::MailGuestService;
 use crate::application::service::MailServerService;
 use crate::application::service::FetchmailServerService;
 use crate::application::service::MailGatewayAllowedService;
+use crate::application::service::PhoneBlacklistService;
 use crate::application::service::MailMessageScheduleService;
 use crate::application::service::MailScheduledMessageService;
 use crate::application::service::SmsService;
@@ -105,6 +106,8 @@ pub struct AppState {
     pub fetchmail_server_service: Arc<FetchmailServerService>,
     /// MailGatewayAllowed service
     pub mail_gateway_allowed_service: Arc<MailGatewayAllowedService>,
+    /// PhoneBlacklist service
+    pub phone_blacklist_service: Arc<PhoneBlacklistService>,
     /// MailMessageSchedule service
     pub mail_message_schedule_service: Arc<MailMessageScheduleService>,
     /// MailScheduledMessage service
@@ -144,6 +147,7 @@ impl AppState {
         mail_server_service: Arc<MailServerService>,
         fetchmail_server_service: Arc<FetchmailServerService>,
         mail_gateway_allowed_service: Arc<MailGatewayAllowedService>,
+        phone_blacklist_service: Arc<PhoneBlacklistService>,
         mail_message_schedule_service: Arc<MailMessageScheduleService>,
         mail_scheduled_message_service: Arc<MailScheduledMessageService>,
         sms_service: Arc<SmsService>,
@@ -175,6 +179,7 @@ impl AppState {
             mail_server_service,
             fetchmail_server_service,
             mail_gateway_allowed_service,
+            phone_blacklist_service,
             mail_message_schedule_service,
             mail_scheduled_message_service,
             sms_service,
@@ -210,6 +215,7 @@ impl AppState {
             mail_server_service: module.mail_server_service.clone(),
             fetchmail_server_service: module.fetchmail_server_service.clone(),
             mail_gateway_allowed_service: module.mail_gateway_allowed_service.clone(),
+            phone_blacklist_service: module.phone_blacklist_service.clone(),
             mail_message_schedule_service: module.mail_message_schedule_service.clone(),
             mail_scheduled_message_service: module.mail_scheduled_message_service.clone(),
             sms_service: module.sms_service.clone(),
@@ -248,6 +254,7 @@ pub struct AppStateBuilder {
     mail_server_service: Option<Arc<MailServerService>>,
     fetchmail_server_service: Option<Arc<FetchmailServerService>>,
     mail_gateway_allowed_service: Option<Arc<MailGatewayAllowedService>>,
+    phone_blacklist_service: Option<Arc<PhoneBlacklistService>>,
     mail_message_schedule_service: Option<Arc<MailMessageScheduleService>>,
     mail_scheduled_message_service: Option<Arc<MailScheduledMessageService>>,
     sms_service: Option<Arc<SmsService>>,
@@ -405,6 +412,12 @@ impl AppStateBuilder {
         self
     }
 
+    /// Set the PhoneBlacklist service.
+    pub fn with_phone_blacklist_service(mut self, service: Arc<PhoneBlacklistService>) -> Self {
+        self.phone_blacklist_service = Some(service);
+        self
+    }
+
     /// Set the MailMessageSchedule service.
     pub fn with_mail_message_schedule_service(mut self, service: Arc<MailMessageScheduleService>) -> Self {
         self.mail_message_schedule_service = Some(service);
@@ -466,6 +479,7 @@ impl AppStateBuilder {
             mail_server_service: self.mail_server_service.expect("mail_server_service is required"),
             fetchmail_server_service: self.fetchmail_server_service.expect("fetchmail_server_service is required"),
             mail_gateway_allowed_service: self.mail_gateway_allowed_service.expect("mail_gateway_allowed_service is required"),
+            phone_blacklist_service: self.phone_blacklist_service.expect("phone_blacklist_service is required"),
             mail_message_schedule_service: self.mail_message_schedule_service.expect("mail_message_schedule_service is required"),
             mail_scheduled_message_service: self.mail_scheduled_message_service.expect("mail_scheduled_message_service is required"),
             sms_service: self.sms_service.expect("sms_service is required"),

@@ -255,4 +255,3 @@ impl backbone_core::ApplyUpdateDto<UpdateMailPresenceDto> for MailPresence {
 // Add custom DTOs specific to MailPresence here.
 // This section will be preserved during regeneration.
 // >>> END CUSTOM DTOs
-

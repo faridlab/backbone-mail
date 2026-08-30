@@ -454,4 +454,3 @@ pub fn create_mail_transition_routes(service: Arc<MailService>) -> Router {
         .route("/mails/:id/transitions/cancelled", post(cancelled_transition))
         .with_state(service)
 }
-

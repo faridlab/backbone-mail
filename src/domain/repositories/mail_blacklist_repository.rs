@@ -7,6 +7,7 @@
 
 use async_trait::async_trait;
 use anyhow::Result;
+use uuid::Uuid;
 
 use crate::domain::entity::MailBlacklist;
 
@@ -44,13 +45,14 @@ pub struct MailBlacklistPaginatedResult {
 #[derive(Debug, Clone, Default)]
 pub struct MailBlacklistFilter {
     pub email: Option<String>,
+    pub opt_out_reason_id: Option<Uuid>,
     pub active: Option<bool>,
 }
 
 impl MailBlacklistFilter {
     /// Check if any filter is set
     pub fn has_filters(&self) -> bool {
-        self.email.is_some() || self.active.is_some()
+        self.email.is_some() || self.opt_out_reason_id.is_some() || self.active.is_some()
     }
 }
 

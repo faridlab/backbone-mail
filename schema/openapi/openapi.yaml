@@ -59,6 +59,8 @@ tags:
     description: FetchmailServer management endpoints
   - name: MailGatewayAlloweds
     description: MailGatewayAllowed management endpoints
+  - name: PhoneBlacklists
+    description: PhoneBlacklist management endpoints
   - name: MailMessageSchedules
     description: MailMessageSchedule management endpoints
   - name: MailScheduledMessages
@@ -8855,6 +8857,372 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
+  /api/v1/phone_blacklists:
+    get:
+      tags:
+        - PhoneBlacklists
+      summary: List PhoneBlacklists
+      description: Get a paginated list of PhoneBlacklists with optional filtering and sorting
+      operationId: listPhoneBlacklists
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PerPageParam'
+        - $ref: '#/components/parameters/SortByParam'
+        - $ref: '#/components/parameters/SortOrderParam'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PhoneBlacklistList'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      tags:
+        - PhoneBlacklists
+      summary: Create PhoneBlacklist
+      description: Create a new PhoneBlacklist
+      operationId: createPhoneBlacklist
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePhoneBlacklistRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PhoneBlacklist'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/v1/phone_blacklists/{id}:
+    parameters:
+      - $ref: '#/components/parameters/IdParam'
+
+    get:
+      tags:
+        - PhoneBlacklists
+      summary: Get PhoneBlacklist by ID
+      operationId: getPhoneBlacklist
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PhoneBlacklist'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags:
+        - PhoneBlacklists
+      summary: Update PhoneBlacklist (full)
+      operationId: updatePhoneBlacklist
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePhoneBlacklistRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PhoneBlacklist'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      tags:
+        - PhoneBlacklists
+      summary: Update PhoneBlacklist (partial)
+      operationId: patchPhoneBlacklist
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchPhoneBlacklistRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PhoneBlacklist'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags:
+        - PhoneBlacklists
+      summary: Delete PhoneBlacklist (soft)
+      operationId: deletePhoneBlacklist
+      responses:
+        '204':
+          description: Deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/phone_blacklists/bulk:
+    post:
+      tags:
+        - PhoneBlacklists
+      summary: Bulk create PhoneBlacklists
+      operationId: bulkCreatePhoneBlacklists
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/CreatePhoneBlacklistRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PhoneBlacklist'
+    put:
+      tags:
+        - PhoneBlacklists
+      summary: Bulk update PhoneBlacklists (full, atomic)
+      operationId: bulkUpdatePhoneBlacklists
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                allOf:
+                  - type: object
+                    required: [id]
+                    properties:
+                      id:
+                        type: string
+                  - $ref: '#/components/schemas/UpdatePhoneBlacklistRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PhoneBlacklistBulkResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+    patch:
+      tags:
+        - PhoneBlacklists
+      summary: Bulk partial-update PhoneBlacklists (atomic)
+      operationId: bulkPatchPhoneBlacklists
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - type: object
+                  required: [ids, patch]
+                  properties:
+                    ids:
+                      type: array
+                      items: { type: string }
+                    patch:
+                      type: object
+                      additionalProperties: true
+                - type: object
+                  required: [items]
+                  properties:
+                    items:
+                      type: array
+                      items:
+                        type: object
+                        required: [id, patch]
+                        properties:
+                          id: { type: string }
+                          patch: { type: object, additionalProperties: true }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PhoneBlacklistBulkResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/phone_blacklists/upsert:
+    post:
+      tags:
+        - PhoneBlacklists
+      summary: Upsert PhoneBlacklist
+      operationId: upsertPhoneBlacklist
+      parameters:
+        - name: key_field
+          in: query
+          schema:
+            type: string
+        - name: key_value
+          in: query
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePhoneBlacklistRequest'
+      responses:
+        '200':
+          description: Upserted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PhoneBlacklist'
+
+  /api/v1/phone_blacklists/trash:
+    get:
+      tags:
+        - PhoneBlacklists
+      summary: List deleted PhoneBlacklists
+      operationId: listDeletedPhoneBlacklists
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PerPageParam'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PhoneBlacklistList'
+
+  /api/v1/phone_blacklists/{id}/restore:
+    parameters:
+      - $ref: '#/components/parameters/IdParam'
+    post:
+      tags:
+        - PhoneBlacklists
+      summary: Restore deleted PhoneBlacklist
+      operationId: restorePhoneBlacklist
+      responses:
+        '200':
+          description: Restored
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PhoneBlacklist'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/phone_blacklists/empty:
+    delete:
+      tags:
+        - PhoneBlacklists
+      summary: Empty trash for PhoneBlacklists
+      operationId: emptyTrashPhoneBlacklists
+      responses:
+        '200':
+          description: Trash emptied
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  deleted_count:
+                    type: integer
+
+  /api/v1/phone_blacklists/delete/bulk:
+    post:
+      tags:
+        - PhoneBlacklists
+      summary: Bulk soft-delete PhoneBlacklists by ids (atomic)
+      operationId: bulkDeletePhoneBlacklists
+      requestBody:
+        $ref: '#/components/requestBodies/BatchIds'
+      responses:
+        '200':
+          description: Soft-deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  soft_deleted: { type: integer }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/phone_blacklists/restore/bulk:
+    post:
+      tags:
+        - PhoneBlacklists
+      summary: Bulk restore PhoneBlacklists by ids (atomic)
+      operationId: bulkRestorePhoneBlacklists
+      requestBody:
+        $ref: '#/components/requestBodies/BatchIds'
+      responses:
+        '200':
+          description: Restored
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PhoneBlacklistBulkResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/phone_blacklists/restore/all:
+    post:
+      tags:
+        - PhoneBlacklists
+      summary: Restore all soft-deleted PhoneBlacklists
+      operationId: restoreAllPhoneBlacklists
+      responses:
+        '200':
+          description: Restored
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  restored: { type: integer }
+
+  /api/v1/phone_blacklists/trash/bulk:
+    delete:
+      tags:
+        - PhoneBlacklists
+      summary: Bulk permanently-delete PhoneBlacklists from trash by ids (atomic)
+      operationId: bulkPermanentDeletePhoneBlacklists
+      requestBody:
+        $ref: '#/components/requestBodies/BatchIds'
+      responses:
+        '200':
+          description: Permanently deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  permanently_deleted: { type: integer }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
   /api/v1/mail_message_schedules:
     get:
       tags:
@@ -13308,6 +13676,10 @@ components:
           format: uuid
         email:
           type: string
+        opt_out_reason_id:
+          nullable: true
+          type: string
+          format: uuid
         active:
           type: boolean
         metadata:
@@ -13335,6 +13707,10 @@ components:
       properties:
         email:
           type: string
+        opt_out_reason_id:
+          nullable: true
+          type: string
+          format: uuid
         active:
           type: boolean
         metadata:
@@ -13349,6 +13725,10 @@ components:
       properties:
         email:
           type: string
+        opt_out_reason_id:
+          nullable: true
+          type: string
+          format: uuid
         active:
           type: boolean
         metadata:
@@ -13359,6 +13739,10 @@ components:
       properties:
         email:
           type: string
+        opt_out_reason_id:
+          nullable: true
+          type: string
+          format: uuid
         active:
           type: boolean
         metadata:
@@ -14675,6 +15059,85 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/MailGatewayAllowed'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+
+    PhoneBlacklist:
+      type: object
+      required:
+        - id
+        - number
+        - active
+        - metadata
+      properties:
+        id:
+          type: string
+          format: uuid
+        number:
+          type: string
+        active:
+          type: boolean
+        metadata:
+          type: object
+
+    PhoneBlacklistBulkResult:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/PhoneBlacklist'
+        total: { type: integer }
+        failed: { type: integer }
+        errors:
+          type: array
+          items: { type: string }
+
+    CreatePhoneBlacklistRequest:
+      type: object
+      required:
+        - number
+        - active
+        - metadata
+      properties:
+        number:
+          type: string
+        active:
+          type: boolean
+        metadata:
+          type: object
+
+    UpdatePhoneBlacklistRequest:
+      type: object
+      required:
+        - number
+        - active
+        - metadata
+      properties:
+        number:
+          type: string
+        active:
+          type: boolean
+        metadata:
+          type: object
+
+    PatchPhoneBlacklistRequest:
+      type: object
+      properties:
+        number:
+          type: string
+        active:
+          type: boolean
+        metadata:
+          type: object
+
+    PhoneBlacklistList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/PhoneBlacklist'
         meta:
           $ref: '#/components/schemas/PaginationMeta'
 

@@ -387,4 +387,3 @@ impl backbone_core::ApplyUpdateDto<UpdateMailActivityDto> for MailActivity {
 // Add custom DTOs specific to MailActivity here.
 // This section will be preserved during regeneration.
 // >>> END CUSTOM DTOs
-

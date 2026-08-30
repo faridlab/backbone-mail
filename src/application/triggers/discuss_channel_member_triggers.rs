@@ -23,4 +23,3 @@ pub fn discuss_channel_member_trigger_registry() -> DiscussChannelMemberTriggerR
     TriggerRegistry::build(|r| {
     })
 }
-

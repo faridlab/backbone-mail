@@ -25,6 +25,7 @@ impl TestDataGenerator for MailBlacklistTestData {
         json!({
             "id": Uuid::new_v4().to_string(),
             "email": format!("test{}@example.com", Uuid::new_v4().to_string().split('-').next().unwrap()),
+            "opt_out_reason_id": null,
             "active": false,
             "metadata": json!({}),
         })
@@ -35,6 +36,7 @@ impl TestDataGenerator for MailBlacklistTestData {
         json!({
             "id": id,
             "email": format!("test{}@example.com", Uuid::new_v4().to_string().split('-').next().unwrap()),
+            "opt_out_reason_id": null,
             "active": false,
             "metadata": json!({}),
         })

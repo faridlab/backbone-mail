@@ -448,4 +448,3 @@ impl backbone_core::ApplyUpdateDto<UpdateMailMessageDto> for MailMessage {
 // Add custom DTOs specific to MailMessage here.
 // This section will be preserved during regeneration.
 // >>> END CUSTOM DTOs
-

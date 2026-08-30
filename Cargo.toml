@@ -1,6 +1,6 @@
 [package]
 name = "backbone-mail"
-version = "0.2.0"
+version = "0.2.4"
 edition = "2021"
 description = "Odoo mail core port — message/notification/followers/activity/alias/sms queue (schema: messaging)"
 
@@ -64,6 +64,11 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
 # Validation
 validator = { version = "0.16", features = ["derive"] }
+
+# Phone-number parsing/formatting (E.164) — a pure-Rust port of Google's
+# libphonenumber. Domain logic (the sanitize contract for sms/mailing
+# recipients), not a transport: plain non-optional dep, no C deps, no network.
+phonenumber = "0.3"
 
 # Error handling
 anyhow = "1.0"

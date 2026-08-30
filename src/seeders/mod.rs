@@ -33,6 +33,7 @@ mod mail_guest_seeder;
 mod mail_server_seeder;
 mod fetchmail_server_seeder;
 mod mail_gateway_allowed_seeder;
+mod phone_blacklist_seeder;
 mod mail_message_schedule_seeder;
 mod mail_scheduled_message_seeder;
 mod sms_seeder;
@@ -63,6 +64,7 @@ pub use mail_guest_seeder::SeedMailGuestSeeder;
 pub use mail_server_seeder::SeedMailServerSeeder;
 pub use fetchmail_server_seeder::SeedFetchmailServerSeeder;
 pub use mail_gateway_allowed_seeder::SeedMailGatewayAllowedSeeder;
+pub use phone_blacklist_seeder::SeedPhoneBlacklistSeeder;
 pub use mail_message_schedule_seeder::SeedMailMessageScheduleSeeder;
 pub use mail_scheduled_message_seeder::SeedMailScheduledMessageSeeder;
 pub use sms_seeder::SeedSmsSeeder;
@@ -118,4 +120,3 @@ pub enum SeederType {
 // <<< CUSTOM SEEDERS START >>>
 // Add custom seeders here
 // <<< CUSTOM SEEDERS END >>>
-

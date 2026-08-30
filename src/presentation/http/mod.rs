@@ -29,6 +29,7 @@ pub mod mail_guest_handler;
 pub mod mail_server_handler;
 pub mod fetchmail_server_handler;
 pub mod mail_gateway_allowed_handler;
+pub mod phone_blacklist_handler;
 pub mod mail_message_schedule_handler;
 pub mod mail_scheduled_message_handler;
 pub mod sms_handler;
@@ -73,6 +74,7 @@ pub use mail_guest_handler::{create_mail_guest_routes, create_mail_guest_read_ro
 pub use mail_server_handler::{create_mail_server_routes, create_mail_server_read_routes, create_mail_server_write_routes};
 pub use fetchmail_server_handler::{create_fetchmail_server_routes, create_fetchmail_server_read_routes, create_fetchmail_server_write_routes};
 pub use mail_gateway_allowed_handler::{create_mail_gateway_allowed_routes, create_mail_gateway_allowed_read_routes, create_mail_gateway_allowed_write_routes};
+pub use phone_blacklist_handler::{create_phone_blacklist_routes, create_phone_blacklist_read_routes, create_phone_blacklist_write_routes};
 pub use mail_message_schedule_handler::{create_mail_message_schedule_routes, create_mail_message_schedule_read_routes, create_mail_message_schedule_write_routes};
 pub use mail_scheduled_message_handler::{create_mail_scheduled_message_routes, create_mail_scheduled_message_read_routes, create_mail_scheduled_message_write_routes};
 pub use sms_handler::{create_sms_routes, create_sms_read_routes, create_sms_write_routes};

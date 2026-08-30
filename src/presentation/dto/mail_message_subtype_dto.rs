@@ -321,4 +321,3 @@ impl backbone_core::ApplyUpdateDto<UpdateMailMessageSubtypeDto> for MailMessageS
 // Add custom DTOs specific to MailMessageSubtype here.
 // This section will be preserved during regeneration.
 // >>> END CUSTOM DTOs
-
