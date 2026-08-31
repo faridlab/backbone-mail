@@ -33,6 +33,7 @@ impl TestDataGenerator for MailTestData {
             "email_to": null,
             "email_cc": null,
             "reply_to": null,
+            "headers": json!({}),
             "metadata": json!({}),
         })
     }
@@ -50,6 +51,7 @@ impl TestDataGenerator for MailTestData {
             "email_to": null,
             "email_cc": null,
             "reply_to": null,
+            "headers": json!({}),
             "metadata": json!({}),
         })
     }

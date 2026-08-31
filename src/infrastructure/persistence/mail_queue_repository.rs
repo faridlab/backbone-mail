@@ -31,6 +31,10 @@ pub struct MailQueueRow {
     /// mail.message.message_id — the RFC id of THIS message (becomes the
     /// child's References header).
     pub message_id: Option<String>,
+    /// mails.headers — the per-mail custom header object, raw as stored. The
+    /// drainer runs it through the single-line guard; a row written outside
+    /// the sanctioned enqueue can hold a non-object here (handled loudly).
+    pub headers: serde_json::Value,
 }
 
 /// Hand-written mail queue SQL.
@@ -51,6 +55,8 @@ impl Default for MailQueueRepository {
 impl MailQueueRepository {
     /// Enqueue an outgoing mail (state='outgoing'). Runs on the caller's open
     /// transaction (the notify pump enqueues in-tx with the notification rows).
+    /// `headers` must already be through the single-line guard (the service
+    /// validates before opening the tx) — the repository trusts its caller.
     #[allow(clippy::too_many_arguments)]
     pub async fn enqueue(
         conn: &mut PgConnection,
@@ -59,18 +65,20 @@ impl MailQueueRepository {
         email_to: &str,
         email_cc: Option<&str>,
         reply_to: Option<&str>,
+        headers: &serde_json::Value,
         scheduled_date: Option<DateTime<Utc>>,
     ) -> Result<(), sqlx::Error> {
         sqlx::query(
             r#"INSERT INTO messaging.mails
-                 (id, mail_message_id, state, email_to, email_cc, reply_to, scheduled_date)
-               VALUES ($1,$2,'outgoing'::mail_state,$3,$4,$5,$6)"#,
+                 (id, mail_message_id, state, email_to, email_cc, reply_to, headers, scheduled_date)
+               VALUES ($1,$2,'outgoing'::mail_state,$3,$4,$5,$6::jsonb,$7)"#,
         )
         .bind(id)
         .bind(mail_message_id)
         .bind(email_to)
         .bind(email_cc)
         .bind(reply_to)
+        .bind(headers)
         .bind(scheduled_date)
         .execute(&mut *conn)
         .await?;
@@ -110,7 +118,7 @@ impl MailQueueRepository {
                LEFT JOIN messaging.mail_messages msg ON msg.id = c.mail_message_id
                WHERE m.id = c.id
                RETURNING m.id, m.mail_message_id, m.email_to, m.email_cc, m.reply_to,
-                         msg.subject, msg.body, msg.email_from, msg.message_id"#,
+                         m.headers, msg.subject, msg.body, msg.email_from, msg.message_id"#,
         )
         .bind(batch)
         .bind(now)
@@ -124,6 +132,7 @@ impl MailQueueRepository {
                 email_to: r.get("email_to"),
                 email_cc: r.get("email_cc"),
                 reply_to: r.get("reply_to"),
+                headers: r.get("headers"),
                 subject: r.get("subject"),
                 body: r.get("body"),
                 email_from: r.get("email_from"),

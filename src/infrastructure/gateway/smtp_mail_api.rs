@@ -27,10 +27,65 @@ use chrono::Utc;
 use uuid::Uuid;
 
 use crate::application::service::mail_ports::{
-    MailApiPort, MailSendFailure, MailSendOutcome, MailSendRequest,
+    validate_mail_header, MailApiPort, MailSendFailure, MailSendOutcome, MailSendRequest,
+    TRANSPORT_THREADING_HEADERS,
 };
 use crate::application::service::MailServerQueryService;
 use crate::infrastructure::persistence::smtp_selection_repository::SmtpEndpoint;
+
+/// Merge the request's per-mail headers with the structured threading into
+/// the header map handed to the transport. PRECEDENCE (the contract
+/// documented on [`crate::application::service::mail_ports`]):
+///
+/// 1. Per-mail entries are re-validated here (the single-line guard,
+///    defense-in-depth for rows written outside the sanctioned enqueue) —
+///    a CR/LF in a name or value is a typed refusal; the row lands
+///    `exception` with the refusal as its failure reason.
+/// 2. When the structured `in_reply_to` is set, a per-mail entry carrying
+///    `In-Reply-To` or `References` (case-insensitive) is REFUSED — both
+///    sources claiming thread linkage is ambiguous, and the send fails
+///    loudly rather than silently picking a winner or emitting duplicates.
+/// 3. With no collision, per-mail entries pass through verbatim and the
+///    structured threading is added on top.
+///
+/// The transport's own envelope headers (From/To/Subject/Message-ID/MIME-*)
+/// are outside this map entirely — backbone-email builds them itself, so a
+/// per-mail entry with such a name can never replace them.
+fn merge_transport_headers(
+    in_reply_to: Option<&str>,
+    per_mail: &HashMap<String, String>,
+) -> Result<HashMap<String, String>, MailSendFailure> {
+    let refused = |detail: String| MailSendFailure {
+        // No honest bucket in the mail_failure_type vocabulary for "refused
+        // before the wire" — unknown is the documented catch-all and the
+        // message carries the precise reason.
+        failure_type: "unknown".into(),
+        message: format!("refused per-mail headers: {detail}"),
+    };
+    let mut merged = HashMap::with_capacity(per_mail.len() + 2);
+    for (name, value) in per_mail {
+        if let Err(e) = validate_mail_header(name, value) {
+            return Err(refused(e.to_string()));
+        }
+        if in_reply_to.is_some()
+            && TRANSPORT_THREADING_HEADERS
+                .iter()
+                .any(|reserved| name.eq_ignore_ascii_case(reserved))
+        {
+            return Err(refused(format!(
+                "both the structured in_reply_to and a per-mail entry carry {name:?} \
+                 ({:?}) — ambiguous threading, refusing",
+                TRANSPORT_THREADING_HEADERS
+            )));
+        }
+        merged.insert(name.clone(), value.clone());
+    }
+    if let Some(parent) = in_reply_to {
+        merged.insert("In-Reply-To".into(), parent.to_string());
+        merged.insert("References".into(), parent.to_string());
+    }
+    Ok(merged)
+}
 
 pub struct SmtpMailApi {
     servers: MailServerQueryService,
@@ -146,11 +201,7 @@ impl MailApiPort for SmtpMailApi {
 
         let transport = self.transport_for(&ep)?;
 
-        let mut headers = HashMap::new();
-        if let Some(parent) = &req.in_reply_to {
-            headers.insert("In-Reply-To".into(), parent.clone());
-            headers.insert("References".into(), parent.clone());
-        }
+        let headers = merge_transport_headers(req.in_reply_to.as_deref(), &req.headers)?;
         let message = EmailMessage {
             id: req.mail_id.to_string(),
             from: EmailAddress::new(&req.from),
@@ -187,5 +238,78 @@ impl MailApiPort for SmtpMailApi {
                 ),
             })
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn per_mail(entries: &[(&str, &str)]) -> HashMap<String, String> {
+        entries.iter().map(|(k, v)| (k.to_string(), v.to_string())).collect()
+    }
+
+    #[test]
+    fn per_mail_headers_flow_into_the_transport_map() {
+        let merged =
+            merge_transport_headers(None, &per_mail(&[("X-Campaign-Id", "summer-2026")]))
+                .expect("clean per-mail headers merge");
+        assert_eq!(merged.get("X-Campaign-Id").map(String::as_str), Some("summer-2026"));
+        assert_eq!(merged.len(), 1);
+    }
+
+    #[test]
+    fn structured_threading_is_added_on_top_of_per_mail_headers() {
+        let merged = merge_transport_headers(
+            Some("<parent@example.com>"),
+            &per_mail(&[("X-Campaign-Id", "promo")]),
+        )
+        .expect("no collision merges");
+        assert_eq!(merged.get("In-Reply-To").map(String::as_str), Some("<parent@example.com>"));
+        assert_eq!(merged.get("References").map(String::as_str), Some("<parent@example.com>"));
+        assert_eq!(merged.get("X-Campaign-Id").map(String::as_str), Some("promo"));
+    }
+
+    #[test]
+    fn per_mail_threading_headers_pass_when_no_structured_threading() {
+        let merged = merge_transport_headers(
+            None,
+            &per_mail(&[("In-Reply-To", "<self@example.com>"), ("references", "<t@example.com>")]),
+        )
+        .expect("sole source of threading flows through");
+        assert_eq!(merged.get("In-Reply-To").map(String::as_str), Some("<self@example.com>"));
+        // RFC 5322 names are case-insensitive — a lowercase entry is kept
+        // verbatim (no silent case rewrite).
+        assert_eq!(merged.get("references").map(String::as_str), Some("<t@example.com>"));
+    }
+
+    #[test]
+    fn threading_collision_is_refused_loudly_case_insensitively() {
+        for name in ["In-Reply-To", "References", "in-reply-to", "REFERENCES"] {
+            let refusal = merge_transport_headers(
+                Some("<parent@example.com>"),
+                &per_mail(&[(name, "<rogue@example.com>")]),
+            )
+            .expect_err("collision must refuse");
+            assert_eq!(refusal.failure_type, "unknown");
+            assert!(
+                refusal.message.contains("ambiguous threading"),
+                "message must name the collision: {}",
+                refusal.message
+            );
+        }
+    }
+
+    #[test]
+    fn crlf_smuggle_through_the_gateway_is_refused() {
+        let refusal = merge_transport_headers(
+            None,
+            &per_mail(&[("X-Campaign", "a\r\nBcc: victim@example.com")]),
+        )
+        .expect_err("CRLF must refuse at the gateway too (defense in depth)");
+        assert_eq!(refusal.failure_type, "unknown");
+        assert!(refusal.message.contains("CR/LF"));
+        // The name side too.
+        assert!(merge_transport_headers(None, &per_mail(&[("Bad\r\nName", "v")])).is_err());
     }
 }

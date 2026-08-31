@@ -69,6 +69,11 @@ pub mod inbound_repository;
 // canonical upsert add, conditional archive remove, point/batch membership.
 // Distinct path from the generated per-entity phone_blacklist_repository.
 pub mod phone_blacklist_verb_repository;
+
+// Email-blacklist verb SQL (user-owned): the same add/remove/membership
+// shape over mail_blacklists, carrying the opt_out_reason_id column.
+// Distinct path from the generated per-entity mail_blacklist_repository.
+pub mod mail_blacklist_verb_repository;
 // END CUSTOM
 
 // Re-exports

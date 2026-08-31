@@ -40,7 +40,7 @@ async fn drain_pre_writes_exception_and_stages_dispatch_request() {
     let msg_id = seed_message(&pool).await;
 
     let mail_id = svc
-        .enqueue(msg_id, "dest@example.com", None, None, None, None, None)
+        .enqueue(msg_id, "dest@example.com", None, None, None, None, None, None)
         .await
         .expect("enqueue");
     // A previous crashed run may have left its dispatch event behind — this test
@@ -102,7 +102,7 @@ async fn mark_failed_then_requeue_reenters_queue() {
     let svc = MailQueueWriteService::new(pool.clone());
     let msg_id = seed_message(&pool).await;
     let mail_id = svc
-        .enqueue(msg_id, "dest2@example.com", None, None, None, None, None)
+        .enqueue(msg_id, "dest2@example.com", None, None, None, None, None, None)
         .await
         .unwrap();
 

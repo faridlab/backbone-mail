@@ -12817,6 +12817,7 @@ components:
         - mail_message_id
         - state
         - auto_delete
+        - headers
         - metadata
       properties:
         id:
@@ -12848,6 +12849,8 @@ components:
         reply_to:
           nullable: true
           type: string
+        headers:
+          type: object
         metadata:
           type: object
 
@@ -12870,6 +12873,7 @@ components:
         - mail_message_id
         - state
         - auto_delete
+        - headers
         - metadata
       properties:
         mail_message_id:
@@ -12898,6 +12902,8 @@ components:
         reply_to:
           nullable: true
           type: string
+        headers:
+          type: object
         metadata:
           type: object
 
@@ -12907,6 +12913,7 @@ components:
         - mail_message_id
         - state
         - auto_delete
+        - headers
         - metadata
       properties:
         mail_message_id:
@@ -12935,6 +12942,8 @@ components:
         reply_to:
           nullable: true
           type: string
+        headers:
+          type: object
         metadata:
           type: object
 
@@ -12967,6 +12976,8 @@ components:
         reply_to:
           nullable: true
           type: string
+        headers:
+          type: object
         metadata:
           type: object
 

@@ -13,3 +13,4 @@ pub mod routes;
 pub mod sse;
 pub mod gateway;
 pub mod phone_validation_cases;
+pub mod mail_headers_cases;

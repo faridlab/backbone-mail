@@ -77,11 +77,11 @@ use sqlx::PgPool;
 use crate::application::service::{
     ActivityWriteService, AliasWriteService, AttachmentWriteService, ChannelMemberWriteService,
     ChannelQueryService, ChannelWriteService, FollowerWriteService, GuestWriteService,
-    MailQueueWriteService, MessageEditService, MessageQueryService, MessageWriteService,
-    PhoneBlacklistWriteService, PhoneBookPort, PhoneBookSlot, PhoneValidationService,
-    PresenceWriteService, ReactionWriteService, RecipientQueryService, ScheduleWriteService,
-    SmsStatusWebhookService, SmsWriteService, StaticThreadAccess, ThreadAclSlot,
-    ThreadAccessResolver, ThreadChatterService, TypingService,
+    MailBlacklistWriteService, MailQueueWriteService, MessageEditService, MessageQueryService,
+    MessageWriteService, PhoneBlacklistWriteService, PhoneBookPort, PhoneBookSlot,
+    PhoneValidationService, PresenceWriteService, ReactionWriteService, RecipientQueryService,
+    ScheduleWriteService, SmsStatusWebhookService, SmsWriteService, StaticThreadAccess,
+    ThreadAclSlot, ThreadAccessResolver, ThreadChatterService, TypingService,
 };
 
 /// The realtime surface (SSE session proofs; tailer + stream land in Stage 4).
@@ -173,6 +173,10 @@ pub struct MessagingModule {
     /// The phone-validation opener (user-owned): the blacklist verbs and the
     /// live sanitized-for verb over the swappable phone-book slot.
     pub phone_blacklist_write_service: Arc<PhoneBlacklistWriteService>,
+    /// The email-blacklist verbs (user-owned): the sanctioned write path for
+    /// mail_blacklists — add (recording the opt-out reason when supplied),
+    /// archive-only remove, point/batch membership checks.
+    pub mail_blacklist_write_service: Arc<MailBlacklistWriteService>,
     /// The swappable recipient-candidate slot — install a host's phone book
     /// with [`MessagingModule::set_phone_book`]. Defaults to the refusing
     /// (fail-closed) book.
@@ -627,6 +631,10 @@ impl MessagingModuleBuilder {
         // install a real book via set_phone_book post-build).
         let phone_blacklist_write_service =
             Arc::new(PhoneBlacklistWriteService::new(db_pool.clone()));
+        // The email-blacklist verbs: add (recording opt_out_reason_id when
+        // supplied), archive-only remove, membership checks.
+        let mail_blacklist_write_service =
+            Arc::new(MailBlacklistWriteService::new(db_pool.clone()));
         let phone_book = PhoneBookSlot::default();
         let phone_validation_service = Arc::new(PhoneValidationService::new(
             db_pool.clone(),
@@ -690,6 +698,7 @@ impl MessagingModuleBuilder {
             pool: db_pool.clone(),
             realtime_registry,
             phone_blacklist_write_service,
+            mail_blacklist_write_service,
             phone_book,
             phone_validation_service,
             // END CUSTOM

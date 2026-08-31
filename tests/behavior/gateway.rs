@@ -183,7 +183,7 @@ async fn queue_send_via_port_marks_sent() {
         .await
         .unwrap();
     let mail_id = svc
-        .enqueue(msg_id, "dest@example.com", Some("cc@example.com"), None, None, None, None)
+        .enqueue(msg_id, "dest@example.com", Some("cc@example.com"), None, None, None, None, None)
         .await
         .unwrap();
 

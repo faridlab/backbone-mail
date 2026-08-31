@@ -118,6 +118,17 @@ user_owned:
   # generated path would suppress the entity repository itself.
   - "src/infrastructure/persistence/phone_blacklist_verb_repository.rs"
 
+  # --- email-blacklist verbs (user-owned) ----------------------------------------
+  # The mail.blacklist sanctioned write path: the same add/remove/membership
+  # verb shape as the phone side, extended with the opt_out_reason_id column
+  # (email lowercased on write — the documented app-layer case-fold).
+  # Declared BEFORE any file lands (regen-safety contract).
+  - "src/application/service/mail_blacklist_write_service.rs"
+  # Distinct name from the generated per-entity repository
+  # (mail_blacklist_repository.rs, emitted for the MailBlacklist entity) for
+  # the same reason as the phone side above.
+  - "src/infrastructure/persistence/mail_blacklist_verb_repository.rs"
+
   # Behavior tests (the golden cases / oracle) + BDD features.
   - "tests/behavior_tests.rs"
   - "tests/behavior/**"

@@ -270,3 +270,37 @@ HTTP JSON adapter** mirroring Odoo's IAP batch shape (endpoint + token env refs)
 | RTC / call history / GIF / voice / ICE | MAIL-M39..M42, MAIL-M65 | Waits on the websocket-surface decision (SFU ≥3, 75s reaper, JWT HS256 sessions). |
 | IMAP/POP poller | MAIL-M27 adjunct | Webhook chose first; poller lands behind the same service if a customer needs mailbox polling. |
 | backbone-notification composition (relay→transport fan-out) | app seam | **Composed (2026-08-15)** under the sentinel-company posture — see the closure ledger row above. Two composition lessons live in the app and travel to any future multi-tenant compose: (1) composing a company-fence module turns the outbox crate's `multi_tenant` feature on for the WHOLE graph (cargo unifies features), silently fencing the fence-none `messaging.outbox_events` — the app re-asserts its posture at boot by dropping that policy from the messaging schema; (2) mixed backbone-orm git refs (tag vs branch) resolve to TWO crates with separate company-scope task-locals, silently failing the fence — the app's `[patch]` collapses them onto one crate. Still open in 3b: real `notify()` producers in this app (the composition is exercised via hand-seeded rows until they exist). |
+
+### Per-mail custom headers + the email-blacklist reason writer (2026-08-31)
+
+- **`mails.headers`** (JSONB object of header name → string, default `{}`): per-mail custom
+  RFC 5322 headers flow enqueue → row → drain claim → `MailSendRequest.headers` → the
+  transport's header map. Precedence contract (documented on `mail_ports.rs`): the
+  transport's envelope/structural headers (From/To/Subject/Message-ID/MIME-*) are never
+  overridable from the column; when the structured `in_reply_to` field is set, a per-mail
+  `In-Reply-To`/`References` (case-insensitive) is REFUSED at the gateway — ambiguous
+  threading fails loudly instead of silently picking a winner or duplicating; everything
+  else passes through verbatim. Injection safety: a CR/LF in a header name or value is a
+  typed refusal at BOTH ends — `MailQueueError::Header` at enqueue (nothing persisted) and
+  a `MailSendFailure` at the gateway merge (the row lands `exception` with the refusal as
+  its failure reason). There is deliberately NO sanitize-to-empty path. A row whose headers
+  column holds a non-object (written outside the sanctioned enqueue) fails the drain
+  loudly with `malformed per-mail headers` as the failure reason.
+- **`mail_blacklists.opt_out_reason_id` writer**: `MailBlacklistWriteService` — the
+  sanctioned add/remove/membership verbs over `mail_blacklists`, mirroring the phone
+  side's shape. `add(email, reason)` persists the reason when supplied; an unreasoned
+  re-add COALESCEs (never erases a recorded reason); `remove` archives and keeps the
+  reason. Every verb folds the address to lowercase first (the schema documents the unique
+  as firing on the as-stored value — the fold in this service is what converges
+  mixed-case writes onto one row). The reason is a logical uuid ref to the mailing
+  module's OptOutReason catalog, opaque here.
+- **`delivery_reports_url` — deferred, nothing landed**: the optional per-mail
+  delivery-report callback override. The module has NO mail-side delivery-report surface
+  to hang it on: the only callback shapes are the SMS provider status webhook
+  (`/sms/status`, SM-B2) and the INBOUND mail pipeline (`/mail/inbound/:server_id`) —
+  outbound mail delivery reporting (provider webhook/DSN ingestion for email) does not
+  exist here, `MailServer` carries no callback column, and the framework's
+  `EmailDeliveryReport`/`EmailWebhookHandler` traits (backbone-email) have no consumer in
+  this module. Landing an override field with no reader would be dead config; it rides the
+  first mail delivery-report ingestion increment instead (the SMS webhook service is the
+  template when that lands).

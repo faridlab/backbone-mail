@@ -172,4 +172,13 @@ pub use phone_validation_service::{
 pub use phone_blacklist_write_service::{
     AddOutcome, PhoneBlacklistError, PhoneBlacklistWriteService, RemoveOutcome,
 };
+
+// Email-blacklist verbs (user-owned): the mail.blacklist sanctioned write
+// path — the same add/remove/membership shape as the phone side, with the
+// app-layer lowercase fold and the opt_out_reason_id column persisted by add.
+pub mod mail_blacklist_write_service;
+pub use mail_blacklist_write_service::{
+    AddOutcome as MailAddOutcome, MailBlacklistError, MailBlacklistWriteService,
+    RemoveOutcome as MailRemoveOutcome,
+};
 // END CUSTOM

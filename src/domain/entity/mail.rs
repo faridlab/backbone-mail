@@ -62,6 +62,7 @@ pub struct Mail {
     pub email_to: Option<String>,
     pub email_cc: Option<String>,
     pub reply_to: Option<String>,
+    pub headers: serde_json::Value,
     #[serde(default)]
     #[sqlx(json)]
     pub metadata: AuditMetadata,
@@ -74,7 +75,7 @@ impl Mail {
     }
 
     /// Create a new Mail with required fields
-    pub fn new(mail_message_id: Uuid, state: MailState, auto_delete: bool) -> Self {
+    pub fn new(mail_message_id: Uuid, state: MailState, auto_delete: bool, headers: serde_json::Value) -> Self {
         Self {
             id: Uuid::new_v4(),
             mail_message_id,
@@ -86,6 +87,7 @@ impl Mail {
             email_to: None,
             email_cc: None,
             reply_to: None,
+            headers,
             metadata: AuditMetadata::default(),
         }
     }
@@ -230,6 +232,9 @@ impl Mail {
                 "reply_to" => {
                     if let Ok(v) = serde_json::from_value(value) { self.reply_to = v; }
                 }
+                "headers" => {
+                    if let Ok(v) = serde_json::from_value(value) { self.headers = v; }
+                }
                 _ => {} // ignore unknown fields
             }
         }
@@ -309,6 +314,7 @@ pub struct MailBuilder {
     email_to: Option<String>,
     email_cc: Option<String>,
     reply_to: Option<String>,
+    headers: Option<serde_json::Value>,
 }
 
 impl MailBuilder {
@@ -366,6 +372,12 @@ impl MailBuilder {
         self
     }
 
+    /// Set the headers field (default: `serde_json::json!({})`)
+    pub fn headers(mut self, value: serde_json::Value) -> Self {
+        self.headers = Some(value);
+        self
+    }
+
     /// Build the Mail entity
     ///
     /// Returns Err if any required field without a default is missing.
@@ -383,6 +395,7 @@ impl MailBuilder {
             email_to: self.email_to,
             email_cc: self.email_cc,
             reply_to: self.reply_to,
+            headers: self.headers.unwrap_or(serde_json::json!({})),
             metadata: AuditMetadata::default(),
         })
     }

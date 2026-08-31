@@ -53,6 +53,7 @@ pub struct CreateMailDto {
     pub email_cc: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "reply_to")]
     pub reply_to: Option<String>,
+    pub headers: serde_json::Value,
 }
 
 // =============================================================================
@@ -87,6 +88,7 @@ pub struct UpdateMailDto {
     pub email_cc: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "reply_to")]
     pub reply_to: Option<String>,
+    pub headers: serde_json::Value,
 }
 
 // =============================================================================
@@ -122,12 +124,14 @@ pub struct PatchMailDto {
     pub email_cc: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none", alias = "reply_to")]
     pub reply_to: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub headers: Option<serde_json::Value>,
 }
 
 impl PatchMailDto {
     /// Check if any field is set
     pub fn has_changes(&self) -> bool {
-        self.mail_message_id.is_some() || self.state.is_some() || self.failure_type.is_some() || self.scheduled_date.is_some() || self.auto_delete.is_some() || self.failure_reason.is_some() || self.email_to.is_some() || self.email_cc.is_some() || self.reply_to.is_some()
+        self.mail_message_id.is_some() || self.state.is_some() || self.failure_type.is_some() || self.scheduled_date.is_some() || self.auto_delete.is_some() || self.failure_reason.is_some() || self.email_to.is_some() || self.email_cc.is_some() || self.reply_to.is_some() || self.headers.is_some()
     }
 }
 
@@ -156,6 +160,7 @@ pub struct MailResponseDto {
     pub email_to: Option<String>,
     pub email_cc: Option<String>,
     pub reply_to: Option<String>,
+    pub headers: serde_json::Value,
     pub metadata: AuditMetadata,
 }
 
@@ -236,6 +241,7 @@ impl From<Mail> for MailResponseDto {
             email_to: entity.email_to,
             email_cc: entity.email_cc,
             reply_to: entity.reply_to,
+            headers: entity.headers,
             metadata: entity.metadata,
         }
     }
@@ -267,6 +273,7 @@ impl From<CreateMailDto> for Mail {
             email_to: dto.email_to,
             email_cc: dto.email_cc,
             reply_to: dto.reply_to,
+            headers: dto.headers,
             metadata: AuditMetadata::default(),
         }
     }
@@ -285,6 +292,7 @@ impl From<&Mail> for MailResponseDto {
             email_to: entity.email_to.clone(),
             email_cc: entity.email_cc.clone(),
             reply_to: entity.reply_to.clone(),
+            headers: entity.headers.clone(),
             metadata: entity.metadata.clone(),
         }
     }
@@ -307,6 +315,7 @@ impl backbone_core::ApplyUpdateDto<UpdateMailDto> for Mail {
         self.email_to = dto.email_to;
         self.email_cc = dto.email_cc;
         self.reply_to = dto.reply_to;
+        self.headers = dto.headers;
         Ok(self)
     }
 }

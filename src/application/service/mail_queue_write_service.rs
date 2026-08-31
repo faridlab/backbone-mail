@@ -23,7 +23,9 @@
 use chrono::{DateTime, Utc};
 use uuid::Uuid;
 
-use crate::application::service::mail_ports::{MailApiPort, MailSendRequest};
+use crate::application::service::mail_ports::{
+    mail_headers_from_json, MailApiPort, MailHeaderError, MailSendRequest,
+};
 use crate::domain::event::{record_channel, stage_bus_event};
 use crate::infrastructure::persistence::mail_queue_repository::MailQueueRepository;
 
@@ -36,6 +38,10 @@ pub enum MailQueueError {
     Db(#[from] sqlx::Error),
     #[error("invalid input: {0}")]
     Invalid(String),
+    /// Per-mail headers refused by the single-line guard — the row is never
+    /// written (a typed refusal; there is no sanitize-to-empty path).
+    #[error("refused mail headers: {0}")]
+    Header(#[from] MailHeaderError),
 }
 
 /// What one drain pass did.
@@ -57,6 +63,12 @@ impl MailQueueWriteService {
     }
 
     /// Enqueue an outgoing mail (state='outgoing'). Stages `MailQueued` in-tx.
+    ///
+    /// `headers` — optional per-mail custom RFC 5322 headers (a JSON object of
+    /// name → string). Validated BEFORE any write: a CR/LF in a name or value
+    /// (the header-injection guard) or a non-object shape refuses the enqueue
+    /// with [`MailQueueError::Header`] — nothing is persisted. `None` stores
+    /// the column's empty-object default.
     #[allow(clippy::too_many_arguments)]
     pub async fn enqueue(
         &self,
@@ -64,6 +76,7 @@ impl MailQueueWriteService {
         email_to: &str,
         email_cc: Option<&str>,
         reply_to: Option<&str>,
+        headers: Option<&serde_json::Value>,
         scheduled_date: Option<DateTime<Utc>>,
         model: Option<&str>,
         res_id: Option<Uuid>,
@@ -71,9 +84,18 @@ impl MailQueueWriteService {
         if email_to.trim().is_empty() {
             return Err(MailQueueError::Invalid("email_to is required".into()));
         }
+        // The guard runs before the transaction opens: a refused header never
+        // writes anything, and the error names the exact defect.
+        let headers_json = match headers {
+            Some(value) => {
+                mail_headers_from_json(value)?;
+                value.clone()
+            }
+            None => serde_json::json!({}),
+        };
         let id = Uuid::new_v4();
         let mut tx = self.pool.begin().await?;
-        MailQueueRepository::enqueue(&mut tx, id, mail_message_id, email_to, email_cc, reply_to, scheduled_date).await?;
+        MailQueueRepository::enqueue(&mut tx, id, mail_message_id, email_to, email_cc, reply_to, &headers_json, scheduled_date).await?;
         let channel_key = match (model, res_id) {
             (Some(m), Some(r)) => record_channel(m, r),
             _ => format!("mail.message_{mail_message_id}"),
@@ -151,6 +173,25 @@ impl MailQueueWriteService {
 
             // Send + apply each verdict in its own unit (commit per row).
             for row in &claimed {
+                // Per-mail headers: the row's JSONB object through the same
+                // guard enqueue applies. A row written OUTSIDE the sanctioned
+                // enqueue (raw SQL, generic CRUD) can hold anything — a
+                // malformed object fails the row loudly here (state is already
+                // 'exception' from the claim; the refusal becomes its failure
+                // reason), never silently mailing partial headers.
+                let row_headers = match mail_headers_from_json(&row.headers) {
+                    Ok(map) => map,
+                    Err(refusal) => {
+                        self.mark_failed(
+                            row.id,
+                            "unknown",
+                            Some(&format!("malformed per-mail headers on the queue row: {refusal}")),
+                        )
+                        .await?;
+                        total.failed += 1;
+                        continue;
+                    }
+                };
                 let result = port
                     .send(&MailSendRequest {
                         mail_id: row.id,
@@ -165,6 +206,7 @@ impl MailQueueWriteService {
                         // shape keeps the field so a threading producer can set
                         // it; the drainer has nothing to seed it with.
                         in_reply_to: None,
+                        headers: row_headers,
                     })
                     .await;
                 match result {

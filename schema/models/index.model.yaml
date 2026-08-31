@@ -111,6 +111,10 @@ imports:
 #                                      on mail.message, NOT a join table; raw UPDATE deliberately skips updated_at — see port-notes)
 #   MAIL-M38.1 member read state       discuss.model.yaml (fetched_message_id, new_message_separator [int→uuid adaptation],
 #                                      custom_notifications, mute_until_dt ['+infinity' = until-unmuted], unpin_dt, last_seen_dt)
+#   Mail.headers                       core.model.yaml (per-mail custom RFC 5322 headers, JSONB object of name→string;
+#                                      CR/LF in a name or value is refused at enqueue — header-injection guard. The
+#                                      transport's structured threading + envelope headers always win over same-named
+#                                      entries; see mail_ports.rs for the precedence contract)
 #
 # SMS (docs/odoo/messaging/sms):
 #   SM-M1/2  Sms (queue row)           sms.model.yaml (+hooks/sms.hook.yaml machine, G-SM1)

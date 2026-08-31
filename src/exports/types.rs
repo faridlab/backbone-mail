@@ -682,6 +682,7 @@ pub struct MailDto {
     pub email_to: Option<String>,
     pub email_cc: Option<String>,
     pub reply_to: Option<String>,
+    pub headers: serde_json::Value,
     pub metadata: serde_json::Value,
 }
 
