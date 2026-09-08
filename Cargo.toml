@@ -17,20 +17,20 @@ path = "src/lib.rs"
 # or `rev = "<commit-sha>"`. Cargo dedupes the git fetch — the repo is only
 # cloned once even though four crates reference it.
 # -----------------------------------------------------------------------------
-backbone-core = { git = "https://github.com/faridlab/backbone-framework", tag = "v2.7.15", features = ["postgres"] }
-backbone-orm = { git = "https://github.com/faridlab/backbone-framework", tag = "v2.7.15" }
-backbone-auth = { git = "https://github.com/faridlab/backbone-framework", tag = "v2.7.15" }
-backbone-messaging = { git = "https://github.com/faridlab/backbone-framework", tag = "v2.7.15" }
+backbone-core = { git = "https://github.com/faridlab/backbone-framework", tag = "v2.7.16", features = ["postgres"] }
+backbone-orm = { git = "https://github.com/faridlab/backbone-framework", tag = "v2.7.16" }
+backbone-auth = { git = "https://github.com/faridlab/backbone-framework", tag = "v2.7.16" }
+backbone-messaging = { git = "https://github.com/faridlab/backbone-framework", tag = "v2.7.16" }
 # ADR-0017 carrier. Deliberately WITHOUT the `multi_tenant` feature: this module
 # is company_fence: none (ADR-0014 posture 4) — its outbox gets no RLS, and
 # staged events carry the MESSAGING_PLATFORM_COMPANY_ID sentinel instead.
-backbone-outbox = { git = "https://github.com/faridlab/backbone-framework", tag = "v2.7.15" }
+backbone-outbox = { git = "https://github.com/faridlab/backbone-framework", tag = "v2.7.16" }
 # Queue-drainer scheduler for the sms/mail queues (ADR-0020 postures).
-backbone-jobs = { git = "https://github.com/faridlab/backbone-framework", tag = "v2.7.15" }
+backbone-jobs = { git = "https://github.com/faridlab/backbone-framework", tag = "v2.7.16" }
 # Gateway transport adapters (ADR-0024 seam) — see src/infrastructure/gateway/.
 # Opt-in via the `gateway-smtp` / `gateway-sms-http` features so the crate stays
 # transport-free by default (promoted from backbone-messaging-app, increment 3).
-backbone-email = { git = "https://github.com/faridlab/backbone-framework", tag = "v2.7.15", optional = true }
+backbone-email = { git = "https://github.com/faridlab/backbone-framework", tag = "v2.7.16", optional = true }
 
 # Core async runtime and serialization
 tokio = { version = "1.0", features = ["full"] }
@@ -39,7 +39,7 @@ async-trait = "0.1"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 base64 = "0.22"
-backbone-rate-limit = { git = "https://github.com/faridlab/backbone-framework", tag = "v2.7.15" }
+backbone-rate-limit = { git = "https://github.com/faridlab/backbone-framework", tag = "v2.7.16" }
 uuid = { version = "1.0", features = ["v4", "serde"] }
 chrono = { version = "0.4", features = ["serde"] }
 # Money/quantities — near-universal in domain modules. Generated code for any `decimal`
