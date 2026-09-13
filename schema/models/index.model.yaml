@@ -14,7 +14,8 @@ version: 1
 schema: messaging
 description: "Odoo mail core — message/notification/followers/activity/alias/sms queue (single-tenant, fence none)"
 
-company_fence: none
+# Company fence: none by design (ADR-0014 posture 4; tenant-agnostic under
+# ADR-0029) — no company column on any entity, no company RLS policy emitted.
 
 # ADR-0014 posture 4: the Odoo messaging stack is single-tenant — no company
 # dimension anywhere (theme C2: zero ir.rules, no company_id). Declaring
