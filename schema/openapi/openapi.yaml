@@ -7,7 +7,7 @@ info:
     This API provides 11 standard CRUD endpoints for each model.
 
 servers:
-  - url: http://localhost:3000
+  - url: /
     description: Development server
 
 tags:
@@ -73,7 +73,7 @@ tags:
     description: SmsTracker management endpoints
 
 paths:
-  /api/v1/mail_activities:
+  /api/v1/messaging/mail_activities:
     get:
       tags:
         - MailActivities
@@ -119,7 +119,7 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
 
-  /api/v1/mail_activities/{id}:
+  /api/v1/messaging/mail_activities/{id}:
     parameters:
       - $ref: '#/components/parameters/IdParam'
 
@@ -191,7 +191,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/v1/mail_activities/bulk:
+  /api/v1/messaging/mail_activities/bulk:
     post:
       tags:
         - MailActivities
@@ -283,7 +283,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_activities/upsert:
+  /api/v1/messaging/mail_activities/upsert:
     post:
       tags:
         - MailActivities
@@ -313,7 +313,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/MailActivity'
 
-  /api/v1/mail_activities/trash:
+  /api/v1/messaging/mail_activities/trash:
     get:
       tags:
         - MailActivities
@@ -330,7 +330,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/MailActivityList'
 
-  /api/v1/mail_activities/{id}/restore:
+  /api/v1/messaging/mail_activities/{id}/restore:
     parameters:
       - $ref: '#/components/parameters/IdParam'
     post:
@@ -348,7 +348,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/v1/mail_activities/empty:
+  /api/v1/messaging/mail_activities/empty:
     delete:
       tags:
         - MailActivities
@@ -365,7 +365,7 @@ paths:
                   deleted_count:
                     type: integer
 
-  /api/v1/mail_activities/delete/bulk:
+  /api/v1/messaging/mail_activities/delete/bulk:
     post:
       tags:
         - MailActivities
@@ -385,7 +385,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_activities/restore/bulk:
+  /api/v1/messaging/mail_activities/restore/bulk:
     post:
       tags:
         - MailActivities
@@ -403,7 +403,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_activities/restore/all:
+  /api/v1/messaging/mail_activities/restore/all:
     post:
       tags:
         - MailActivities
@@ -419,7 +419,7 @@ paths:
                 properties:
                   restored: { type: integer }
 
-  /api/v1/mail_activities/trash/bulk:
+  /api/v1/messaging/mail_activities/trash/bulk:
     delete:
       tags:
         - MailActivities
@@ -439,7 +439,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_activity_types:
+  /api/v1/messaging/mail_activity_types:
     get:
       tags:
         - MailActivityTypes
@@ -485,7 +485,7 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
 
-  /api/v1/mail_activity_types/{id}:
+  /api/v1/messaging/mail_activity_types/{id}:
     parameters:
       - $ref: '#/components/parameters/IdParam'
 
@@ -557,7 +557,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/v1/mail_activity_types/bulk:
+  /api/v1/messaging/mail_activity_types/bulk:
     post:
       tags:
         - MailActivityTypes
@@ -649,7 +649,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_activity_types/upsert:
+  /api/v1/messaging/mail_activity_types/upsert:
     post:
       tags:
         - MailActivityTypes
@@ -679,7 +679,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/MailActivityType'
 
-  /api/v1/mail_activity_types/trash:
+  /api/v1/messaging/mail_activity_types/trash:
     get:
       tags:
         - MailActivityTypes
@@ -696,7 +696,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/MailActivityTypeList'
 
-  /api/v1/mail_activity_types/{id}/restore:
+  /api/v1/messaging/mail_activity_types/{id}/restore:
     parameters:
       - $ref: '#/components/parameters/IdParam'
     post:
@@ -714,7 +714,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/v1/mail_activity_types/empty:
+  /api/v1/messaging/mail_activity_types/empty:
     delete:
       tags:
         - MailActivityTypes
@@ -731,7 +731,7 @@ paths:
                   deleted_count:
                     type: integer
 
-  /api/v1/mail_activity_types/delete/bulk:
+  /api/v1/messaging/mail_activity_types/delete/bulk:
     post:
       tags:
         - MailActivityTypes
@@ -751,7 +751,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_activity_types/restore/bulk:
+  /api/v1/messaging/mail_activity_types/restore/bulk:
     post:
       tags:
         - MailActivityTypes
@@ -769,7 +769,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_activity_types/restore/all:
+  /api/v1/messaging/mail_activity_types/restore/all:
     post:
       tags:
         - MailActivityTypes
@@ -785,7 +785,7 @@ paths:
                 properties:
                   restored: { type: integer }
 
-  /api/v1/mail_activity_types/trash/bulk:
+  /api/v1/messaging/mail_activity_types/trash/bulk:
     delete:
       tags:
         - MailActivityTypes
@@ -805,7 +805,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_activity_plans:
+  /api/v1/messaging/mail_activity_plans:
     get:
       tags:
         - MailActivityPlans
@@ -851,7 +851,7 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
 
-  /api/v1/mail_activity_plans/{id}:
+  /api/v1/messaging/mail_activity_plans/{id}:
     parameters:
       - $ref: '#/components/parameters/IdParam'
 
@@ -923,7 +923,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/v1/mail_activity_plans/bulk:
+  /api/v1/messaging/mail_activity_plans/bulk:
     post:
       tags:
         - MailActivityPlans
@@ -1015,7 +1015,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_activity_plans/upsert:
+  /api/v1/messaging/mail_activity_plans/upsert:
     post:
       tags:
         - MailActivityPlans
@@ -1045,7 +1045,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/MailActivityPlan'
 
-  /api/v1/mail_activity_plans/trash:
+  /api/v1/messaging/mail_activity_plans/trash:
     get:
       tags:
         - MailActivityPlans
@@ -1062,7 +1062,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/MailActivityPlanList'
 
-  /api/v1/mail_activity_plans/{id}/restore:
+  /api/v1/messaging/mail_activity_plans/{id}/restore:
     parameters:
       - $ref: '#/components/parameters/IdParam'
     post:
@@ -1080,7 +1080,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/v1/mail_activity_plans/empty:
+  /api/v1/messaging/mail_activity_plans/empty:
     delete:
       tags:
         - MailActivityPlans
@@ -1097,7 +1097,7 @@ paths:
                   deleted_count:
                     type: integer
 
-  /api/v1/mail_activity_plans/delete/bulk:
+  /api/v1/messaging/mail_activity_plans/delete/bulk:
     post:
       tags:
         - MailActivityPlans
@@ -1117,7 +1117,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_activity_plans/restore/bulk:
+  /api/v1/messaging/mail_activity_plans/restore/bulk:
     post:
       tags:
         - MailActivityPlans
@@ -1135,7 +1135,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_activity_plans/restore/all:
+  /api/v1/messaging/mail_activity_plans/restore/all:
     post:
       tags:
         - MailActivityPlans
@@ -1151,7 +1151,7 @@ paths:
                 properties:
                   restored: { type: integer }
 
-  /api/v1/mail_activity_plans/trash/bulk:
+  /api/v1/messaging/mail_activity_plans/trash/bulk:
     delete:
       tags:
         - MailActivityPlans
@@ -1171,7 +1171,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_activity_plan_templates:
+  /api/v1/messaging/mail_activity_plan_templates:
     get:
       tags:
         - MailActivityPlanTemplates
@@ -1217,7 +1217,7 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
 
-  /api/v1/mail_activity_plan_templates/{id}:
+  /api/v1/messaging/mail_activity_plan_templates/{id}:
     parameters:
       - $ref: '#/components/parameters/IdParam'
 
@@ -1289,7 +1289,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/v1/mail_activity_plan_templates/bulk:
+  /api/v1/messaging/mail_activity_plan_templates/bulk:
     post:
       tags:
         - MailActivityPlanTemplates
@@ -1381,7 +1381,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_activity_plan_templates/upsert:
+  /api/v1/messaging/mail_activity_plan_templates/upsert:
     post:
       tags:
         - MailActivityPlanTemplates
@@ -1411,7 +1411,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/MailActivityPlanTemplate'
 
-  /api/v1/mail_activity_plan_templates/trash:
+  /api/v1/messaging/mail_activity_plan_templates/trash:
     get:
       tags:
         - MailActivityPlanTemplates
@@ -1428,7 +1428,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/MailActivityPlanTemplateList'
 
-  /api/v1/mail_activity_plan_templates/{id}/restore:
+  /api/v1/messaging/mail_activity_plan_templates/{id}/restore:
     parameters:
       - $ref: '#/components/parameters/IdParam'
     post:
@@ -1446,7 +1446,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/v1/mail_activity_plan_templates/empty:
+  /api/v1/messaging/mail_activity_plan_templates/empty:
     delete:
       tags:
         - MailActivityPlanTemplates
@@ -1463,7 +1463,7 @@ paths:
                   deleted_count:
                     type: integer
 
-  /api/v1/mail_activity_plan_templates/delete/bulk:
+  /api/v1/messaging/mail_activity_plan_templates/delete/bulk:
     post:
       tags:
         - MailActivityPlanTemplates
@@ -1483,7 +1483,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_activity_plan_templates/restore/bulk:
+  /api/v1/messaging/mail_activity_plan_templates/restore/bulk:
     post:
       tags:
         - MailActivityPlanTemplates
@@ -1501,7 +1501,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_activity_plan_templates/restore/all:
+  /api/v1/messaging/mail_activity_plan_templates/restore/all:
     post:
       tags:
         - MailActivityPlanTemplates
@@ -1517,7 +1517,7 @@ paths:
                 properties:
                   restored: { type: integer }
 
-  /api/v1/mail_activity_plan_templates/trash/bulk:
+  /api/v1/messaging/mail_activity_plan_templates/trash/bulk:
     delete:
       tags:
         - MailActivityPlanTemplates
@@ -1537,7 +1537,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_alias_domains:
+  /api/v1/messaging/mail_alias_domains:
     get:
       tags:
         - MailAliasDomains
@@ -1583,7 +1583,7 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
 
-  /api/v1/mail_alias_domains/{id}:
+  /api/v1/messaging/mail_alias_domains/{id}:
     parameters:
       - $ref: '#/components/parameters/IdParam'
 
@@ -1655,7 +1655,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/v1/mail_alias_domains/bulk:
+  /api/v1/messaging/mail_alias_domains/bulk:
     post:
       tags:
         - MailAliasDomains
@@ -1747,7 +1747,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_alias_domains/upsert:
+  /api/v1/messaging/mail_alias_domains/upsert:
     post:
       tags:
         - MailAliasDomains
@@ -1777,7 +1777,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/MailAliasDomain'
 
-  /api/v1/mail_alias_domains/trash:
+  /api/v1/messaging/mail_alias_domains/trash:
     get:
       tags:
         - MailAliasDomains
@@ -1794,7 +1794,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/MailAliasDomainList'
 
-  /api/v1/mail_alias_domains/{id}/restore:
+  /api/v1/messaging/mail_alias_domains/{id}/restore:
     parameters:
       - $ref: '#/components/parameters/IdParam'
     post:
@@ -1812,7 +1812,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/v1/mail_alias_domains/empty:
+  /api/v1/messaging/mail_alias_domains/empty:
     delete:
       tags:
         - MailAliasDomains
@@ -1829,7 +1829,7 @@ paths:
                   deleted_count:
                     type: integer
 
-  /api/v1/mail_alias_domains/delete/bulk:
+  /api/v1/messaging/mail_alias_domains/delete/bulk:
     post:
       tags:
         - MailAliasDomains
@@ -1849,7 +1849,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_alias_domains/restore/bulk:
+  /api/v1/messaging/mail_alias_domains/restore/bulk:
     post:
       tags:
         - MailAliasDomains
@@ -1867,7 +1867,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_alias_domains/restore/all:
+  /api/v1/messaging/mail_alias_domains/restore/all:
     post:
       tags:
         - MailAliasDomains
@@ -1883,7 +1883,7 @@ paths:
                 properties:
                   restored: { type: integer }
 
-  /api/v1/mail_alias_domains/trash/bulk:
+  /api/v1/messaging/mail_alias_domains/trash/bulk:
     delete:
       tags:
         - MailAliasDomains
@@ -1903,7 +1903,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_aliases:
+  /api/v1/messaging/mail_aliases:
     get:
       tags:
         - MailAliases
@@ -1949,7 +1949,7 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
 
-  /api/v1/mail_aliases/{id}:
+  /api/v1/messaging/mail_aliases/{id}:
     parameters:
       - $ref: '#/components/parameters/IdParam'
 
@@ -2021,7 +2021,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/v1/mail_aliases/bulk:
+  /api/v1/messaging/mail_aliases/bulk:
     post:
       tags:
         - MailAliases
@@ -2113,7 +2113,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_aliases/upsert:
+  /api/v1/messaging/mail_aliases/upsert:
     post:
       tags:
         - MailAliases
@@ -2143,7 +2143,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/MailAlias'
 
-  /api/v1/mail_aliases/trash:
+  /api/v1/messaging/mail_aliases/trash:
     get:
       tags:
         - MailAliases
@@ -2160,7 +2160,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/MailAliasList'
 
-  /api/v1/mail_aliases/{id}/restore:
+  /api/v1/messaging/mail_aliases/{id}/restore:
     parameters:
       - $ref: '#/components/parameters/IdParam'
     post:
@@ -2178,7 +2178,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/v1/mail_aliases/empty:
+  /api/v1/messaging/mail_aliases/empty:
     delete:
       tags:
         - MailAliases
@@ -2195,7 +2195,7 @@ paths:
                   deleted_count:
                     type: integer
 
-  /api/v1/mail_aliases/delete/bulk:
+  /api/v1/messaging/mail_aliases/delete/bulk:
     post:
       tags:
         - MailAliases
@@ -2215,7 +2215,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_aliases/restore/bulk:
+  /api/v1/messaging/mail_aliases/restore/bulk:
     post:
       tags:
         - MailAliases
@@ -2233,7 +2233,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_aliases/restore/all:
+  /api/v1/messaging/mail_aliases/restore/all:
     post:
       tags:
         - MailAliases
@@ -2249,7 +2249,7 @@ paths:
                 properties:
                   restored: { type: integer }
 
-  /api/v1/mail_aliases/trash/bulk:
+  /api/v1/messaging/mail_aliases/trash/bulk:
     delete:
       tags:
         - MailAliases
@@ -2269,7 +2269,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_attachments:
+  /api/v1/messaging/mail_attachments:
     get:
       tags:
         - MailAttachments
@@ -2315,7 +2315,7 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
 
-  /api/v1/mail_attachments/{id}:
+  /api/v1/messaging/mail_attachments/{id}:
     parameters:
       - $ref: '#/components/parameters/IdParam'
 
@@ -2387,7 +2387,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/v1/mail_attachments/bulk:
+  /api/v1/messaging/mail_attachments/bulk:
     post:
       tags:
         - MailAttachments
@@ -2479,7 +2479,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_attachments/upsert:
+  /api/v1/messaging/mail_attachments/upsert:
     post:
       tags:
         - MailAttachments
@@ -2509,7 +2509,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/MailAttachment'
 
-  /api/v1/mail_attachments/trash:
+  /api/v1/messaging/mail_attachments/trash:
     get:
       tags:
         - MailAttachments
@@ -2526,7 +2526,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/MailAttachmentList'
 
-  /api/v1/mail_attachments/{id}/restore:
+  /api/v1/messaging/mail_attachments/{id}/restore:
     parameters:
       - $ref: '#/components/parameters/IdParam'
     post:
@@ -2544,7 +2544,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/v1/mail_attachments/empty:
+  /api/v1/messaging/mail_attachments/empty:
     delete:
       tags:
         - MailAttachments
@@ -2561,7 +2561,7 @@ paths:
                   deleted_count:
                     type: integer
 
-  /api/v1/mail_attachments/delete/bulk:
+  /api/v1/messaging/mail_attachments/delete/bulk:
     post:
       tags:
         - MailAttachments
@@ -2581,7 +2581,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_attachments/restore/bulk:
+  /api/v1/messaging/mail_attachments/restore/bulk:
     post:
       tags:
         - MailAttachments
@@ -2599,7 +2599,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_attachments/restore/all:
+  /api/v1/messaging/mail_attachments/restore/all:
     post:
       tags:
         - MailAttachments
@@ -2615,7 +2615,7 @@ paths:
                 properties:
                   restored: { type: integer }
 
-  /api/v1/mail_attachments/trash/bulk:
+  /api/v1/messaging/mail_attachments/trash/bulk:
     delete:
       tags:
         - MailAttachments
@@ -2635,7 +2635,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_message_attachments:
+  /api/v1/messaging/mail_message_attachments:
     get:
       tags:
         - MailMessageAttachments
@@ -2681,7 +2681,7 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
 
-  /api/v1/mail_message_attachments/{id}:
+  /api/v1/messaging/mail_message_attachments/{id}:
     parameters:
       - $ref: '#/components/parameters/IdParam'
 
@@ -2753,7 +2753,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/v1/mail_message_attachments/bulk:
+  /api/v1/messaging/mail_message_attachments/bulk:
     post:
       tags:
         - MailMessageAttachments
@@ -2845,7 +2845,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_message_attachments/upsert:
+  /api/v1/messaging/mail_message_attachments/upsert:
     post:
       tags:
         - MailMessageAttachments
@@ -2875,7 +2875,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/MailMessageAttachment'
 
-  /api/v1/mail_message_attachments/trash:
+  /api/v1/messaging/mail_message_attachments/trash:
     get:
       tags:
         - MailMessageAttachments
@@ -2892,7 +2892,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/MailMessageAttachmentList'
 
-  /api/v1/mail_message_attachments/{id}/restore:
+  /api/v1/messaging/mail_message_attachments/{id}/restore:
     parameters:
       - $ref: '#/components/parameters/IdParam'
     post:
@@ -2910,7 +2910,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/v1/mail_message_attachments/empty:
+  /api/v1/messaging/mail_message_attachments/empty:
     delete:
       tags:
         - MailMessageAttachments
@@ -2927,7 +2927,7 @@ paths:
                   deleted_count:
                     type: integer
 
-  /api/v1/mail_message_attachments/delete/bulk:
+  /api/v1/messaging/mail_message_attachments/delete/bulk:
     post:
       tags:
         - MailMessageAttachments
@@ -2947,7 +2947,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_message_attachments/restore/bulk:
+  /api/v1/messaging/mail_message_attachments/restore/bulk:
     post:
       tags:
         - MailMessageAttachments
@@ -2965,7 +2965,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_message_attachments/restore/all:
+  /api/v1/messaging/mail_message_attachments/restore/all:
     post:
       tags:
         - MailMessageAttachments
@@ -2981,7 +2981,7 @@ paths:
                 properties:
                   restored: { type: integer }
 
-  /api/v1/mail_message_attachments/trash/bulk:
+  /api/v1/messaging/mail_message_attachments/trash/bulk:
     delete:
       tags:
         - MailMessageAttachments
@@ -3001,7 +3001,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_message_stars:
+  /api/v1/messaging/mail_message_stars:
     get:
       tags:
         - MailMessageStars
@@ -3047,7 +3047,7 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
 
-  /api/v1/mail_message_stars/{id}:
+  /api/v1/messaging/mail_message_stars/{id}:
     parameters:
       - $ref: '#/components/parameters/IdParam'
 
@@ -3119,7 +3119,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/v1/mail_message_stars/bulk:
+  /api/v1/messaging/mail_message_stars/bulk:
     post:
       tags:
         - MailMessageStars
@@ -3211,7 +3211,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_message_stars/upsert:
+  /api/v1/messaging/mail_message_stars/upsert:
     post:
       tags:
         - MailMessageStars
@@ -3241,7 +3241,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/MailMessageStar'
 
-  /api/v1/mail_message_stars/trash:
+  /api/v1/messaging/mail_message_stars/trash:
     get:
       tags:
         - MailMessageStars
@@ -3258,7 +3258,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/MailMessageStarList'
 
-  /api/v1/mail_message_stars/{id}/restore:
+  /api/v1/messaging/mail_message_stars/{id}/restore:
     parameters:
       - $ref: '#/components/parameters/IdParam'
     post:
@@ -3276,7 +3276,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/v1/mail_message_stars/empty:
+  /api/v1/messaging/mail_message_stars/empty:
     delete:
       tags:
         - MailMessageStars
@@ -3293,7 +3293,7 @@ paths:
                   deleted_count:
                     type: integer
 
-  /api/v1/mail_message_stars/delete/bulk:
+  /api/v1/messaging/mail_message_stars/delete/bulk:
     post:
       tags:
         - MailMessageStars
@@ -3313,7 +3313,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_message_stars/restore/bulk:
+  /api/v1/messaging/mail_message_stars/restore/bulk:
     post:
       tags:
         - MailMessageStars
@@ -3331,7 +3331,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_message_stars/restore/all:
+  /api/v1/messaging/mail_message_stars/restore/all:
     post:
       tags:
         - MailMessageStars
@@ -3347,7 +3347,7 @@ paths:
                 properties:
                   restored: { type: integer }
 
-  /api/v1/mail_message_stars/trash/bulk:
+  /api/v1/messaging/mail_message_stars/trash/bulk:
     delete:
       tags:
         - MailMessageStars
@@ -3367,7 +3367,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_messages:
+  /api/v1/messaging/mail_messages:
     get:
       tags:
         - MailMessages
@@ -3413,7 +3413,7 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
 
-  /api/v1/mail_messages/{id}:
+  /api/v1/messaging/mail_messages/{id}:
     parameters:
       - $ref: '#/components/parameters/IdParam'
 
@@ -3485,7 +3485,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/v1/mail_messages/bulk:
+  /api/v1/messaging/mail_messages/bulk:
     post:
       tags:
         - MailMessages
@@ -3577,7 +3577,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_messages/upsert:
+  /api/v1/messaging/mail_messages/upsert:
     post:
       tags:
         - MailMessages
@@ -3607,7 +3607,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/MailMessage'
 
-  /api/v1/mail_messages/trash:
+  /api/v1/messaging/mail_messages/trash:
     get:
       tags:
         - MailMessages
@@ -3624,7 +3624,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/MailMessageList'
 
-  /api/v1/mail_messages/{id}/restore:
+  /api/v1/messaging/mail_messages/{id}/restore:
     parameters:
       - $ref: '#/components/parameters/IdParam'
     post:
@@ -3642,7 +3642,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/v1/mail_messages/empty:
+  /api/v1/messaging/mail_messages/empty:
     delete:
       tags:
         - MailMessages
@@ -3659,7 +3659,7 @@ paths:
                   deleted_count:
                     type: integer
 
-  /api/v1/mail_messages/delete/bulk:
+  /api/v1/messaging/mail_messages/delete/bulk:
     post:
       tags:
         - MailMessages
@@ -3679,7 +3679,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_messages/restore/bulk:
+  /api/v1/messaging/mail_messages/restore/bulk:
     post:
       tags:
         - MailMessages
@@ -3697,7 +3697,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_messages/restore/all:
+  /api/v1/messaging/mail_messages/restore/all:
     post:
       tags:
         - MailMessages
@@ -3713,7 +3713,7 @@ paths:
                 properties:
                   restored: { type: integer }
 
-  /api/v1/mail_messages/trash/bulk:
+  /api/v1/messaging/mail_messages/trash/bulk:
     delete:
       tags:
         - MailMessages
@@ -3733,7 +3733,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mails:
+  /api/v1/messaging/mails:
     get:
       tags:
         - Mails
@@ -3779,7 +3779,7 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
 
-  /api/v1/mails/{id}:
+  /api/v1/messaging/mails/{id}:
     parameters:
       - $ref: '#/components/parameters/IdParam'
 
@@ -3851,7 +3851,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/v1/mails/bulk:
+  /api/v1/messaging/mails/bulk:
     post:
       tags:
         - Mails
@@ -3943,7 +3943,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mails/upsert:
+  /api/v1/messaging/mails/upsert:
     post:
       tags:
         - Mails
@@ -3973,7 +3973,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Mail'
 
-  /api/v1/mails/trash:
+  /api/v1/messaging/mails/trash:
     get:
       tags:
         - Mails
@@ -3990,7 +3990,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/MailList'
 
-  /api/v1/mails/{id}/restore:
+  /api/v1/messaging/mails/{id}/restore:
     parameters:
       - $ref: '#/components/parameters/IdParam'
     post:
@@ -4008,7 +4008,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/v1/mails/empty:
+  /api/v1/messaging/mails/empty:
     delete:
       tags:
         - Mails
@@ -4025,7 +4025,7 @@ paths:
                   deleted_count:
                     type: integer
 
-  /api/v1/mails/delete/bulk:
+  /api/v1/messaging/mails/delete/bulk:
     post:
       tags:
         - Mails
@@ -4045,7 +4045,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mails/restore/bulk:
+  /api/v1/messaging/mails/restore/bulk:
     post:
       tags:
         - Mails
@@ -4063,7 +4063,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mails/restore/all:
+  /api/v1/messaging/mails/restore/all:
     post:
       tags:
         - Mails
@@ -4079,7 +4079,7 @@ paths:
                 properties:
                   restored: { type: integer }
 
-  /api/v1/mails/trash/bulk:
+  /api/v1/messaging/mails/trash/bulk:
     delete:
       tags:
         - Mails
@@ -4099,7 +4099,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_notifications:
+  /api/v1/messaging/mail_notifications:
     get:
       tags:
         - MailNotifications
@@ -4145,7 +4145,7 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
 
-  /api/v1/mail_notifications/{id}:
+  /api/v1/messaging/mail_notifications/{id}:
     parameters:
       - $ref: '#/components/parameters/IdParam'
 
@@ -4217,7 +4217,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/v1/mail_notifications/bulk:
+  /api/v1/messaging/mail_notifications/bulk:
     post:
       tags:
         - MailNotifications
@@ -4309,7 +4309,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_notifications/upsert:
+  /api/v1/messaging/mail_notifications/upsert:
     post:
       tags:
         - MailNotifications
@@ -4339,7 +4339,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/MailNotification'
 
-  /api/v1/mail_notifications/trash:
+  /api/v1/messaging/mail_notifications/trash:
     get:
       tags:
         - MailNotifications
@@ -4356,7 +4356,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/MailNotificationList'
 
-  /api/v1/mail_notifications/{id}/restore:
+  /api/v1/messaging/mail_notifications/{id}/restore:
     parameters:
       - $ref: '#/components/parameters/IdParam'
     post:
@@ -4374,7 +4374,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/v1/mail_notifications/empty:
+  /api/v1/messaging/mail_notifications/empty:
     delete:
       tags:
         - MailNotifications
@@ -4391,7 +4391,7 @@ paths:
                   deleted_count:
                     type: integer
 
-  /api/v1/mail_notifications/delete/bulk:
+  /api/v1/messaging/mail_notifications/delete/bulk:
     post:
       tags:
         - MailNotifications
@@ -4411,7 +4411,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_notifications/restore/bulk:
+  /api/v1/messaging/mail_notifications/restore/bulk:
     post:
       tags:
         - MailNotifications
@@ -4429,7 +4429,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_notifications/restore/all:
+  /api/v1/messaging/mail_notifications/restore/all:
     post:
       tags:
         - MailNotifications
@@ -4445,7 +4445,7 @@ paths:
                 properties:
                   restored: { type: integer }
 
-  /api/v1/mail_notifications/trash/bulk:
+  /api/v1/messaging/mail_notifications/trash/bulk:
     delete:
       tags:
         - MailNotifications
@@ -4465,7 +4465,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_message_subtypes:
+  /api/v1/messaging/mail_message_subtypes:
     get:
       tags:
         - MailMessageSubtypes
@@ -4511,7 +4511,7 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
 
-  /api/v1/mail_message_subtypes/{id}:
+  /api/v1/messaging/mail_message_subtypes/{id}:
     parameters:
       - $ref: '#/components/parameters/IdParam'
 
@@ -4583,7 +4583,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/v1/mail_message_subtypes/bulk:
+  /api/v1/messaging/mail_message_subtypes/bulk:
     post:
       tags:
         - MailMessageSubtypes
@@ -4675,7 +4675,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_message_subtypes/upsert:
+  /api/v1/messaging/mail_message_subtypes/upsert:
     post:
       tags:
         - MailMessageSubtypes
@@ -4705,7 +4705,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/MailMessageSubtype'
 
-  /api/v1/mail_message_subtypes/trash:
+  /api/v1/messaging/mail_message_subtypes/trash:
     get:
       tags:
         - MailMessageSubtypes
@@ -4722,7 +4722,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/MailMessageSubtypeList'
 
-  /api/v1/mail_message_subtypes/{id}/restore:
+  /api/v1/messaging/mail_message_subtypes/{id}/restore:
     parameters:
       - $ref: '#/components/parameters/IdParam'
     post:
@@ -4740,7 +4740,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/v1/mail_message_subtypes/empty:
+  /api/v1/messaging/mail_message_subtypes/empty:
     delete:
       tags:
         - MailMessageSubtypes
@@ -4757,7 +4757,7 @@ paths:
                   deleted_count:
                     type: integer
 
-  /api/v1/mail_message_subtypes/delete/bulk:
+  /api/v1/messaging/mail_message_subtypes/delete/bulk:
     post:
       tags:
         - MailMessageSubtypes
@@ -4777,7 +4777,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_message_subtypes/restore/bulk:
+  /api/v1/messaging/mail_message_subtypes/restore/bulk:
     post:
       tags:
         - MailMessageSubtypes
@@ -4795,7 +4795,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_message_subtypes/restore/all:
+  /api/v1/messaging/mail_message_subtypes/restore/all:
     post:
       tags:
         - MailMessageSubtypes
@@ -4811,7 +4811,7 @@ paths:
                 properties:
                   restored: { type: integer }
 
-  /api/v1/mail_message_subtypes/trash/bulk:
+  /api/v1/messaging/mail_message_subtypes/trash/bulk:
     delete:
       tags:
         - MailMessageSubtypes
@@ -4831,7 +4831,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_message_reactions:
+  /api/v1/messaging/mail_message_reactions:
     get:
       tags:
         - MailMessageReactions
@@ -4877,7 +4877,7 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
 
-  /api/v1/mail_message_reactions/{id}:
+  /api/v1/messaging/mail_message_reactions/{id}:
     parameters:
       - $ref: '#/components/parameters/IdParam'
 
@@ -4949,7 +4949,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/v1/mail_message_reactions/bulk:
+  /api/v1/messaging/mail_message_reactions/bulk:
     post:
       tags:
         - MailMessageReactions
@@ -5041,7 +5041,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_message_reactions/upsert:
+  /api/v1/messaging/mail_message_reactions/upsert:
     post:
       tags:
         - MailMessageReactions
@@ -5071,7 +5071,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/MailMessageReaction'
 
-  /api/v1/mail_message_reactions/trash:
+  /api/v1/messaging/mail_message_reactions/trash:
     get:
       tags:
         - MailMessageReactions
@@ -5088,7 +5088,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/MailMessageReactionList'
 
-  /api/v1/mail_message_reactions/{id}/restore:
+  /api/v1/messaging/mail_message_reactions/{id}/restore:
     parameters:
       - $ref: '#/components/parameters/IdParam'
     post:
@@ -5106,7 +5106,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/v1/mail_message_reactions/empty:
+  /api/v1/messaging/mail_message_reactions/empty:
     delete:
       tags:
         - MailMessageReactions
@@ -5123,7 +5123,7 @@ paths:
                   deleted_count:
                     type: integer
 
-  /api/v1/mail_message_reactions/delete/bulk:
+  /api/v1/messaging/mail_message_reactions/delete/bulk:
     post:
       tags:
         - MailMessageReactions
@@ -5143,7 +5143,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_message_reactions/restore/bulk:
+  /api/v1/messaging/mail_message_reactions/restore/bulk:
     post:
       tags:
         - MailMessageReactions
@@ -5161,7 +5161,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_message_reactions/restore/all:
+  /api/v1/messaging/mail_message_reactions/restore/all:
     post:
       tags:
         - MailMessageReactions
@@ -5177,7 +5177,7 @@ paths:
                 properties:
                   restored: { type: integer }
 
-  /api/v1/mail_message_reactions/trash/bulk:
+  /api/v1/messaging/mail_message_reactions/trash/bulk:
     delete:
       tags:
         - MailMessageReactions
@@ -5197,7 +5197,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_followerses:
+  /api/v1/messaging/mail_followerses:
     get:
       tags:
         - MailFollowerses
@@ -5243,7 +5243,7 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
 
-  /api/v1/mail_followerses/{id}:
+  /api/v1/messaging/mail_followerses/{id}:
     parameters:
       - $ref: '#/components/parameters/IdParam'
 
@@ -5315,7 +5315,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/v1/mail_followerses/bulk:
+  /api/v1/messaging/mail_followerses/bulk:
     post:
       tags:
         - MailFollowerses
@@ -5407,7 +5407,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_followerses/upsert:
+  /api/v1/messaging/mail_followerses/upsert:
     post:
       tags:
         - MailFollowerses
@@ -5437,7 +5437,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/MailFollowers'
 
-  /api/v1/mail_followerses/trash:
+  /api/v1/messaging/mail_followerses/trash:
     get:
       tags:
         - MailFollowerses
@@ -5454,7 +5454,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/MailFollowersList'
 
-  /api/v1/mail_followerses/{id}/restore:
+  /api/v1/messaging/mail_followerses/{id}/restore:
     parameters:
       - $ref: '#/components/parameters/IdParam'
     post:
@@ -5472,7 +5472,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/v1/mail_followerses/empty:
+  /api/v1/messaging/mail_followerses/empty:
     delete:
       tags:
         - MailFollowerses
@@ -5489,7 +5489,7 @@ paths:
                   deleted_count:
                     type: integer
 
-  /api/v1/mail_followerses/delete/bulk:
+  /api/v1/messaging/mail_followerses/delete/bulk:
     post:
       tags:
         - MailFollowerses
@@ -5509,7 +5509,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_followerses/restore/bulk:
+  /api/v1/messaging/mail_followerses/restore/bulk:
     post:
       tags:
         - MailFollowerses
@@ -5527,7 +5527,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_followerses/restore/all:
+  /api/v1/messaging/mail_followerses/restore/all:
     post:
       tags:
         - MailFollowerses
@@ -5543,7 +5543,7 @@ paths:
                 properties:
                   restored: { type: integer }
 
-  /api/v1/mail_followerses/trash/bulk:
+  /api/v1/messaging/mail_followerses/trash/bulk:
     delete:
       tags:
         - MailFollowerses
@@ -5563,7 +5563,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_presences:
+  /api/v1/messaging/mail_presences:
     get:
       tags:
         - MailPresences
@@ -5609,7 +5609,7 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
 
-  /api/v1/mail_presences/{id}:
+  /api/v1/messaging/mail_presences/{id}:
     parameters:
       - $ref: '#/components/parameters/IdParam'
 
@@ -5681,7 +5681,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/v1/mail_presences/bulk:
+  /api/v1/messaging/mail_presences/bulk:
     post:
       tags:
         - MailPresences
@@ -5773,7 +5773,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_presences/upsert:
+  /api/v1/messaging/mail_presences/upsert:
     post:
       tags:
         - MailPresences
@@ -5803,7 +5803,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/MailPresence'
 
-  /api/v1/mail_presences/trash:
+  /api/v1/messaging/mail_presences/trash:
     get:
       tags:
         - MailPresences
@@ -5820,7 +5820,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/MailPresenceList'
 
-  /api/v1/mail_presences/{id}/restore:
+  /api/v1/messaging/mail_presences/{id}/restore:
     parameters:
       - $ref: '#/components/parameters/IdParam'
     post:
@@ -5838,7 +5838,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/v1/mail_presences/empty:
+  /api/v1/messaging/mail_presences/empty:
     delete:
       tags:
         - MailPresences
@@ -5855,7 +5855,7 @@ paths:
                   deleted_count:
                     type: integer
 
-  /api/v1/mail_presences/delete/bulk:
+  /api/v1/messaging/mail_presences/delete/bulk:
     post:
       tags:
         - MailPresences
@@ -5875,7 +5875,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_presences/restore/bulk:
+  /api/v1/messaging/mail_presences/restore/bulk:
     post:
       tags:
         - MailPresences
@@ -5893,7 +5893,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_presences/restore/all:
+  /api/v1/messaging/mail_presences/restore/all:
     post:
       tags:
         - MailPresences
@@ -5909,7 +5909,7 @@ paths:
                 properties:
                   restored: { type: integer }
 
-  /api/v1/mail_presences/trash/bulk:
+  /api/v1/messaging/mail_presences/trash/bulk:
     delete:
       tags:
         - MailPresences
@@ -5929,7 +5929,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_blacklists:
+  /api/v1/messaging/mail_blacklists:
     get:
       tags:
         - MailBlacklists
@@ -5975,7 +5975,7 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
 
-  /api/v1/mail_blacklists/{id}:
+  /api/v1/messaging/mail_blacklists/{id}:
     parameters:
       - $ref: '#/components/parameters/IdParam'
 
@@ -6047,7 +6047,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/v1/mail_blacklists/bulk:
+  /api/v1/messaging/mail_blacklists/bulk:
     post:
       tags:
         - MailBlacklists
@@ -6139,7 +6139,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_blacklists/upsert:
+  /api/v1/messaging/mail_blacklists/upsert:
     post:
       tags:
         - MailBlacklists
@@ -6169,7 +6169,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/MailBlacklist'
 
-  /api/v1/mail_blacklists/trash:
+  /api/v1/messaging/mail_blacklists/trash:
     get:
       tags:
         - MailBlacklists
@@ -6186,7 +6186,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/MailBlacklistList'
 
-  /api/v1/mail_blacklists/{id}/restore:
+  /api/v1/messaging/mail_blacklists/{id}/restore:
     parameters:
       - $ref: '#/components/parameters/IdParam'
     post:
@@ -6204,7 +6204,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/v1/mail_blacklists/empty:
+  /api/v1/messaging/mail_blacklists/empty:
     delete:
       tags:
         - MailBlacklists
@@ -6221,7 +6221,7 @@ paths:
                   deleted_count:
                     type: integer
 
-  /api/v1/mail_blacklists/delete/bulk:
+  /api/v1/messaging/mail_blacklists/delete/bulk:
     post:
       tags:
         - MailBlacklists
@@ -6241,7 +6241,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_blacklists/restore/bulk:
+  /api/v1/messaging/mail_blacklists/restore/bulk:
     post:
       tags:
         - MailBlacklists
@@ -6259,7 +6259,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_blacklists/restore/all:
+  /api/v1/messaging/mail_blacklists/restore/all:
     post:
       tags:
         - MailBlacklists
@@ -6275,7 +6275,7 @@ paths:
                 properties:
                   restored: { type: integer }
 
-  /api/v1/mail_blacklists/trash/bulk:
+  /api/v1/messaging/mail_blacklists/trash/bulk:
     delete:
       tags:
         - MailBlacklists
@@ -6295,7 +6295,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_tracking_values:
+  /api/v1/messaging/mail_tracking_values:
     get:
       tags:
         - MailTrackingValues
@@ -6341,7 +6341,7 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
 
-  /api/v1/mail_tracking_values/{id}:
+  /api/v1/messaging/mail_tracking_values/{id}:
     parameters:
       - $ref: '#/components/parameters/IdParam'
 
@@ -6413,7 +6413,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/v1/mail_tracking_values/bulk:
+  /api/v1/messaging/mail_tracking_values/bulk:
     post:
       tags:
         - MailTrackingValues
@@ -6505,7 +6505,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_tracking_values/upsert:
+  /api/v1/messaging/mail_tracking_values/upsert:
     post:
       tags:
         - MailTrackingValues
@@ -6535,7 +6535,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/MailTrackingValue'
 
-  /api/v1/mail_tracking_values/trash:
+  /api/v1/messaging/mail_tracking_values/trash:
     get:
       tags:
         - MailTrackingValues
@@ -6552,7 +6552,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/MailTrackingValueList'
 
-  /api/v1/mail_tracking_values/{id}/restore:
+  /api/v1/messaging/mail_tracking_values/{id}/restore:
     parameters:
       - $ref: '#/components/parameters/IdParam'
     post:
@@ -6570,7 +6570,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/v1/mail_tracking_values/empty:
+  /api/v1/messaging/mail_tracking_values/empty:
     delete:
       tags:
         - MailTrackingValues
@@ -6587,7 +6587,7 @@ paths:
                   deleted_count:
                     type: integer
 
-  /api/v1/mail_tracking_values/delete/bulk:
+  /api/v1/messaging/mail_tracking_values/delete/bulk:
     post:
       tags:
         - MailTrackingValues
@@ -6607,7 +6607,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_tracking_values/restore/bulk:
+  /api/v1/messaging/mail_tracking_values/restore/bulk:
     post:
       tags:
         - MailTrackingValues
@@ -6625,7 +6625,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_tracking_values/restore/all:
+  /api/v1/messaging/mail_tracking_values/restore/all:
     post:
       tags:
         - MailTrackingValues
@@ -6641,7 +6641,7 @@ paths:
                 properties:
                   restored: { type: integer }
 
-  /api/v1/mail_tracking_values/trash/bulk:
+  /api/v1/messaging/mail_tracking_values/trash/bulk:
     delete:
       tags:
         - MailTrackingValues
@@ -6661,7 +6661,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/discuss_channels:
+  /api/v1/messaging/discuss_channels:
     get:
       tags:
         - DiscussChannels
@@ -6707,7 +6707,7 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
 
-  /api/v1/discuss_channels/{id}:
+  /api/v1/messaging/discuss_channels/{id}:
     parameters:
       - $ref: '#/components/parameters/IdParam'
 
@@ -6779,7 +6779,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/v1/discuss_channels/bulk:
+  /api/v1/messaging/discuss_channels/bulk:
     post:
       tags:
         - DiscussChannels
@@ -6871,7 +6871,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/discuss_channels/upsert:
+  /api/v1/messaging/discuss_channels/upsert:
     post:
       tags:
         - DiscussChannels
@@ -6901,7 +6901,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/DiscussChannel'
 
-  /api/v1/discuss_channels/trash:
+  /api/v1/messaging/discuss_channels/trash:
     get:
       tags:
         - DiscussChannels
@@ -6918,7 +6918,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/DiscussChannelList'
 
-  /api/v1/discuss_channels/{id}/restore:
+  /api/v1/messaging/discuss_channels/{id}/restore:
     parameters:
       - $ref: '#/components/parameters/IdParam'
     post:
@@ -6936,7 +6936,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/v1/discuss_channels/empty:
+  /api/v1/messaging/discuss_channels/empty:
     delete:
       tags:
         - DiscussChannels
@@ -6953,7 +6953,7 @@ paths:
                   deleted_count:
                     type: integer
 
-  /api/v1/discuss_channels/delete/bulk:
+  /api/v1/messaging/discuss_channels/delete/bulk:
     post:
       tags:
         - DiscussChannels
@@ -6973,7 +6973,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/discuss_channels/restore/bulk:
+  /api/v1/messaging/discuss_channels/restore/bulk:
     post:
       tags:
         - DiscussChannels
@@ -6991,7 +6991,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/discuss_channels/restore/all:
+  /api/v1/messaging/discuss_channels/restore/all:
     post:
       tags:
         - DiscussChannels
@@ -7007,7 +7007,7 @@ paths:
                 properties:
                   restored: { type: integer }
 
-  /api/v1/discuss_channels/trash/bulk:
+  /api/v1/messaging/discuss_channels/trash/bulk:
     delete:
       tags:
         - DiscussChannels
@@ -7027,7 +7027,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/discuss_channel_members:
+  /api/v1/messaging/discuss_channel_members:
     get:
       tags:
         - DiscussChannelMembers
@@ -7073,7 +7073,7 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
 
-  /api/v1/discuss_channel_members/{id}:
+  /api/v1/messaging/discuss_channel_members/{id}:
     parameters:
       - $ref: '#/components/parameters/IdParam'
 
@@ -7145,7 +7145,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/v1/discuss_channel_members/bulk:
+  /api/v1/messaging/discuss_channel_members/bulk:
     post:
       tags:
         - DiscussChannelMembers
@@ -7237,7 +7237,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/discuss_channel_members/upsert:
+  /api/v1/messaging/discuss_channel_members/upsert:
     post:
       tags:
         - DiscussChannelMembers
@@ -7267,7 +7267,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/DiscussChannelMember'
 
-  /api/v1/discuss_channel_members/trash:
+  /api/v1/messaging/discuss_channel_members/trash:
     get:
       tags:
         - DiscussChannelMembers
@@ -7284,7 +7284,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/DiscussChannelMemberList'
 
-  /api/v1/discuss_channel_members/{id}/restore:
+  /api/v1/messaging/discuss_channel_members/{id}/restore:
     parameters:
       - $ref: '#/components/parameters/IdParam'
     post:
@@ -7302,7 +7302,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/v1/discuss_channel_members/empty:
+  /api/v1/messaging/discuss_channel_members/empty:
     delete:
       tags:
         - DiscussChannelMembers
@@ -7319,7 +7319,7 @@ paths:
                   deleted_count:
                     type: integer
 
-  /api/v1/discuss_channel_members/delete/bulk:
+  /api/v1/messaging/discuss_channel_members/delete/bulk:
     post:
       tags:
         - DiscussChannelMembers
@@ -7339,7 +7339,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/discuss_channel_members/restore/bulk:
+  /api/v1/messaging/discuss_channel_members/restore/bulk:
     post:
       tags:
         - DiscussChannelMembers
@@ -7357,7 +7357,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/discuss_channel_members/restore/all:
+  /api/v1/messaging/discuss_channel_members/restore/all:
     post:
       tags:
         - DiscussChannelMembers
@@ -7373,7 +7373,7 @@ paths:
                 properties:
                   restored: { type: integer }
 
-  /api/v1/discuss_channel_members/trash/bulk:
+  /api/v1/messaging/discuss_channel_members/trash/bulk:
     delete:
       tags:
         - DiscussChannelMembers
@@ -7393,7 +7393,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_guests:
+  /api/v1/messaging/mail_guests:
     get:
       tags:
         - MailGuests
@@ -7439,7 +7439,7 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
 
-  /api/v1/mail_guests/{id}:
+  /api/v1/messaging/mail_guests/{id}:
     parameters:
       - $ref: '#/components/parameters/IdParam'
 
@@ -7511,7 +7511,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/v1/mail_guests/bulk:
+  /api/v1/messaging/mail_guests/bulk:
     post:
       tags:
         - MailGuests
@@ -7603,7 +7603,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_guests/upsert:
+  /api/v1/messaging/mail_guests/upsert:
     post:
       tags:
         - MailGuests
@@ -7633,7 +7633,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/MailGuest'
 
-  /api/v1/mail_guests/trash:
+  /api/v1/messaging/mail_guests/trash:
     get:
       tags:
         - MailGuests
@@ -7650,7 +7650,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/MailGuestList'
 
-  /api/v1/mail_guests/{id}/restore:
+  /api/v1/messaging/mail_guests/{id}/restore:
     parameters:
       - $ref: '#/components/parameters/IdParam'
     post:
@@ -7668,7 +7668,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/v1/mail_guests/empty:
+  /api/v1/messaging/mail_guests/empty:
     delete:
       tags:
         - MailGuests
@@ -7685,7 +7685,7 @@ paths:
                   deleted_count:
                     type: integer
 
-  /api/v1/mail_guests/delete/bulk:
+  /api/v1/messaging/mail_guests/delete/bulk:
     post:
       tags:
         - MailGuests
@@ -7705,7 +7705,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_guests/restore/bulk:
+  /api/v1/messaging/mail_guests/restore/bulk:
     post:
       tags:
         - MailGuests
@@ -7723,7 +7723,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_guests/restore/all:
+  /api/v1/messaging/mail_guests/restore/all:
     post:
       tags:
         - MailGuests
@@ -7739,7 +7739,7 @@ paths:
                 properties:
                   restored: { type: integer }
 
-  /api/v1/mail_guests/trash/bulk:
+  /api/v1/messaging/mail_guests/trash/bulk:
     delete:
       tags:
         - MailGuests
@@ -7759,7 +7759,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_servers:
+  /api/v1/messaging/mail_servers:
     get:
       tags:
         - MailServers
@@ -7805,7 +7805,7 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
 
-  /api/v1/mail_servers/{id}:
+  /api/v1/messaging/mail_servers/{id}:
     parameters:
       - $ref: '#/components/parameters/IdParam'
 
@@ -7877,7 +7877,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/v1/mail_servers/bulk:
+  /api/v1/messaging/mail_servers/bulk:
     post:
       tags:
         - MailServers
@@ -7969,7 +7969,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_servers/upsert:
+  /api/v1/messaging/mail_servers/upsert:
     post:
       tags:
         - MailServers
@@ -7999,7 +7999,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/MailServer'
 
-  /api/v1/mail_servers/trash:
+  /api/v1/messaging/mail_servers/trash:
     get:
       tags:
         - MailServers
@@ -8016,7 +8016,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/MailServerList'
 
-  /api/v1/mail_servers/{id}/restore:
+  /api/v1/messaging/mail_servers/{id}/restore:
     parameters:
       - $ref: '#/components/parameters/IdParam'
     post:
@@ -8034,7 +8034,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/v1/mail_servers/empty:
+  /api/v1/messaging/mail_servers/empty:
     delete:
       tags:
         - MailServers
@@ -8051,7 +8051,7 @@ paths:
                   deleted_count:
                     type: integer
 
-  /api/v1/mail_servers/delete/bulk:
+  /api/v1/messaging/mail_servers/delete/bulk:
     post:
       tags:
         - MailServers
@@ -8071,7 +8071,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_servers/restore/bulk:
+  /api/v1/messaging/mail_servers/restore/bulk:
     post:
       tags:
         - MailServers
@@ -8089,7 +8089,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_servers/restore/all:
+  /api/v1/messaging/mail_servers/restore/all:
     post:
       tags:
         - MailServers
@@ -8105,7 +8105,7 @@ paths:
                 properties:
                   restored: { type: integer }
 
-  /api/v1/mail_servers/trash/bulk:
+  /api/v1/messaging/mail_servers/trash/bulk:
     delete:
       tags:
         - MailServers
@@ -8125,7 +8125,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/fetchmail_servers:
+  /api/v1/messaging/fetchmail_servers:
     get:
       tags:
         - FetchmailServers
@@ -8171,7 +8171,7 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
 
-  /api/v1/fetchmail_servers/{id}:
+  /api/v1/messaging/fetchmail_servers/{id}:
     parameters:
       - $ref: '#/components/parameters/IdParam'
 
@@ -8243,7 +8243,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/v1/fetchmail_servers/bulk:
+  /api/v1/messaging/fetchmail_servers/bulk:
     post:
       tags:
         - FetchmailServers
@@ -8335,7 +8335,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/fetchmail_servers/upsert:
+  /api/v1/messaging/fetchmail_servers/upsert:
     post:
       tags:
         - FetchmailServers
@@ -8365,7 +8365,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/FetchmailServer'
 
-  /api/v1/fetchmail_servers/trash:
+  /api/v1/messaging/fetchmail_servers/trash:
     get:
       tags:
         - FetchmailServers
@@ -8382,7 +8382,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/FetchmailServerList'
 
-  /api/v1/fetchmail_servers/{id}/restore:
+  /api/v1/messaging/fetchmail_servers/{id}/restore:
     parameters:
       - $ref: '#/components/parameters/IdParam'
     post:
@@ -8400,7 +8400,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/v1/fetchmail_servers/empty:
+  /api/v1/messaging/fetchmail_servers/empty:
     delete:
       tags:
         - FetchmailServers
@@ -8417,7 +8417,7 @@ paths:
                   deleted_count:
                     type: integer
 
-  /api/v1/fetchmail_servers/delete/bulk:
+  /api/v1/messaging/fetchmail_servers/delete/bulk:
     post:
       tags:
         - FetchmailServers
@@ -8437,7 +8437,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/fetchmail_servers/restore/bulk:
+  /api/v1/messaging/fetchmail_servers/restore/bulk:
     post:
       tags:
         - FetchmailServers
@@ -8455,7 +8455,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/fetchmail_servers/restore/all:
+  /api/v1/messaging/fetchmail_servers/restore/all:
     post:
       tags:
         - FetchmailServers
@@ -8471,7 +8471,7 @@ paths:
                 properties:
                   restored: { type: integer }
 
-  /api/v1/fetchmail_servers/trash/bulk:
+  /api/v1/messaging/fetchmail_servers/trash/bulk:
     delete:
       tags:
         - FetchmailServers
@@ -8491,7 +8491,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_gateway_alloweds:
+  /api/v1/messaging/mail_gateway_alloweds:
     get:
       tags:
         - MailGatewayAlloweds
@@ -8537,7 +8537,7 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
 
-  /api/v1/mail_gateway_alloweds/{id}:
+  /api/v1/messaging/mail_gateway_alloweds/{id}:
     parameters:
       - $ref: '#/components/parameters/IdParam'
 
@@ -8609,7 +8609,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/v1/mail_gateway_alloweds/bulk:
+  /api/v1/messaging/mail_gateway_alloweds/bulk:
     post:
       tags:
         - MailGatewayAlloweds
@@ -8701,7 +8701,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_gateway_alloweds/upsert:
+  /api/v1/messaging/mail_gateway_alloweds/upsert:
     post:
       tags:
         - MailGatewayAlloweds
@@ -8731,7 +8731,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/MailGatewayAllowed'
 
-  /api/v1/mail_gateway_alloweds/trash:
+  /api/v1/messaging/mail_gateway_alloweds/trash:
     get:
       tags:
         - MailGatewayAlloweds
@@ -8748,7 +8748,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/MailGatewayAllowedList'
 
-  /api/v1/mail_gateway_alloweds/{id}/restore:
+  /api/v1/messaging/mail_gateway_alloweds/{id}/restore:
     parameters:
       - $ref: '#/components/parameters/IdParam'
     post:
@@ -8766,7 +8766,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/v1/mail_gateway_alloweds/empty:
+  /api/v1/messaging/mail_gateway_alloweds/empty:
     delete:
       tags:
         - MailGatewayAlloweds
@@ -8783,7 +8783,7 @@ paths:
                   deleted_count:
                     type: integer
 
-  /api/v1/mail_gateway_alloweds/delete/bulk:
+  /api/v1/messaging/mail_gateway_alloweds/delete/bulk:
     post:
       tags:
         - MailGatewayAlloweds
@@ -8803,7 +8803,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_gateway_alloweds/restore/bulk:
+  /api/v1/messaging/mail_gateway_alloweds/restore/bulk:
     post:
       tags:
         - MailGatewayAlloweds
@@ -8821,7 +8821,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_gateway_alloweds/restore/all:
+  /api/v1/messaging/mail_gateway_alloweds/restore/all:
     post:
       tags:
         - MailGatewayAlloweds
@@ -8837,7 +8837,7 @@ paths:
                 properties:
                   restored: { type: integer }
 
-  /api/v1/mail_gateway_alloweds/trash/bulk:
+  /api/v1/messaging/mail_gateway_alloweds/trash/bulk:
     delete:
       tags:
         - MailGatewayAlloweds
@@ -8857,7 +8857,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/phone_blacklists:
+  /api/v1/messaging/phone_blacklists:
     get:
       tags:
         - PhoneBlacklists
@@ -8903,7 +8903,7 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
 
-  /api/v1/phone_blacklists/{id}:
+  /api/v1/messaging/phone_blacklists/{id}:
     parameters:
       - $ref: '#/components/parameters/IdParam'
 
@@ -8975,7 +8975,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/v1/phone_blacklists/bulk:
+  /api/v1/messaging/phone_blacklists/bulk:
     post:
       tags:
         - PhoneBlacklists
@@ -9067,7 +9067,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/phone_blacklists/upsert:
+  /api/v1/messaging/phone_blacklists/upsert:
     post:
       tags:
         - PhoneBlacklists
@@ -9097,7 +9097,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/PhoneBlacklist'
 
-  /api/v1/phone_blacklists/trash:
+  /api/v1/messaging/phone_blacklists/trash:
     get:
       tags:
         - PhoneBlacklists
@@ -9114,7 +9114,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/PhoneBlacklistList'
 
-  /api/v1/phone_blacklists/{id}/restore:
+  /api/v1/messaging/phone_blacklists/{id}/restore:
     parameters:
       - $ref: '#/components/parameters/IdParam'
     post:
@@ -9132,7 +9132,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/v1/phone_blacklists/empty:
+  /api/v1/messaging/phone_blacklists/empty:
     delete:
       tags:
         - PhoneBlacklists
@@ -9149,7 +9149,7 @@ paths:
                   deleted_count:
                     type: integer
 
-  /api/v1/phone_blacklists/delete/bulk:
+  /api/v1/messaging/phone_blacklists/delete/bulk:
     post:
       tags:
         - PhoneBlacklists
@@ -9169,7 +9169,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/phone_blacklists/restore/bulk:
+  /api/v1/messaging/phone_blacklists/restore/bulk:
     post:
       tags:
         - PhoneBlacklists
@@ -9187,7 +9187,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/phone_blacklists/restore/all:
+  /api/v1/messaging/phone_blacklists/restore/all:
     post:
       tags:
         - PhoneBlacklists
@@ -9203,7 +9203,7 @@ paths:
                 properties:
                   restored: { type: integer }
 
-  /api/v1/phone_blacklists/trash/bulk:
+  /api/v1/messaging/phone_blacklists/trash/bulk:
     delete:
       tags:
         - PhoneBlacklists
@@ -9223,7 +9223,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_message_schedules:
+  /api/v1/messaging/mail_message_schedules:
     get:
       tags:
         - MailMessageSchedules
@@ -9269,7 +9269,7 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
 
-  /api/v1/mail_message_schedules/{id}:
+  /api/v1/messaging/mail_message_schedules/{id}:
     parameters:
       - $ref: '#/components/parameters/IdParam'
 
@@ -9341,7 +9341,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/v1/mail_message_schedules/bulk:
+  /api/v1/messaging/mail_message_schedules/bulk:
     post:
       tags:
         - MailMessageSchedules
@@ -9433,7 +9433,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_message_schedules/upsert:
+  /api/v1/messaging/mail_message_schedules/upsert:
     post:
       tags:
         - MailMessageSchedules
@@ -9463,7 +9463,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/MailMessageSchedule'
 
-  /api/v1/mail_message_schedules/trash:
+  /api/v1/messaging/mail_message_schedules/trash:
     get:
       tags:
         - MailMessageSchedules
@@ -9480,7 +9480,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/MailMessageScheduleList'
 
-  /api/v1/mail_message_schedules/{id}/restore:
+  /api/v1/messaging/mail_message_schedules/{id}/restore:
     parameters:
       - $ref: '#/components/parameters/IdParam'
     post:
@@ -9498,7 +9498,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/v1/mail_message_schedules/empty:
+  /api/v1/messaging/mail_message_schedules/empty:
     delete:
       tags:
         - MailMessageSchedules
@@ -9515,7 +9515,7 @@ paths:
                   deleted_count:
                     type: integer
 
-  /api/v1/mail_message_schedules/delete/bulk:
+  /api/v1/messaging/mail_message_schedules/delete/bulk:
     post:
       tags:
         - MailMessageSchedules
@@ -9535,7 +9535,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_message_schedules/restore/bulk:
+  /api/v1/messaging/mail_message_schedules/restore/bulk:
     post:
       tags:
         - MailMessageSchedules
@@ -9553,7 +9553,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_message_schedules/restore/all:
+  /api/v1/messaging/mail_message_schedules/restore/all:
     post:
       tags:
         - MailMessageSchedules
@@ -9569,7 +9569,7 @@ paths:
                 properties:
                   restored: { type: integer }
 
-  /api/v1/mail_message_schedules/trash/bulk:
+  /api/v1/messaging/mail_message_schedules/trash/bulk:
     delete:
       tags:
         - MailMessageSchedules
@@ -9589,7 +9589,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_scheduled_messages:
+  /api/v1/messaging/mail_scheduled_messages:
     get:
       tags:
         - MailScheduledMessages
@@ -9635,7 +9635,7 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
 
-  /api/v1/mail_scheduled_messages/{id}:
+  /api/v1/messaging/mail_scheduled_messages/{id}:
     parameters:
       - $ref: '#/components/parameters/IdParam'
 
@@ -9707,7 +9707,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/v1/mail_scheduled_messages/bulk:
+  /api/v1/messaging/mail_scheduled_messages/bulk:
     post:
       tags:
         - MailScheduledMessages
@@ -9799,7 +9799,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_scheduled_messages/upsert:
+  /api/v1/messaging/mail_scheduled_messages/upsert:
     post:
       tags:
         - MailScheduledMessages
@@ -9829,7 +9829,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/MailScheduledMessage'
 
-  /api/v1/mail_scheduled_messages/trash:
+  /api/v1/messaging/mail_scheduled_messages/trash:
     get:
       tags:
         - MailScheduledMessages
@@ -9846,7 +9846,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/MailScheduledMessageList'
 
-  /api/v1/mail_scheduled_messages/{id}/restore:
+  /api/v1/messaging/mail_scheduled_messages/{id}/restore:
     parameters:
       - $ref: '#/components/parameters/IdParam'
     post:
@@ -9864,7 +9864,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/v1/mail_scheduled_messages/empty:
+  /api/v1/messaging/mail_scheduled_messages/empty:
     delete:
       tags:
         - MailScheduledMessages
@@ -9881,7 +9881,7 @@ paths:
                   deleted_count:
                     type: integer
 
-  /api/v1/mail_scheduled_messages/delete/bulk:
+  /api/v1/messaging/mail_scheduled_messages/delete/bulk:
     post:
       tags:
         - MailScheduledMessages
@@ -9901,7 +9901,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_scheduled_messages/restore/bulk:
+  /api/v1/messaging/mail_scheduled_messages/restore/bulk:
     post:
       tags:
         - MailScheduledMessages
@@ -9919,7 +9919,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/mail_scheduled_messages/restore/all:
+  /api/v1/messaging/mail_scheduled_messages/restore/all:
     post:
       tags:
         - MailScheduledMessages
@@ -9935,7 +9935,7 @@ paths:
                 properties:
                   restored: { type: integer }
 
-  /api/v1/mail_scheduled_messages/trash/bulk:
+  /api/v1/messaging/mail_scheduled_messages/trash/bulk:
     delete:
       tags:
         - MailScheduledMessages
@@ -9955,7 +9955,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/smses:
+  /api/v1/messaging/smses:
     get:
       tags:
         - Smses
@@ -10001,7 +10001,7 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
 
-  /api/v1/smses/{id}:
+  /api/v1/messaging/smses/{id}:
     parameters:
       - $ref: '#/components/parameters/IdParam'
 
@@ -10073,7 +10073,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/v1/smses/bulk:
+  /api/v1/messaging/smses/bulk:
     post:
       tags:
         - Smses
@@ -10165,7 +10165,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/smses/upsert:
+  /api/v1/messaging/smses/upsert:
     post:
       tags:
         - Smses
@@ -10195,7 +10195,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Sms'
 
-  /api/v1/smses/trash:
+  /api/v1/messaging/smses/trash:
     get:
       tags:
         - Smses
@@ -10212,7 +10212,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/SmsList'
 
-  /api/v1/smses/{id}/restore:
+  /api/v1/messaging/smses/{id}/restore:
     parameters:
       - $ref: '#/components/parameters/IdParam'
     post:
@@ -10230,7 +10230,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/v1/smses/empty:
+  /api/v1/messaging/smses/empty:
     delete:
       tags:
         - Smses
@@ -10247,7 +10247,7 @@ paths:
                   deleted_count:
                     type: integer
 
-  /api/v1/smses/delete/bulk:
+  /api/v1/messaging/smses/delete/bulk:
     post:
       tags:
         - Smses
@@ -10267,7 +10267,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/smses/restore/bulk:
+  /api/v1/messaging/smses/restore/bulk:
     post:
       tags:
         - Smses
@@ -10285,7 +10285,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/smses/restore/all:
+  /api/v1/messaging/smses/restore/all:
     post:
       tags:
         - Smses
@@ -10301,7 +10301,7 @@ paths:
                 properties:
                   restored: { type: integer }
 
-  /api/v1/smses/trash/bulk:
+  /api/v1/messaging/smses/trash/bulk:
     delete:
       tags:
         - Smses
@@ -10321,7 +10321,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/sms_templates:
+  /api/v1/messaging/sms_templates:
     get:
       tags:
         - SmsTemplates
@@ -10367,7 +10367,7 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
 
-  /api/v1/sms_templates/{id}:
+  /api/v1/messaging/sms_templates/{id}:
     parameters:
       - $ref: '#/components/parameters/IdParam'
 
@@ -10439,7 +10439,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/v1/sms_templates/bulk:
+  /api/v1/messaging/sms_templates/bulk:
     post:
       tags:
         - SmsTemplates
@@ -10531,7 +10531,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/sms_templates/upsert:
+  /api/v1/messaging/sms_templates/upsert:
     post:
       tags:
         - SmsTemplates
@@ -10561,7 +10561,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/SmsTemplate'
 
-  /api/v1/sms_templates/trash:
+  /api/v1/messaging/sms_templates/trash:
     get:
       tags:
         - SmsTemplates
@@ -10578,7 +10578,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/SmsTemplateList'
 
-  /api/v1/sms_templates/{id}/restore:
+  /api/v1/messaging/sms_templates/{id}/restore:
     parameters:
       - $ref: '#/components/parameters/IdParam'
     post:
@@ -10596,7 +10596,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/v1/sms_templates/empty:
+  /api/v1/messaging/sms_templates/empty:
     delete:
       tags:
         - SmsTemplates
@@ -10613,7 +10613,7 @@ paths:
                   deleted_count:
                     type: integer
 
-  /api/v1/sms_templates/delete/bulk:
+  /api/v1/messaging/sms_templates/delete/bulk:
     post:
       tags:
         - SmsTemplates
@@ -10633,7 +10633,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/sms_templates/restore/bulk:
+  /api/v1/messaging/sms_templates/restore/bulk:
     post:
       tags:
         - SmsTemplates
@@ -10651,7 +10651,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/sms_templates/restore/all:
+  /api/v1/messaging/sms_templates/restore/all:
     post:
       tags:
         - SmsTemplates
@@ -10667,7 +10667,7 @@ paths:
                 properties:
                   restored: { type: integer }
 
-  /api/v1/sms_templates/trash/bulk:
+  /api/v1/messaging/sms_templates/trash/bulk:
     delete:
       tags:
         - SmsTemplates
@@ -10687,7 +10687,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/sms_trackers:
+  /api/v1/messaging/sms_trackers:
     get:
       tags:
         - SmsTrackers
@@ -10733,7 +10733,7 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
 
-  /api/v1/sms_trackers/{id}:
+  /api/v1/messaging/sms_trackers/{id}:
     parameters:
       - $ref: '#/components/parameters/IdParam'
 
@@ -10805,7 +10805,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/v1/sms_trackers/bulk:
+  /api/v1/messaging/sms_trackers/bulk:
     post:
       tags:
         - SmsTrackers
@@ -10897,7 +10897,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/sms_trackers/upsert:
+  /api/v1/messaging/sms_trackers/upsert:
     post:
       tags:
         - SmsTrackers
@@ -10927,7 +10927,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/SmsTracker'
 
-  /api/v1/sms_trackers/trash:
+  /api/v1/messaging/sms_trackers/trash:
     get:
       tags:
         - SmsTrackers
@@ -10944,7 +10944,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/SmsTrackerList'
 
-  /api/v1/sms_trackers/{id}/restore:
+  /api/v1/messaging/sms_trackers/{id}/restore:
     parameters:
       - $ref: '#/components/parameters/IdParam'
     post:
@@ -10962,7 +10962,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/v1/sms_trackers/empty:
+  /api/v1/messaging/sms_trackers/empty:
     delete:
       tags:
         - SmsTrackers
@@ -10979,7 +10979,7 @@ paths:
                   deleted_count:
                     type: integer
 
-  /api/v1/sms_trackers/delete/bulk:
+  /api/v1/messaging/sms_trackers/delete/bulk:
     post:
       tags:
         - SmsTrackers
@@ -10999,7 +10999,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/sms_trackers/restore/bulk:
+  /api/v1/messaging/sms_trackers/restore/bulk:
     post:
       tags:
         - SmsTrackers
@@ -11017,7 +11017,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
-  /api/v1/sms_trackers/restore/all:
+  /api/v1/messaging/sms_trackers/restore/all:
     post:
       tags:
         - SmsTrackers
@@ -11033,7 +11033,7 @@ paths:
                 properties:
                   restored: { type: integer }
 
-  /api/v1/sms_trackers/trash/bulk:
+  /api/v1/messaging/sms_trackers/trash/bulk:
     delete:
       tags:
         - SmsTrackers

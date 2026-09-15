@@ -11,6 +11,15 @@
 # Add your hand-authored services, handlers, tests, and docs below as you write them.
 
 user_owned:
+  # Hand-written files the audit found undeclared; declared so a schema
+  # regeneration cannot delete them.
+  - "src/infrastructure/persistence/reaction_repository.rs"
+  - "src/infrastructure/persistence/presence_repository.rs"
+  - "src/infrastructure/persistence/message_edit_repository.rs"
+  - "src/infrastructure/persistence/gc_repository.rs"
+  - "src/infrastructure/persistence/attachment_repository.rs"
+  - "src/infrastructure/persistence/guest_repository.rs"
+
   # Hand-authored behavior (services + their HTTP surface). Examples:
   # - "src/application/service/onboarding_service.rs"
   # - "src/presentation/http/guarded_routes.rs"
