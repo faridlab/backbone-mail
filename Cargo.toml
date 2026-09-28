@@ -1,6 +1,6 @@
 [package]
 name = "backbone-mail"
-version = "0.2.28"
+version = "0.2.29"
 edition = "2021"
 description = "Odoo mail core port — message/notification/followers/activity/alias/sms queue (schema: messaging)"
 
