@@ -248,6 +248,7 @@ impl backbone_orm::EntityRepoMeta for MailPresence {
         m.insert("user_id".to_string(), "uuid".to_string());
         m.insert("guest_id".to_string(), "uuid".to_string());
         m.insert("status".to_string(), "mail_presence_status".to_string());
+        m.insert("last_poll".to_string(), "timestamptz".to_string());
         m
     }
     fn search_fields() -> &'static [&'static str] {

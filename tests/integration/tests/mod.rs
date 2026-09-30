@@ -38,7 +38,6 @@ pub mod sms_template_api_test;
 pub mod sms_tracker_api_test;
 
 // Re-exports for convenience
-pub use crud_test_base::*;
 pub use mail_activity_api_test::*;
 pub use mail_activity_type_api_test::*;
 pub use mail_activity_plan_api_test::*;

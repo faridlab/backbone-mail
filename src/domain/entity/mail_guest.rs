@@ -217,6 +217,7 @@ impl backbone_orm::EntityRepoMeta for MailGuest {
         let mut m = std::collections::HashMap::new();
         m.insert("id".to_string(), "uuid".to_string());
         m.insert("country_id".to_string(), "uuid".to_string());
+        m.insert("last_connection_dt".to_string(), "timestamptz".to_string());
         m
     }
     fn search_fields() -> &'static [&'static str] {

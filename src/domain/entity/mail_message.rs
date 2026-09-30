@@ -377,6 +377,8 @@ impl backbone_orm::EntityRepoMeta for MailMessage {
         m.insert("res_id".to_string(), "uuid".to_string());
         m.insert("message_type".to_string(), "mail_message_type".to_string());
         m.insert("moderation_status".to_string(), "mail_moderation_status".to_string());
+        m.insert("date".to_string(), "timestamptz".to_string());
+        m.insert("pinned_at".to_string(), "timestamptz".to_string());
         m
     }
     fn search_fields() -> &'static [&'static str] {

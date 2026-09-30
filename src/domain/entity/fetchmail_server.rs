@@ -256,6 +256,8 @@ impl backbone_orm::EntityRepoMeta for FetchmailServer {
         let mut m = std::collections::HashMap::new();
         m.insert("id".to_string(), "uuid".to_string());
         m.insert("state".to_string(), "fetchmail_state".to_string());
+        m.insert("last_fetch_at".to_string(), "timestamptz".to_string());
+        m.insert("error_at".to_string(), "timestamptz".to_string());
         m
     }
     fn search_fields() -> &'static [&'static str] {

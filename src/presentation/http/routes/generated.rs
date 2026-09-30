@@ -10,7 +10,7 @@ use std::sync::Arc;
 
 use super::{
     mail_activity_handler::create_mail_activity_routes,
-    mail_activity_type_handler::create_mail_activity_type_routes,
+    mail_activity_type_handler::create_mail_activity_type_read_routes,
     mail_activity_plan_handler::create_mail_activity_plan_routes,
     mail_activity_plan_template_handler::create_mail_activity_plan_template_routes,
     mail_alias_domain_handler::create_mail_alias_domain_routes,
@@ -18,27 +18,27 @@ use super::{
     mail_attachment_handler::create_mail_attachment_routes,
     mail_message_attachment_handler::create_mail_message_attachment_routes,
     mail_message_star_handler::create_mail_message_star_routes,
-    mail_message_handler::create_mail_message_routes,
-    mail_handler::create_mail_routes,
-    mail_notification_handler::create_mail_notification_routes,
+    mail_message_handler::create_mail_message_read_routes,
+    mail_handler::create_mail_read_routes,
+    mail_notification_handler::create_mail_notification_read_routes,
     mail_message_subtype_handler::create_mail_message_subtype_routes,
     mail_message_reaction_handler::create_mail_message_reaction_routes,
     mail_followers_handler::create_mail_followers_routes,
-    mail_presence_handler::create_mail_presence_routes,
+    mail_presence_handler::create_mail_presence_read_routes,
     mail_blacklist_handler::create_mail_blacklist_routes,
     mail_tracking_value_handler::create_mail_tracking_value_routes,
-    discuss_channel_handler::create_discuss_channel_routes,
+    discuss_channel_handler::create_discuss_channel_read_routes,
     discuss_channel_member_handler::create_discuss_channel_member_routes,
     mail_guest_handler::create_mail_guest_routes,
     mail_server_handler::create_mail_server_routes,
-    fetchmail_server_handler::create_fetchmail_server_routes,
+    fetchmail_server_handler::create_fetchmail_server_read_routes,
     mail_gateway_allowed_handler::create_mail_gateway_allowed_routes,
     phone_blacklist_handler::create_phone_blacklist_routes,
     mail_message_schedule_handler::create_mail_message_schedule_routes,
     mail_scheduled_message_handler::create_mail_scheduled_message_routes,
-    sms_handler::create_sms_routes,
+    sms_handler::create_sms_read_routes,
     sms_template_handler::create_sms_template_routes,
-    sms_tracker_handler::create_sms_tracker_routes,
+    sms_tracker_handler::create_sms_tracker_read_routes,
 };
 
 use crate::application::service::{
@@ -127,8 +127,8 @@ pub fn configure_routes(services: HttpServices) -> Router {
     Router::new()
         // MailActivity routes (12 Backbone endpoints)
         .merge(create_mail_activity_routes(services.mail_activity))
-        // MailActivityType routes (12 Backbone endpoints)
-        .merge(create_mail_activity_type_routes(services.mail_activity_type))
+        // MailActivityType routes (READ-ONLY mount — hand_set lifecycle; the state field moves only through the module's validated verbs)
+        .merge(create_mail_activity_type_read_routes(services.mail_activity_type))
         // MailActivityPlan routes (12 Backbone endpoints)
         .merge(create_mail_activity_plan_routes(services.mail_activity_plan))
         // MailActivityPlanTemplate routes (12 Backbone endpoints)
@@ -143,34 +143,34 @@ pub fn configure_routes(services: HttpServices) -> Router {
         .merge(create_mail_message_attachment_routes(services.mail_message_attachment))
         // MailMessageStar routes (12 Backbone endpoints)
         .merge(create_mail_message_star_routes(services.mail_message_star))
-        // MailMessage routes (12 Backbone endpoints)
-        .merge(create_mail_message_routes(services.mail_message))
-        // Mail routes (12 Backbone endpoints)
-        .merge(create_mail_routes(services.mail))
-        // MailNotification routes (12 Backbone endpoints)
-        .merge(create_mail_notification_routes(services.mail_notification))
+        // MailMessage routes (READ-ONLY mount — hand_set lifecycle; the state field moves only through the module's validated verbs)
+        .merge(create_mail_message_read_routes(services.mail_message))
+        // Mail routes (READ-ONLY mount — hand_set lifecycle; the state field moves only through the module's validated verbs)
+        .merge(create_mail_read_routes(services.mail))
+        // MailNotification routes (READ-ONLY mount — hand_set lifecycle; the state field moves only through the module's validated verbs)
+        .merge(create_mail_notification_read_routes(services.mail_notification))
         // MailMessageSubtype routes (12 Backbone endpoints)
         .merge(create_mail_message_subtype_routes(services.mail_message_subtype))
         // MailMessageReaction routes (12 Backbone endpoints)
         .merge(create_mail_message_reaction_routes(services.mail_message_reaction))
         // MailFollowers routes (12 Backbone endpoints)
         .merge(create_mail_followers_routes(services.mail_followers))
-        // MailPresence routes (12 Backbone endpoints)
-        .merge(create_mail_presence_routes(services.mail_presence))
+        // MailPresence routes (READ-ONLY mount — hand_set lifecycle; the state field moves only through the module's validated verbs)
+        .merge(create_mail_presence_read_routes(services.mail_presence))
         // MailBlacklist routes (12 Backbone endpoints)
         .merge(create_mail_blacklist_routes(services.mail_blacklist))
         // MailTrackingValue routes (12 Backbone endpoints)
         .merge(create_mail_tracking_value_routes(services.mail_tracking_value))
-        // DiscussChannel routes (12 Backbone endpoints)
-        .merge(create_discuss_channel_routes(services.discuss_channel))
+        // DiscussChannel routes (READ-ONLY mount — hand_set lifecycle; the state field moves only through the module's validated verbs)
+        .merge(create_discuss_channel_read_routes(services.discuss_channel))
         // DiscussChannelMember routes (12 Backbone endpoints)
         .merge(create_discuss_channel_member_routes(services.discuss_channel_member))
         // MailGuest routes (12 Backbone endpoints)
         .merge(create_mail_guest_routes(services.mail_guest))
         // MailServer routes (12 Backbone endpoints)
         .merge(create_mail_server_routes(services.mail_server))
-        // FetchmailServer routes (12 Backbone endpoints)
-        .merge(create_fetchmail_server_routes(services.fetchmail_server))
+        // FetchmailServer routes (READ-ONLY mount — hand_set lifecycle; the state field moves only through the module's validated verbs)
+        .merge(create_fetchmail_server_read_routes(services.fetchmail_server))
         // MailGatewayAllowed routes (12 Backbone endpoints)
         .merge(create_mail_gateway_allowed_routes(services.mail_gateway_allowed))
         // PhoneBlacklist routes (12 Backbone endpoints)
@@ -179,12 +179,12 @@ pub fn configure_routes(services: HttpServices) -> Router {
         .merge(create_mail_message_schedule_routes(services.mail_message_schedule))
         // MailScheduledMessage routes (12 Backbone endpoints)
         .merge(create_mail_scheduled_message_routes(services.mail_scheduled_message))
-        // Sms routes (12 Backbone endpoints)
-        .merge(create_sms_routes(services.sms))
+        // Sms routes (READ-ONLY mount — hand_set lifecycle; the state field moves only through the module's validated verbs)
+        .merge(create_sms_read_routes(services.sms))
         // SmsTemplate routes (12 Backbone endpoints)
         .merge(create_sms_template_routes(services.sms_template))
-        // SmsTracker routes (12 Backbone endpoints)
-        .merge(create_sms_tracker_routes(services.sms_tracker))
+        // SmsTracker routes (READ-ONLY mount — hand_set lifecycle; the state field moves only through the module's validated verbs)
+        .merge(create_sms_tracker_read_routes(services.sms_tracker))
 }
 
 /// Create an individual entity's routes (for modular configuration)
@@ -196,7 +196,7 @@ pub mod individual {
     }
 
     pub fn mail_activity_type_routes(service: Arc<MailActivityTypeService>) -> Router {
-        create_mail_activity_type_routes(service)
+        create_mail_activity_type_read_routes(service)
     }
 
     pub fn mail_activity_plan_routes(service: Arc<MailActivityPlanService>) -> Router {
@@ -228,15 +228,15 @@ pub mod individual {
     }
 
     pub fn mail_message_routes(service: Arc<MailMessageService>) -> Router {
-        create_mail_message_routes(service)
+        create_mail_message_read_routes(service)
     }
 
     pub fn mail_routes(service: Arc<MailService>) -> Router {
-        create_mail_routes(service)
+        create_mail_read_routes(service)
     }
 
     pub fn mail_notification_routes(service: Arc<MailNotificationService>) -> Router {
-        create_mail_notification_routes(service)
+        create_mail_notification_read_routes(service)
     }
 
     pub fn mail_message_subtype_routes(service: Arc<MailMessageSubtypeService>) -> Router {
@@ -252,7 +252,7 @@ pub mod individual {
     }
 
     pub fn mail_presence_routes(service: Arc<MailPresenceService>) -> Router {
-        create_mail_presence_routes(service)
+        create_mail_presence_read_routes(service)
     }
 
     pub fn mail_blacklist_routes(service: Arc<MailBlacklistService>) -> Router {
@@ -264,7 +264,7 @@ pub mod individual {
     }
 
     pub fn discuss_channel_routes(service: Arc<DiscussChannelService>) -> Router {
-        create_discuss_channel_routes(service)
+        create_discuss_channel_read_routes(service)
     }
 
     pub fn discuss_channel_member_routes(service: Arc<DiscussChannelMemberService>) -> Router {
@@ -280,7 +280,7 @@ pub mod individual {
     }
 
     pub fn fetchmail_server_routes(service: Arc<FetchmailServerService>) -> Router {
-        create_fetchmail_server_routes(service)
+        create_fetchmail_server_read_routes(service)
     }
 
     pub fn mail_gateway_allowed_routes(service: Arc<MailGatewayAllowedService>) -> Router {
@@ -300,7 +300,7 @@ pub mod individual {
     }
 
     pub fn sms_routes(service: Arc<SmsService>) -> Router {
-        create_sms_routes(service)
+        create_sms_read_routes(service)
     }
 
     pub fn sms_template_routes(service: Arc<SmsTemplateService>) -> Router {
@@ -308,7 +308,7 @@ pub mod individual {
     }
 
     pub fn sms_tracker_routes(service: Arc<SmsTrackerService>) -> Router {
-        create_sms_tracker_routes(service)
+        create_sms_tracker_read_routes(service)
     }
 
 }

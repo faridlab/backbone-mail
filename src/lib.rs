@@ -200,7 +200,7 @@ impl MessagingModule {
     pub fn all_crud_routes(&self) -> Router {
         use presentation::http::{
             create_mail_activity_routes,
-            create_mail_activity_type_routes,
+            create_mail_activity_type_read_routes,
             create_mail_activity_plan_routes,
             create_mail_activity_plan_template_routes,
             create_mail_alias_domain_routes,
@@ -208,32 +208,35 @@ impl MessagingModule {
             create_mail_attachment_routes,
             create_mail_message_attachment_routes,
             create_mail_message_star_routes,
-            create_mail_message_routes,
-            create_mail_routes,
-            create_mail_notification_routes,
+            create_mail_message_read_routes,
+            create_mail_read_routes,
+            create_mail_notification_read_routes,
             create_mail_message_subtype_routes,
             create_mail_message_reaction_routes,
             create_mail_followers_routes,
-            create_mail_presence_routes,
+            create_mail_presence_read_routes,
             create_mail_blacklist_routes,
             create_mail_tracking_value_routes,
-            create_discuss_channel_routes,
+            create_discuss_channel_read_routes,
             create_discuss_channel_member_routes,
             create_mail_guest_routes,
             create_mail_server_routes,
-            create_fetchmail_server_routes,
+            create_fetchmail_server_read_routes,
             create_mail_gateway_allowed_routes,
             create_phone_blacklist_routes,
             create_mail_message_schedule_routes,
             create_mail_scheduled_message_routes,
-            create_sms_routes,
+            create_sms_read_routes,
             create_sms_template_routes,
-            create_sms_tracker_routes,
+            create_sms_tracker_read_routes,
         };
 
         Router::new()
             .merge(create_mail_activity_routes(self.mail_activity_service.clone()))
-            .merge(create_mail_activity_type_routes(self.mail_activity_type_service.clone()))
+            // MailActivityType: hand_set lifecycle — the state field moves only through the
+            // module's validated verbs; generic writes cannot reach it, so only the
+            // read surface mounts here.
+            .merge(create_mail_activity_type_read_routes(self.mail_activity_type_service.clone()))
             .merge(create_mail_activity_plan_routes(self.mail_activity_plan_service.clone()))
             .merge(create_mail_activity_plan_template_routes(self.mail_activity_plan_template_service.clone()))
             .merge(create_mail_alias_domain_routes(self.mail_alias_domain_service.clone()))
@@ -241,27 +244,51 @@ impl MessagingModule {
             .merge(create_mail_attachment_routes(self.mail_attachment_service.clone()))
             .merge(create_mail_message_attachment_routes(self.mail_message_attachment_service.clone()))
             .merge(create_mail_message_star_routes(self.mail_message_star_service.clone()))
-            .merge(create_mail_message_routes(self.mail_message_service.clone()))
-            .merge(create_mail_routes(self.mail_service.clone()))
-            .merge(create_mail_notification_routes(self.mail_notification_service.clone()))
+            // MailMessage: hand_set lifecycle — the state field moves only through the
+            // module's validated verbs; generic writes cannot reach it, so only the
+            // read surface mounts here.
+            .merge(create_mail_message_read_routes(self.mail_message_service.clone()))
+            // Mail: hand_set lifecycle — the state field moves only through the
+            // module's validated verbs; generic writes cannot reach it, so only the
+            // read surface mounts here.
+            .merge(create_mail_read_routes(self.mail_service.clone()))
+            // MailNotification: hand_set lifecycle — the state field moves only through the
+            // module's validated verbs; generic writes cannot reach it, so only the
+            // read surface mounts here.
+            .merge(create_mail_notification_read_routes(self.mail_notification_service.clone()))
             .merge(create_mail_message_subtype_routes(self.mail_message_subtype_service.clone()))
             .merge(create_mail_message_reaction_routes(self.mail_message_reaction_service.clone()))
             .merge(create_mail_followers_routes(self.mail_followers_service.clone()))
-            .merge(create_mail_presence_routes(self.mail_presence_service.clone()))
+            // MailPresence: hand_set lifecycle — the state field moves only through the
+            // module's validated verbs; generic writes cannot reach it, so only the
+            // read surface mounts here.
+            .merge(create_mail_presence_read_routes(self.mail_presence_service.clone()))
             .merge(create_mail_blacklist_routes(self.mail_blacklist_service.clone()))
             .merge(create_mail_tracking_value_routes(self.mail_tracking_value_service.clone()))
-            .merge(create_discuss_channel_routes(self.discuss_channel_service.clone()))
+            // DiscussChannel: hand_set lifecycle — the state field moves only through the
+            // module's validated verbs; generic writes cannot reach it, so only the
+            // read surface mounts here.
+            .merge(create_discuss_channel_read_routes(self.discuss_channel_service.clone()))
             .merge(create_discuss_channel_member_routes(self.discuss_channel_member_service.clone()))
             .merge(create_mail_guest_routes(self.mail_guest_service.clone()))
             .merge(create_mail_server_routes(self.mail_server_service.clone()))
-            .merge(create_fetchmail_server_routes(self.fetchmail_server_service.clone()))
+            // FetchmailServer: hand_set lifecycle — the state field moves only through the
+            // module's validated verbs; generic writes cannot reach it, so only the
+            // read surface mounts here.
+            .merge(create_fetchmail_server_read_routes(self.fetchmail_server_service.clone()))
             .merge(create_mail_gateway_allowed_routes(self.mail_gateway_allowed_service.clone()))
             .merge(create_phone_blacklist_routes(self.phone_blacklist_service.clone()))
             .merge(create_mail_message_schedule_routes(self.mail_message_schedule_service.clone()))
             .merge(create_mail_scheduled_message_routes(self.mail_scheduled_message_service.clone()))
-            .merge(create_sms_routes(self.sms_service.clone()))
+            // Sms: hand_set lifecycle — the state field moves only through the
+            // module's validated verbs; generic writes cannot reach it, so only the
+            // read surface mounts here.
+            .merge(create_sms_read_routes(self.sms_service.clone()))
             .merge(create_sms_template_routes(self.sms_template_service.clone()))
-            .merge(create_sms_tracker_routes(self.sms_tracker_service.clone()))
+            // SmsTracker: hand_set lifecycle — the state field moves only through the
+            // module's validated verbs; generic writes cannot reach it, so only the
+            // read surface mounts here.
+            .merge(create_sms_tracker_read_routes(self.sms_tracker_service.clone()))
     }
 
     /// Deprecated alias for [`Self::all_crud_routes`]. `routes()` reads like

@@ -317,6 +317,8 @@ impl backbone_orm::EntityRepoMeta for MailTrackingValue {
         m.insert("id".to_string(), "uuid".to_string());
         m.insert("mail_message_id".to_string(), "uuid".to_string());
         m.insert("currency_id".to_string(), "uuid".to_string());
+        m.insert("old_value_datetime".to_string(), "timestamptz".to_string());
+        m.insert("new_value_datetime".to_string(), "timestamptz".to_string());
         m
     }
     fn search_fields() -> &'static [&'static str] {

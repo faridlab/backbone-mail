@@ -305,6 +305,7 @@ impl backbone_orm::EntityRepoMeta for MailActivity {
         m.insert("requested_user_id".to_string(), "uuid".to_string());
         m.insert("calendar_event_id".to_string(), "uuid".to_string());
         m.insert("state".to_string(), "mail_activity_state".to_string());
+        m.insert("date_deadline".to_string(), "date".to_string());
         m
     }
     fn search_fields() -> &'static [&'static str] {

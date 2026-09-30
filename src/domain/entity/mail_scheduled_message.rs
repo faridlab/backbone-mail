@@ -271,6 +271,7 @@ impl backbone_orm::EntityRepoMeta for MailScheduledMessage {
         m.insert("id".to_string(), "uuid".to_string());
         m.insert("res_id".to_string(), "uuid".to_string());
         m.insert("author_party_id".to_string(), "uuid".to_string());
+        m.insert("scheduled_date".to_string(), "timestamptz".to_string());
         m
     }
     fn search_fields() -> &'static [&'static str] {

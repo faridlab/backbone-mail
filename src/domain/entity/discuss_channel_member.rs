@@ -340,6 +340,10 @@ impl backbone_orm::EntityRepoMeta for DiscussChannelMember {
         m.insert("seen_message_id".to_string(), "uuid".to_string());
         m.insert("fold_state".to_string(), "sidebar_fold_state".to_string());
         m.insert("custom_notifications".to_string(), "member_custom_notifications".to_string());
+        m.insert("mute_until_dt".to_string(), "timestamptz".to_string());
+        m.insert("unpin_dt".to_string(), "timestamptz".to_string());
+        m.insert("last_seen_dt".to_string(), "timestamptz".to_string());
+        m.insert("last_interest_dt".to_string(), "timestamptz".to_string());
         m
     }
     fn search_fields() -> &'static [&'static str] {

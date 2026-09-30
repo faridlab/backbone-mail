@@ -292,6 +292,7 @@ impl backbone_orm::EntityRepoMeta for Mail {
         m.insert("mail_message_id".to_string(), "uuid".to_string());
         m.insert("state".to_string(), "mail_state".to_string());
         m.insert("failure_type".to_string(), "mail_failure_type".to_string());
+        m.insert("scheduled_date".to_string(), "timestamptz".to_string());
         m
     }
     fn search_fields() -> &'static [&'static str] {

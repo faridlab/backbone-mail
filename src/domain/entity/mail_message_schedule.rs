@@ -206,6 +206,7 @@ impl backbone_orm::EntityRepoMeta for MailMessageSchedule {
         let mut m = std::collections::HashMap::new();
         m.insert("id".to_string(), "uuid".to_string());
         m.insert("mail_message_id".to_string(), "uuid".to_string());
+        m.insert("scheduled_datetime".to_string(), "timestamptz".to_string());
         m
     }
     fn search_fields() -> &'static [&'static str] {
