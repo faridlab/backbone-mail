@@ -257,6 +257,9 @@ impl super::Entity for Mail {
 }
 
 impl backbone_core::PersistentEntity for Mail {
+    fn write_protected_fields() -> &'static [&'static str] {
+        &["state"]
+    }
     fn entity_id(&self) -> String {
         self.id.to_string()
     }

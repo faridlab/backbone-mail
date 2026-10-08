@@ -257,6 +257,9 @@ impl super::Entity for DiscussChannel {
 }
 
 impl backbone_core::PersistentEntity for DiscussChannel {
+    fn write_protected_fields() -> &'static [&'static str] {
+        &["channel_type"]
+    }
     fn entity_id(&self) -> String {
         self.id.to_string()
     }

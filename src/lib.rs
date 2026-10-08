@@ -24,6 +24,21 @@ pub mod application;
 pub mod presentation;
 pub mod seeders;
 pub mod exports;
+// <<< CUSTOM MODULES
+use crate::application::service::{
+    ActivityWriteService, AliasWriteService, AttachmentWriteService, ChannelMemberWriteService,
+    ChannelQueryService, ChannelWriteService, FollowerWriteService, GuestWriteService,
+    MailBlacklistWriteService, MailQueueWriteService, MessageEditService, MessageQueryService,
+    MessageWriteService, PhoneBlacklistWriteService, PhoneBookPort, PhoneBookSlot,
+    PhoneValidationService, PresenceWriteService, ReactionWriteService, RecipientQueryService,
+    ScheduleWriteService, SmsStatusWebhookService, SmsWriteService, StaticThreadAccess,
+    ThreadAclSlot, ThreadAccessResolver, ThreadChatterService, TypingService,
+};
+
+/// The realtime surface (SSE session proofs; tailer + stream land in Stage 4).
+/// Declared inside the CUSTOM block so regeneration preserves it.
+pub mod realtime;
+// END CUSTOM
 
 // Re-exports for convenience - Domain entities
 pub use domain::entity::*;
@@ -73,21 +88,6 @@ use std::sync::Arc;
 use axum::Router;
 use sqlx::PgPool;
 
-// <<< CUSTOM
-use crate::application::service::{
-    ActivityWriteService, AliasWriteService, AttachmentWriteService, ChannelMemberWriteService,
-    ChannelQueryService, ChannelWriteService, FollowerWriteService, GuestWriteService,
-    MailBlacklistWriteService, MailQueueWriteService, MessageEditService, MessageQueryService,
-    MessageWriteService, PhoneBlacklistWriteService, PhoneBookPort, PhoneBookSlot,
-    PhoneValidationService, PresenceWriteService, ReactionWriteService, RecipientQueryService,
-    ScheduleWriteService, SmsStatusWebhookService, SmsWriteService, StaticThreadAccess,
-    ThreadAclSlot, ThreadAccessResolver, ThreadChatterService, TypingService,
-};
-
-/// The realtime surface (SSE session proofs; tailer + stream land in Stage 4).
-/// Declared inside the CUSTOM block so regeneration preserves it.
-pub mod realtime;
-// END CUSTOM
 /// Messaging module configuration
 ///
 /// Use the builder pattern to configure and register this module:
@@ -474,6 +474,8 @@ impl MessagingModule {
 /// Builder for MessagingModule
 pub struct MessagingModuleBuilder {
     db_pool: Option<PgPool>,
+    // <<< CUSTOM BUILDER FIELDS
+    // END CUSTOM
 }
 
 impl MessagingModuleBuilder {
@@ -481,6 +483,8 @@ impl MessagingModuleBuilder {
     pub fn new() -> Self {
         Self {
             db_pool: None,
+            // <<< CUSTOM BUILDER DEFAULTS
+            // END CUSTOM
         }
     }
 

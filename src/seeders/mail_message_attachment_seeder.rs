@@ -36,7 +36,7 @@ impl Seeder for SeedMailMessageAttachmentSeeder {
     }
 
     fn order(&self) -> i32 {
-        8
+        19
     }
 
     async fn should_run(&self, pool: &PgPool) -> Result<bool> {

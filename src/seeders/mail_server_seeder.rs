@@ -36,7 +36,7 @@ impl Seeder for SeedMailServerSeeder {
     }
 
     fn order(&self) -> i32 {
-        21
+        11
     }
 
     async fn should_run(&self, pool: &PgPool) -> Result<bool> {

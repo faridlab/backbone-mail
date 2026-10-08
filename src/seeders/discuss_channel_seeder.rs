@@ -36,7 +36,7 @@ impl Seeder for SeedDiscussChannelSeeder {
     }
 
     fn order(&self) -> i32 {
-        18
+        25
     }
 
     async fn should_run(&self, pool: &PgPool) -> Result<bool> {

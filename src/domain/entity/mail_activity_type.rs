@@ -291,6 +291,9 @@ impl super::Entity for MailActivityType {
 }
 
 impl backbone_core::PersistentEntity for MailActivityType {
+    fn write_protected_fields() -> &'static [&'static str] {
+        &["chaining_type"]
+    }
     fn entity_id(&self) -> String {
         self.id.to_string()
     }
