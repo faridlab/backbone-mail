@@ -22,6 +22,6 @@ pub type MailActivityTypeTriggerHandlerObj =
 
 /// Create a default registry pre-populated with all handlers for MailActivityType.
 pub fn mail_activity_type_trigger_registry() -> MailActivityTypeTriggerRegistry {
-    TriggerRegistry::build(|r| {
+    TriggerRegistry::build(|_r| {
     })
 }

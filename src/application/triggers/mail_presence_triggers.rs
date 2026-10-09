@@ -22,6 +22,6 @@ pub type MailPresenceTriggerHandlerObj =
 
 /// Create a default registry pre-populated with all handlers for MailPresence.
 pub fn mail_presence_trigger_registry() -> MailPresenceTriggerRegistry {
-    TriggerRegistry::build(|r| {
+    TriggerRegistry::build(|_r| {
     })
 }

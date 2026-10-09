@@ -22,6 +22,6 @@ pub type MailNotificationTriggerHandlerObj =
 
 /// Create a default registry pre-populated with all handlers for MailNotification.
 pub fn mail_notification_trigger_registry() -> MailNotificationTriggerRegistry {
-    TriggerRegistry::build(|r| {
+    TriggerRegistry::build(|_r| {
     })
 }

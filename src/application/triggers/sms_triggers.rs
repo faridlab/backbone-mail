@@ -22,6 +22,6 @@ pub type SmsTriggerHandlerObj =
 
 /// Create a default registry pre-populated with all handlers for Sms.
 pub fn sms_trigger_registry() -> SmsTriggerRegistry {
-    TriggerRegistry::build(|r| {
+    TriggerRegistry::build(|_r| {
     })
 }

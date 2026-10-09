@@ -20,6 +20,6 @@ pub type MailBlacklistTriggerHandlerObj =
 
 /// Create a default registry pre-populated with all handlers for MailBlacklist.
 pub fn mail_blacklist_trigger_registry() -> MailBlacklistTriggerRegistry {
-    TriggerRegistry::build(|r| {
+    TriggerRegistry::build(|_r| {
     })
 }

@@ -20,6 +20,6 @@ pub type SmsTrackerTriggerHandlerObj =
 
 /// Create a default registry pre-populated with all handlers for SmsTracker.
 pub fn sms_tracker_trigger_registry() -> SmsTrackerTriggerRegistry {
-    TriggerRegistry::build(|r| {
+    TriggerRegistry::build(|_r| {
     })
 }

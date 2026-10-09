@@ -22,6 +22,6 @@ pub type MailTriggerHandlerObj =
 
 /// Create a default registry pre-populated with all handlers for Mail.
 pub fn mail_trigger_registry() -> MailTriggerRegistry {
-    TriggerRegistry::build(|r| {
+    TriggerRegistry::build(|_r| {
     })
 }

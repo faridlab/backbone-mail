@@ -20,6 +20,6 @@ pub type MailFollowersTriggerHandlerObj =
 
 /// Create a default registry pre-populated with all handlers for MailFollowers.
 pub fn mail_followers_trigger_registry() -> MailFollowersTriggerRegistry {
-    TriggerRegistry::build(|r| {
+    TriggerRegistry::build(|_r| {
     })
 }

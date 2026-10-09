@@ -20,6 +20,6 @@ pub type DiscussChannelTriggerHandlerObj =
 
 /// Create a default registry pre-populated with all handlers for DiscussChannel.
 pub fn discuss_channel_trigger_registry() -> DiscussChannelTriggerRegistry {
-    TriggerRegistry::build(|r| {
+    TriggerRegistry::build(|_r| {
     })
 }
