@@ -234,6 +234,9 @@ impl super::Entity for MailAttachment {
 }
 
 impl backbone_core::PersistentEntity for MailAttachment {
+    fn write_protected_fields() -> &'static [&'static str] {
+        &["access_token"]
+    }
     fn entity_id(&self) -> String {
         self.id.to_string()
     }
@@ -272,6 +275,9 @@ impl backbone_orm::EntityRepoMeta for MailAttachment {
     }
     fn search_fields() -> &'static [&'static str] {
         &["name"]
+    }
+    fn secret_fields() -> &'static [&'static str] {
+        &["accessToken"]
     }
 }
 

@@ -73,8 +73,6 @@ pub struct UpdateMailAttachmentDto {
     pub datas: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub checksum: Option<String>,
-    #[serde(default, skip_serializing_if = "Option::is_none", alias = "access_token")]
-    pub access_token: Option<Uuid>,
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "owner_party_id")]
     pub owner_party_id: Option<Uuid>,
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "owner_guest_id")]
@@ -105,8 +103,6 @@ pub struct PatchMailAttachmentDto {
     pub datas: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub checksum: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "access_token")]
-    pub access_token: Option<Uuid>,
     #[serde(skip_serializing_if = "Option::is_none", alias = "owner_party_id")]
     pub owner_party_id: Option<Uuid>,
     #[serde(skip_serializing_if = "Option::is_none", alias = "owner_guest_id")]
@@ -116,7 +112,7 @@ pub struct PatchMailAttachmentDto {
 impl PatchMailAttachmentDto {
     /// Check if any field is set
     pub fn has_changes(&self) -> bool {
-        self.name.is_some() || self.mimetype.is_some() || self.size.is_some() || self.datas.is_some() || self.checksum.is_some() || self.access_token.is_some() || self.owner_party_id.is_some() || self.owner_guest_id.is_some()
+        self.name.is_some() || self.mimetype.is_some() || self.size.is_some() || self.datas.is_some() || self.checksum.is_some() || self.owner_party_id.is_some() || self.owner_guest_id.is_some()
     }
 }
 
@@ -287,7 +283,6 @@ impl backbone_core::ApplyUpdateDto<UpdateMailAttachmentDto> for MailAttachment {
         self.size = dto.size;
         self.datas = dto.datas;
         self.checksum = dto.checksum;
-        self.access_token = dto.access_token;
         self.owner_party_id = dto.owner_party_id;
         self.owner_guest_id = dto.owner_guest_id;
         Ok(self)

@@ -49,7 +49,7 @@ models:
         description: "Content digest for dedup/integrity."
       access_token:
         type: uuid?
-        attributes: ["@unique"]
+        attributes: ["@unique", "@sensitive", "@immutable"]
         description: "Public access token (uuid; minted on demand). Authorization is consteq at the service layer — possession of the token IS the grant (Odoo semantics), but the comparison never leaks timing."
       owner_party_id:
         type: uuid?

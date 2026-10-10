@@ -264,7 +264,10 @@ impl backbone_orm::EntityRepoMeta for FetchmailServer {
         m
     }
     fn search_fields() -> &'static [&'static str] {
-        &["name", "token_hash"]
+        &["name"]
+    }
+    fn secret_fields() -> &'static [&'static str] {
+        &["tokenHash"]
     }
 }
 

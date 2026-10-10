@@ -119,7 +119,7 @@ models:
         description: "Processing priority (kept for parity; webhook mode routes per-server, no polling order)."
       token_hash:
         type: string
-        attributes: ["@required", "@indexed"]
+        attributes: ["@required", "@indexed", "@sensitive"]
         description: "SHA-256 hex of the inbound bearer token. The PLAINTEXT IS NEVER STORED — the route hashes the presented token and consteq's (deliberate ADR-0024 deviation, port-notes §8: per-row tokens don't fit env refs, and a hash beats Odoo's plaintext column)."
       last_fetch_at:
         type: datetime?
