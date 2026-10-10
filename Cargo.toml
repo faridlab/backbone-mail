@@ -1,6 +1,6 @@
 [package]
 name = "backbone-mail"
-version = "0.3.1"
+version = "0.4.0"
 edition = "2021"
 description = "Odoo mail core port — message/notification/followers/activity/alias/sms queue (schema: messaging)"
 license = "MIT OR Apache-2.0"
@@ -20,8 +20,8 @@ path = "src/lib.rs"
 # or `rev = "<commit-sha>"`. Cargo dedupes the git fetch — the repo is only
 # cloned once even though four crates reference it.
 # -----------------------------------------------------------------------------
-backbone-core = { version = "3.0.0", features = ["postgres"] }
-backbone-orm = { version = "3.0.0" }
+backbone-core = { version = "3.1.0", features = ["postgres"] }
+backbone-orm = { version = "3.1.0" }
 backbone-auth = { version = "3.0.0" }
 backbone-messaging = { version = "3.0.0" }
 # ADR-0017 carrier. Deliberately WITHOUT the `multi_tenant` feature: this module
