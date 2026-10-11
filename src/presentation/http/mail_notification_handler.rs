@@ -15,7 +15,6 @@ use uuid::Uuid;
 use backbone_core::http::{ApiResponse, BackboneCrudHandler};
 
 // Auth integration (optional)
-#[cfg(feature = "auth")]
 use backbone_auth::middleware::AuthContext;
 #[cfg(feature = "auth")]
 use backbone_auth::AuthMiddleware;
@@ -207,7 +206,7 @@ pub fn create_protected_mail_notification_routes<A: AuthMiddleware + Send + Sync
 pub async fn dispatch_started_transition(
     axum::extract::State(service): axum::extract::State<Arc<MailNotificationService>>,
     axum::extract::Path(id): axum::extract::Path<String>,
-    #[cfg(feature = "auth")] axum::Extension(auth): axum::Extension<AuthContext>,
+    auth: Option<axum::Extension<AuthContext>>,
 ) -> impl axum::response::IntoResponse {
     use axum::{http::StatusCode, Json};
 
@@ -218,8 +217,10 @@ pub async fn dispatch_started_transition(
         Err(e) => return (StatusCode::INTERNAL_SERVER_ERROR, Json(ApiResponse::<MailNotificationResponseDto>::error(e.to_string()))),
     };
 
-    // Check permission (if auth enabled)
-    #[cfg(feature = "auth")]
+    // Check permission
+    let Some(axum::Extension(auth)) = auth else {
+        return (StatusCode::UNAUTHORIZED, Json(ApiResponse::<MailNotificationResponseDto>::error("A transition needs an authenticated caller")));
+    };
     {
         let allowed_roles = MailNotificationHooksTransition::DispatchStarted.allowed_roles();
         let has_specific_perm = auth.permissions.iter().any(|p| p == "mail_notification:transition:dispatch_started");
@@ -263,7 +264,7 @@ pub async fn dispatch_started_transition(
 pub async fn smtp_accepted_transition(
     axum::extract::State(service): axum::extract::State<Arc<MailNotificationService>>,
     axum::extract::Path(id): axum::extract::Path<String>,
-    #[cfg(feature = "auth")] axum::Extension(auth): axum::Extension<AuthContext>,
+    auth: Option<axum::Extension<AuthContext>>,
 ) -> impl axum::response::IntoResponse {
     use axum::{http::StatusCode, Json};
 
@@ -274,8 +275,10 @@ pub async fn smtp_accepted_transition(
         Err(e) => return (StatusCode::INTERNAL_SERVER_ERROR, Json(ApiResponse::<MailNotificationResponseDto>::error(e.to_string()))),
     };
 
-    // Check permission (if auth enabled)
-    #[cfg(feature = "auth")]
+    // Check permission
+    let Some(axum::Extension(auth)) = auth else {
+        return (StatusCode::UNAUTHORIZED, Json(ApiResponse::<MailNotificationResponseDto>::error("A transition needs an authenticated caller")));
+    };
     {
         let allowed_roles = MailNotificationHooksTransition::SmtpAccepted.allowed_roles();
         let has_specific_perm = auth.permissions.iter().any(|p| p == "mail_notification:transition:smtp_accepted");
@@ -319,7 +322,7 @@ pub async fn smtp_accepted_transition(
 pub async fn delivery_confirmed_transition(
     axum::extract::State(service): axum::extract::State<Arc<MailNotificationService>>,
     axum::extract::Path(id): axum::extract::Path<String>,
-    #[cfg(feature = "auth")] axum::Extension(auth): axum::Extension<AuthContext>,
+    auth: Option<axum::Extension<AuthContext>>,
 ) -> impl axum::response::IntoResponse {
     use axum::{http::StatusCode, Json};
 
@@ -330,8 +333,10 @@ pub async fn delivery_confirmed_transition(
         Err(e) => return (StatusCode::INTERNAL_SERVER_ERROR, Json(ApiResponse::<MailNotificationResponseDto>::error(e.to_string()))),
     };
 
-    // Check permission (if auth enabled)
-    #[cfg(feature = "auth")]
+    // Check permission
+    let Some(axum::Extension(auth)) = auth else {
+        return (StatusCode::UNAUTHORIZED, Json(ApiResponse::<MailNotificationResponseDto>::error("A transition needs an authenticated caller")));
+    };
     {
         let allowed_roles = MailNotificationHooksTransition::DeliveryConfirmed.allowed_roles();
         let has_specific_perm = auth.permissions.iter().any(|p| p == "mail_notification:transition:delivery_confirmed");
@@ -375,7 +380,7 @@ pub async fn delivery_confirmed_transition(
 pub async fn instant_delivered_transition(
     axum::extract::State(service): axum::extract::State<Arc<MailNotificationService>>,
     axum::extract::Path(id): axum::extract::Path<String>,
-    #[cfg(feature = "auth")] axum::Extension(auth): axum::Extension<AuthContext>,
+    auth: Option<axum::Extension<AuthContext>>,
 ) -> impl axum::response::IntoResponse {
     use axum::{http::StatusCode, Json};
 
@@ -386,8 +391,10 @@ pub async fn instant_delivered_transition(
         Err(e) => return (StatusCode::INTERNAL_SERVER_ERROR, Json(ApiResponse::<MailNotificationResponseDto>::error(e.to_string()))),
     };
 
-    // Check permission (if auth enabled)
-    #[cfg(feature = "auth")]
+    // Check permission
+    let Some(axum::Extension(auth)) = auth else {
+        return (StatusCode::UNAUTHORIZED, Json(ApiResponse::<MailNotificationResponseDto>::error("A transition needs an authenticated caller")));
+    };
     {
         let allowed_roles = MailNotificationHooksTransition::InstantDelivered.allowed_roles();
         let has_specific_perm = auth.permissions.iter().any(|p| p == "mail_notification:transition:instant_delivered");
@@ -431,7 +438,7 @@ pub async fn instant_delivered_transition(
 pub async fn bounced_transition(
     axum::extract::State(service): axum::extract::State<Arc<MailNotificationService>>,
     axum::extract::Path(id): axum::extract::Path<String>,
-    #[cfg(feature = "auth")] axum::Extension(auth): axum::Extension<AuthContext>,
+    auth: Option<axum::Extension<AuthContext>>,
 ) -> impl axum::response::IntoResponse {
     use axum::{http::StatusCode, Json};
 
@@ -442,8 +449,10 @@ pub async fn bounced_transition(
         Err(e) => return (StatusCode::INTERNAL_SERVER_ERROR, Json(ApiResponse::<MailNotificationResponseDto>::error(e.to_string()))),
     };
 
-    // Check permission (if auth enabled)
-    #[cfg(feature = "auth")]
+    // Check permission
+    let Some(axum::Extension(auth)) = auth else {
+        return (StatusCode::UNAUTHORIZED, Json(ApiResponse::<MailNotificationResponseDto>::error("A transition needs an authenticated caller")));
+    };
     {
         let allowed_roles = MailNotificationHooksTransition::Bounced.allowed_roles();
         let has_specific_perm = auth.permissions.iter().any(|p| p == "mail_notification:transition:bounced");
@@ -487,7 +496,7 @@ pub async fn bounced_transition(
 pub async fn send_failed_transition(
     axum::extract::State(service): axum::extract::State<Arc<MailNotificationService>>,
     axum::extract::Path(id): axum::extract::Path<String>,
-    #[cfg(feature = "auth")] axum::Extension(auth): axum::Extension<AuthContext>,
+    auth: Option<axum::Extension<AuthContext>>,
 ) -> impl axum::response::IntoResponse {
     use axum::{http::StatusCode, Json};
 
@@ -498,8 +507,10 @@ pub async fn send_failed_transition(
         Err(e) => return (StatusCode::INTERNAL_SERVER_ERROR, Json(ApiResponse::<MailNotificationResponseDto>::error(e.to_string()))),
     };
 
-    // Check permission (if auth enabled)
-    #[cfg(feature = "auth")]
+    // Check permission
+    let Some(axum::Extension(auth)) = auth else {
+        return (StatusCode::UNAUTHORIZED, Json(ApiResponse::<MailNotificationResponseDto>::error("A transition needs an authenticated caller")));
+    };
     {
         let allowed_roles = MailNotificationHooksTransition::SendFailed.allowed_roles();
         let has_specific_perm = auth.permissions.iter().any(|p| p == "mail_notification:transition:send_failed");
@@ -543,7 +554,7 @@ pub async fn send_failed_transition(
 pub async fn canceled_transition(
     axum::extract::State(service): axum::extract::State<Arc<MailNotificationService>>,
     axum::extract::Path(id): axum::extract::Path<String>,
-    #[cfg(feature = "auth")] axum::Extension(auth): axum::Extension<AuthContext>,
+    auth: Option<axum::Extension<AuthContext>>,
 ) -> impl axum::response::IntoResponse {
     use axum::{http::StatusCode, Json};
 
@@ -554,8 +565,10 @@ pub async fn canceled_transition(
         Err(e) => return (StatusCode::INTERNAL_SERVER_ERROR, Json(ApiResponse::<MailNotificationResponseDto>::error(e.to_string()))),
     };
 
-    // Check permission (if auth enabled)
-    #[cfg(feature = "auth")]
+    // Check permission
+    let Some(axum::Extension(auth)) = auth else {
+        return (StatusCode::UNAUTHORIZED, Json(ApiResponse::<MailNotificationResponseDto>::error("A transition needs an authenticated caller")));
+    };
     {
         let allowed_roles = MailNotificationHooksTransition::Canceled.allowed_roles();
         let has_specific_perm = auth.permissions.iter().any(|p| p == "mail_notification:transition:canceled");

@@ -16,7 +16,6 @@ use chrono::{DateTime, Utc};
 use backbone_core::http::{ApiResponse, BackboneCrudHandler};
 
 // Auth integration (optional)
-#[cfg(feature = "auth")]
 use backbone_auth::middleware::AuthContext;
 #[cfg(feature = "auth")]
 use backbone_auth::AuthMiddleware;
@@ -199,7 +198,7 @@ pub fn create_protected_mail_routes<A: AuthMiddleware + Send + Sync + 'static>(
 pub async fn smtp_accepted_transition(
     axum::extract::State(service): axum::extract::State<Arc<MailService>>,
     axum::extract::Path(id): axum::extract::Path<String>,
-    #[cfg(feature = "auth")] axum::Extension(auth): axum::Extension<AuthContext>,
+    auth: Option<axum::Extension<AuthContext>>,
 ) -> impl axum::response::IntoResponse {
     use axum::{http::StatusCode, Json};
 
@@ -210,8 +209,10 @@ pub async fn smtp_accepted_transition(
         Err(e) => return (StatusCode::INTERNAL_SERVER_ERROR, Json(ApiResponse::<MailResponseDto>::error(e.to_string()))),
     };
 
-    // Check permission (if auth enabled)
-    #[cfg(feature = "auth")]
+    // Check permission
+    let Some(axum::Extension(auth)) = auth else {
+        return (StatusCode::UNAUTHORIZED, Json(ApiResponse::<MailResponseDto>::error("A transition needs an authenticated caller")));
+    };
     {
         let allowed_roles = MailHooksTransition::SmtpAccepted.allowed_roles();
         let has_specific_perm = auth.permissions.iter().any(|p| p == "mail:transition:smtp_accepted");
@@ -255,7 +256,7 @@ pub async fn smtp_accepted_transition(
 pub async fn smtp_failed_transition(
     axum::extract::State(service): axum::extract::State<Arc<MailService>>,
     axum::extract::Path(id): axum::extract::Path<String>,
-    #[cfg(feature = "auth")] axum::Extension(auth): axum::Extension<AuthContext>,
+    auth: Option<axum::Extension<AuthContext>>,
 ) -> impl axum::response::IntoResponse {
     use axum::{http::StatusCode, Json};
 
@@ -266,8 +267,10 @@ pub async fn smtp_failed_transition(
         Err(e) => return (StatusCode::INTERNAL_SERVER_ERROR, Json(ApiResponse::<MailResponseDto>::error(e.to_string()))),
     };
 
-    // Check permission (if auth enabled)
-    #[cfg(feature = "auth")]
+    // Check permission
+    let Some(axum::Extension(auth)) = auth else {
+        return (StatusCode::UNAUTHORIZED, Json(ApiResponse::<MailResponseDto>::error("A transition needs an authenticated caller")));
+    };
     {
         let allowed_roles = MailHooksTransition::SmtpFailed.allowed_roles();
         let has_specific_perm = auth.permissions.iter().any(|p| p == "mail:transition:smtp_failed");
@@ -311,7 +314,7 @@ pub async fn smtp_failed_transition(
 pub async fn inbound_acknowledged_transition(
     axum::extract::State(service): axum::extract::State<Arc<MailService>>,
     axum::extract::Path(id): axum::extract::Path<String>,
-    #[cfg(feature = "auth")] axum::Extension(auth): axum::Extension<AuthContext>,
+    auth: Option<axum::Extension<AuthContext>>,
 ) -> impl axum::response::IntoResponse {
     use axum::{http::StatusCode, Json};
 
@@ -322,8 +325,10 @@ pub async fn inbound_acknowledged_transition(
         Err(e) => return (StatusCode::INTERNAL_SERVER_ERROR, Json(ApiResponse::<MailResponseDto>::error(e.to_string()))),
     };
 
-    // Check permission (if auth enabled)
-    #[cfg(feature = "auth")]
+    // Check permission
+    let Some(axum::Extension(auth)) = auth else {
+        return (StatusCode::UNAUTHORIZED, Json(ApiResponse::<MailResponseDto>::error("A transition needs an authenticated caller")));
+    };
     {
         let allowed_roles = MailHooksTransition::InboundAcknowledged.allowed_roles();
         let has_specific_perm = auth.permissions.iter().any(|p| p == "mail:transition:inbound_acknowledged");
@@ -367,7 +372,7 @@ pub async fn inbound_acknowledged_transition(
 pub async fn requeued_transition(
     axum::extract::State(service): axum::extract::State<Arc<MailService>>,
     axum::extract::Path(id): axum::extract::Path<String>,
-    #[cfg(feature = "auth")] axum::Extension(auth): axum::Extension<AuthContext>,
+    auth: Option<axum::Extension<AuthContext>>,
 ) -> impl axum::response::IntoResponse {
     use axum::{http::StatusCode, Json};
 
@@ -378,8 +383,10 @@ pub async fn requeued_transition(
         Err(e) => return (StatusCode::INTERNAL_SERVER_ERROR, Json(ApiResponse::<MailResponseDto>::error(e.to_string()))),
     };
 
-    // Check permission (if auth enabled)
-    #[cfg(feature = "auth")]
+    // Check permission
+    let Some(axum::Extension(auth)) = auth else {
+        return (StatusCode::UNAUTHORIZED, Json(ApiResponse::<MailResponseDto>::error("A transition needs an authenticated caller")));
+    };
     {
         let allowed_roles = MailHooksTransition::Requeued.allowed_roles();
         let has_specific_perm = auth.permissions.iter().any(|p| p == "mail:transition:requeued");
@@ -423,7 +430,7 @@ pub async fn requeued_transition(
 pub async fn cancelled_transition(
     axum::extract::State(service): axum::extract::State<Arc<MailService>>,
     axum::extract::Path(id): axum::extract::Path<String>,
-    #[cfg(feature = "auth")] axum::Extension(auth): axum::Extension<AuthContext>,
+    auth: Option<axum::Extension<AuthContext>>,
 ) -> impl axum::response::IntoResponse {
     use axum::{http::StatusCode, Json};
 
@@ -434,8 +441,10 @@ pub async fn cancelled_transition(
         Err(e) => return (StatusCode::INTERNAL_SERVER_ERROR, Json(ApiResponse::<MailResponseDto>::error(e.to_string()))),
     };
 
-    // Check permission (if auth enabled)
-    #[cfg(feature = "auth")]
+    // Check permission
+    let Some(axum::Extension(auth)) = auth else {
+        return (StatusCode::UNAUTHORIZED, Json(ApiResponse::<MailResponseDto>::error("A transition needs an authenticated caller")));
+    };
     {
         let allowed_roles = MailHooksTransition::Cancelled.allowed_roles();
         let has_specific_perm = auth.permissions.iter().any(|p| p == "mail:transition:cancelled");
