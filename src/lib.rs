@@ -396,6 +396,14 @@ impl MessagingModule {
             .merge(create_sms_tracker_read_routes(self.sms_tracker_service.clone()))
     }
 
+    /// The generated state-machine verbs (`POST /<entities>/:id/transitions/<verb>`) of the
+    /// entities whose machines declare `verbs: generated`: the only way their states move,
+    /// since a generic write changing a state field is a rule break.
+    pub fn transition_routes(&self) -> Router {
+        Router::new()
+            .merge(presentation::http::mail_activity_type_handler::create_mail_activity_type_transition_routes(self.mail_activity_type_service.clone()))
+    }
+
 }
 
 /// Builder for MessagingModule
@@ -445,7 +453,7 @@ impl MessagingModuleBuilder {
 
         // MailActivityType service
         let mail_activity_type_repository = Arc::new(MailActivityTypeRepository::new(db_pool.clone()));
-        let mail_activity_type_service = Arc::new(MailActivityTypeService::with_repository(mail_activity_type_repository.clone()));
+        let mail_activity_type_service = Arc::new(MailActivityTypeService::with_repository(mail_activity_type_repository.clone()).with_guard(Arc::new(crate::application::service::MailActivityTypeRowRules)));
 
         // MailActivityPlan service
         let mail_activity_plan_repository = Arc::new(MailActivityPlanRepository::new(db_pool.clone()));
@@ -481,11 +489,11 @@ impl MessagingModuleBuilder {
 
         // Mail service
         let mail_repository = Arc::new(MailRepository::new(db_pool.clone()));
-        let mail_service = Arc::new(MailService::with_repository(mail_repository.clone()));
+        let mail_service = Arc::new(MailService::with_repository(mail_repository.clone()).with_guard(Arc::new(crate::application::service::MailRowRules)));
 
         // MailNotification service
         let mail_notification_repository = Arc::new(MailNotificationRepository::new(db_pool.clone()));
-        let mail_notification_service = Arc::new(MailNotificationService::with_repository(mail_notification_repository.clone()));
+        let mail_notification_service = Arc::new(MailNotificationService::with_repository(mail_notification_repository.clone()).with_guard(Arc::new(crate::application::service::MailNotificationRowRules)));
 
         // MailMessageSubtype service
         let mail_message_subtype_repository = Arc::new(MailMessageSubtypeRepository::new(db_pool.clone()));
@@ -501,7 +509,7 @@ impl MessagingModuleBuilder {
 
         // MailPresence service
         let mail_presence_repository = Arc::new(MailPresenceRepository::new(db_pool.clone()));
-        let mail_presence_service = Arc::new(MailPresenceService::with_repository(mail_presence_repository.clone()));
+        let mail_presence_service = Arc::new(MailPresenceService::with_repository(mail_presence_repository.clone()).with_guard(Arc::new(crate::application::service::MailPresenceRowRules)));
 
         // MailBlacklist service
         let mail_blacklist_repository = Arc::new(MailBlacklistRepository::new(db_pool.clone()));
@@ -549,7 +557,7 @@ impl MessagingModuleBuilder {
 
         // Sms service
         let sms_repository = Arc::new(SmsRepository::new(db_pool.clone()));
-        let sms_service = Arc::new(SmsService::with_repository(sms_repository.clone()));
+        let sms_service = Arc::new(SmsService::with_repository(sms_repository.clone()).with_guard(Arc::new(crate::application::service::SmsRowRules)));
 
         // SmsTemplate service
         let sms_template_repository = Arc::new(SmsTemplateRepository::new(db_pool.clone()));

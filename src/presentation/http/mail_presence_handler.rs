@@ -216,14 +216,20 @@ pub async fn go_online_transition(
         let allowed_roles = MailPresenceHooksTransition::GoOnline.allowed_roles();
         let has_specific_perm = auth.permissions.iter().any(|p| p == "mail_presence:transition:go_online");
         let has_update_perm = auth.permissions.iter().any(|p| p == "mail_presence:update");
-        if !has_specific_perm && !has_update_perm {
-            return (StatusCode::FORBIDDEN, Json(ApiResponse::<MailPresenceResponseDto>::error("Insufficient permissions for go_online transition")));
+        let _ = &allowed_roles;
+        if !has_specific_perm {
+            if !has_update_perm {
+                return (StatusCode::FORBIDDEN, Json(ApiResponse::<MailPresenceResponseDto>::error("Insufficient permissions for go_online transition")));
+            }
+            tracing::warn!(target: "backbone::write_guard", entity = "MailPresence", verb = "go_online", code = "transition_by_update_permission", "a transition granted only by mail_presence:update, running in shadow; it needs mail_presence:transition:go_online");
         }
     }
 
     // Create state machine from entity's actual status and validate transition
-    let current_state: MailPresenceHooksState = entity.status.to_string().parse()
-        .unwrap_or(MailPresenceHooksState::default());
+    let current_state: MailPresenceHooksState = match entity.status.to_string().parse() {
+        Ok(s) => s,
+        Err(_) => return (StatusCode::CONFLICT, Json(ApiResponse::<MailPresenceResponseDto>::error("The stored state is not a state of this machine"))),
+    };
     let sm = MailPresenceHooksStateMachine::from_state(current_state);
     if !sm.can_transition(MailPresenceHooksTransition::GoOnline) {
         return (StatusCode::BAD_REQUEST, Json(ApiResponse::<MailPresenceResponseDto>::error("Transition not allowed from current state")));
@@ -231,9 +237,9 @@ pub async fn go_online_transition(
 
     // Apply transition via partial update
     let mut fields: HashMap<String, serde_json::Value> = HashMap::new();
-    fields.insert("status".to_string(), serde_json::Value::String("Online".to_string()));
+    fields.insert("status".to_string(), serde_json::Value::String("online".to_string()));
 
-    match service.partial_update(&id, fields).await {
+    match backbone_core::write_guard::as_transition("go_online", service.partial_update(&id, fields)).await {
         Ok(Some(updated)) => {
             let response: MailPresenceResponseDto = updated.into();
             (StatusCode::OK, Json(ApiResponse::ok(response)))
@@ -266,14 +272,20 @@ pub async fn go_away_transition(
         let allowed_roles = MailPresenceHooksTransition::GoAway.allowed_roles();
         let has_specific_perm = auth.permissions.iter().any(|p| p == "mail_presence:transition:go_away");
         let has_update_perm = auth.permissions.iter().any(|p| p == "mail_presence:update");
-        if !has_specific_perm && !has_update_perm {
-            return (StatusCode::FORBIDDEN, Json(ApiResponse::<MailPresenceResponseDto>::error("Insufficient permissions for go_away transition")));
+        let _ = &allowed_roles;
+        if !has_specific_perm {
+            if !has_update_perm {
+                return (StatusCode::FORBIDDEN, Json(ApiResponse::<MailPresenceResponseDto>::error("Insufficient permissions for go_away transition")));
+            }
+            tracing::warn!(target: "backbone::write_guard", entity = "MailPresence", verb = "go_away", code = "transition_by_update_permission", "a transition granted only by mail_presence:update, running in shadow; it needs mail_presence:transition:go_away");
         }
     }
 
     // Create state machine from entity's actual status and validate transition
-    let current_state: MailPresenceHooksState = entity.status.to_string().parse()
-        .unwrap_or(MailPresenceHooksState::default());
+    let current_state: MailPresenceHooksState = match entity.status.to_string().parse() {
+        Ok(s) => s,
+        Err(_) => return (StatusCode::CONFLICT, Json(ApiResponse::<MailPresenceResponseDto>::error("The stored state is not a state of this machine"))),
+    };
     let sm = MailPresenceHooksStateMachine::from_state(current_state);
     if !sm.can_transition(MailPresenceHooksTransition::GoAway) {
         return (StatusCode::BAD_REQUEST, Json(ApiResponse::<MailPresenceResponseDto>::error("Transition not allowed from current state")));
@@ -281,9 +293,9 @@ pub async fn go_away_transition(
 
     // Apply transition via partial update
     let mut fields: HashMap<String, serde_json::Value> = HashMap::new();
-    fields.insert("status".to_string(), serde_json::Value::String("Away".to_string()));
+    fields.insert("status".to_string(), serde_json::Value::String("away".to_string()));
 
-    match service.partial_update(&id, fields).await {
+    match backbone_core::write_guard::as_transition("go_away", service.partial_update(&id, fields)).await {
         Ok(Some(updated)) => {
             let response: MailPresenceResponseDto = updated.into();
             (StatusCode::OK, Json(ApiResponse::ok(response)))
@@ -316,14 +328,20 @@ pub async fn go_offline_transition(
         let allowed_roles = MailPresenceHooksTransition::GoOffline.allowed_roles();
         let has_specific_perm = auth.permissions.iter().any(|p| p == "mail_presence:transition:go_offline");
         let has_update_perm = auth.permissions.iter().any(|p| p == "mail_presence:update");
-        if !has_specific_perm && !has_update_perm {
-            return (StatusCode::FORBIDDEN, Json(ApiResponse::<MailPresenceResponseDto>::error("Insufficient permissions for go_offline transition")));
+        let _ = &allowed_roles;
+        if !has_specific_perm {
+            if !has_update_perm {
+                return (StatusCode::FORBIDDEN, Json(ApiResponse::<MailPresenceResponseDto>::error("Insufficient permissions for go_offline transition")));
+            }
+            tracing::warn!(target: "backbone::write_guard", entity = "MailPresence", verb = "go_offline", code = "transition_by_update_permission", "a transition granted only by mail_presence:update, running in shadow; it needs mail_presence:transition:go_offline");
         }
     }
 
     // Create state machine from entity's actual status and validate transition
-    let current_state: MailPresenceHooksState = entity.status.to_string().parse()
-        .unwrap_or(MailPresenceHooksState::default());
+    let current_state: MailPresenceHooksState = match entity.status.to_string().parse() {
+        Ok(s) => s,
+        Err(_) => return (StatusCode::CONFLICT, Json(ApiResponse::<MailPresenceResponseDto>::error("The stored state is not a state of this machine"))),
+    };
     let sm = MailPresenceHooksStateMachine::from_state(current_state);
     if !sm.can_transition(MailPresenceHooksTransition::GoOffline) {
         return (StatusCode::BAD_REQUEST, Json(ApiResponse::<MailPresenceResponseDto>::error("Transition not allowed from current state")));
@@ -331,9 +349,9 @@ pub async fn go_offline_transition(
 
     // Apply transition via partial update
     let mut fields: HashMap<String, serde_json::Value> = HashMap::new();
-    fields.insert("status".to_string(), serde_json::Value::String("Offline".to_string()));
+    fields.insert("status".to_string(), serde_json::Value::String("offline".to_string()));
 
-    match service.partial_update(&id, fields).await {
+    match backbone_core::write_guard::as_transition("go_offline", service.partial_update(&id, fields)).await {
         Ok(Some(updated)) => {
             let response: MailPresenceResponseDto = updated.into();
             (StatusCode::OK, Json(ApiResponse::ok(response)))

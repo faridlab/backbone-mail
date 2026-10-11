@@ -15,6 +15,7 @@ model: Sms
 
 states:
   field: state
+  verbs: hand
   values:
     outgoing:
       initial: true

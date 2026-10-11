@@ -215,14 +215,20 @@ pub async fn enable_trigger_transition(
         let allowed_roles = MailActivityTypeHooksTransition::EnableTrigger.allowed_roles();
         let has_specific_perm = auth.permissions.iter().any(|p| p == "mail_activity_type:transition:enable_trigger");
         let has_update_perm = auth.permissions.iter().any(|p| p == "mail_activity_type:update");
-        if !has_specific_perm && !has_update_perm {
-            return (StatusCode::FORBIDDEN, Json(ApiResponse::<MailActivityTypeResponseDto>::error("Insufficient permissions for enable_trigger transition")));
+        let _ = &allowed_roles;
+        if !has_specific_perm {
+            if !has_update_perm {
+                return (StatusCode::FORBIDDEN, Json(ApiResponse::<MailActivityTypeResponseDto>::error("Insufficient permissions for enable_trigger transition")));
+            }
+            tracing::warn!(target: "backbone::write_guard", entity = "MailActivityType", verb = "enable_trigger", code = "transition_by_update_permission", "a transition granted only by mail_activity_type:update, running in shadow; it needs mail_activity_type:transition:enable_trigger");
         }
     }
 
     // Create state machine from entity's actual status and validate transition
-    let current_state: MailActivityTypeHooksState = entity.chaining_type.to_string().parse()
-        .unwrap_or(MailActivityTypeHooksState::default());
+    let current_state: MailActivityTypeHooksState = match entity.chaining_type.to_string().parse() {
+        Ok(s) => s,
+        Err(_) => return (StatusCode::CONFLICT, Json(ApiResponse::<MailActivityTypeResponseDto>::error("The stored state is not a state of this machine"))),
+    };
     let sm = MailActivityTypeHooksStateMachine::from_state(current_state);
     if !sm.can_transition(MailActivityTypeHooksTransition::EnableTrigger) {
         return (StatusCode::BAD_REQUEST, Json(ApiResponse::<MailActivityTypeResponseDto>::error("Transition not allowed from current state")));
@@ -230,9 +236,9 @@ pub async fn enable_trigger_transition(
 
     // Apply transition via partial update
     let mut fields: HashMap<String, serde_json::Value> = HashMap::new();
-    fields.insert("chaining_type".to_string(), serde_json::Value::String("Trigger".to_string()));
+    fields.insert("chaining_type".to_string(), serde_json::Value::String("trigger".to_string()));
 
-    match service.partial_update(&id, fields).await {
+    match backbone_core::write_guard::as_transition("enable_trigger", service.partial_update(&id, fields)).await {
         Ok(Some(updated)) => {
             let response: MailActivityTypeResponseDto = updated.into();
             (StatusCode::OK, Json(ApiResponse::ok(response)))

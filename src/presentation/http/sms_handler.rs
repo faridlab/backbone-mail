@@ -224,14 +224,20 @@ pub async fn pickup_transition(
         let allowed_roles = SmsHooksTransition::Pickup.allowed_roles();
         let has_specific_perm = auth.permissions.iter().any(|p| p == "sms:transition:pickup");
         let has_update_perm = auth.permissions.iter().any(|p| p == "sms:update");
-        if !has_specific_perm && !has_update_perm {
-            return (StatusCode::FORBIDDEN, Json(ApiResponse::<SmsResponseDto>::error("Insufficient permissions for pickup transition")));
+        let _ = &allowed_roles;
+        if !has_specific_perm {
+            if !has_update_perm {
+                return (StatusCode::FORBIDDEN, Json(ApiResponse::<SmsResponseDto>::error("Insufficient permissions for pickup transition")));
+            }
+            tracing::warn!(target: "backbone::write_guard", entity = "Sms", verb = "pickup", code = "transition_by_update_permission", "a transition granted only by sms:update, running in shadow; it needs sms:transition:pickup");
         }
     }
 
     // Create state machine from entity's actual status and validate transition
-    let current_state: SmsHooksState = entity.state.to_string().parse()
-        .unwrap_or(SmsHooksState::default());
+    let current_state: SmsHooksState = match entity.state.to_string().parse() {
+        Ok(s) => s,
+        Err(_) => return (StatusCode::CONFLICT, Json(ApiResponse::<SmsResponseDto>::error("The stored state is not a state of this machine"))),
+    };
     let sm = SmsHooksStateMachine::from_state(current_state);
     if !sm.can_transition(SmsHooksTransition::Pickup) {
         return (StatusCode::BAD_REQUEST, Json(ApiResponse::<SmsResponseDto>::error("Transition not allowed from current state")));
@@ -239,9 +245,9 @@ pub async fn pickup_transition(
 
     // Apply transition via partial update
     let mut fields: HashMap<String, serde_json::Value> = HashMap::new();
-    fields.insert("state".to_string(), serde_json::Value::String("Process".to_string()));
+    fields.insert("state".to_string(), serde_json::Value::String("process".to_string()));
 
-    match service.partial_update(&id, fields).await {
+    match backbone_core::write_guard::as_transition("pickup", service.partial_update(&id, fields)).await {
         Ok(Some(updated)) => {
             let response: SmsResponseDto = updated.into();
             (StatusCode::OK, Json(ApiResponse::ok(response)))
@@ -274,14 +280,20 @@ pub async fn iap_accepted_transition(
         let allowed_roles = SmsHooksTransition::IapAccepted.allowed_roles();
         let has_specific_perm = auth.permissions.iter().any(|p| p == "sms:transition:iap_accepted");
         let has_update_perm = auth.permissions.iter().any(|p| p == "sms:update");
-        if !has_specific_perm && !has_update_perm {
-            return (StatusCode::FORBIDDEN, Json(ApiResponse::<SmsResponseDto>::error("Insufficient permissions for iap_accepted transition")));
+        let _ = &allowed_roles;
+        if !has_specific_perm {
+            if !has_update_perm {
+                return (StatusCode::FORBIDDEN, Json(ApiResponse::<SmsResponseDto>::error("Insufficient permissions for iap_accepted transition")));
+            }
+            tracing::warn!(target: "backbone::write_guard", entity = "Sms", verb = "iap_accepted", code = "transition_by_update_permission", "a transition granted only by sms:update, running in shadow; it needs sms:transition:iap_accepted");
         }
     }
 
     // Create state machine from entity's actual status and validate transition
-    let current_state: SmsHooksState = entity.state.to_string().parse()
-        .unwrap_or(SmsHooksState::default());
+    let current_state: SmsHooksState = match entity.state.to_string().parse() {
+        Ok(s) => s,
+        Err(_) => return (StatusCode::CONFLICT, Json(ApiResponse::<SmsResponseDto>::error("The stored state is not a state of this machine"))),
+    };
     let sm = SmsHooksStateMachine::from_state(current_state);
     if !sm.can_transition(SmsHooksTransition::IapAccepted) {
         return (StatusCode::BAD_REQUEST, Json(ApiResponse::<SmsResponseDto>::error("Transition not allowed from current state")));
@@ -289,9 +301,9 @@ pub async fn iap_accepted_transition(
 
     // Apply transition via partial update
     let mut fields: HashMap<String, serde_json::Value> = HashMap::new();
-    fields.insert("state".to_string(), serde_json::Value::String("Pending".to_string()));
+    fields.insert("state".to_string(), serde_json::Value::String("pending".to_string()));
 
-    match service.partial_update(&id, fields).await {
+    match backbone_core::write_guard::as_transition("iap_accepted", service.partial_update(&id, fields)).await {
         Ok(Some(updated)) => {
             let response: SmsResponseDto = updated.into();
             (StatusCode::OK, Json(ApiResponse::ok(response)))
@@ -324,14 +336,20 @@ pub async fn delivery_confirmed_transition(
         let allowed_roles = SmsHooksTransition::DeliveryConfirmed.allowed_roles();
         let has_specific_perm = auth.permissions.iter().any(|p| p == "sms:transition:delivery_confirmed");
         let has_update_perm = auth.permissions.iter().any(|p| p == "sms:update");
-        if !has_specific_perm && !has_update_perm {
-            return (StatusCode::FORBIDDEN, Json(ApiResponse::<SmsResponseDto>::error("Insufficient permissions for delivery_confirmed transition")));
+        let _ = &allowed_roles;
+        if !has_specific_perm {
+            if !has_update_perm {
+                return (StatusCode::FORBIDDEN, Json(ApiResponse::<SmsResponseDto>::error("Insufficient permissions for delivery_confirmed transition")));
+            }
+            tracing::warn!(target: "backbone::write_guard", entity = "Sms", verb = "delivery_confirmed", code = "transition_by_update_permission", "a transition granted only by sms:update, running in shadow; it needs sms:transition:delivery_confirmed");
         }
     }
 
     // Create state machine from entity's actual status and validate transition
-    let current_state: SmsHooksState = entity.state.to_string().parse()
-        .unwrap_or(SmsHooksState::default());
+    let current_state: SmsHooksState = match entity.state.to_string().parse() {
+        Ok(s) => s,
+        Err(_) => return (StatusCode::CONFLICT, Json(ApiResponse::<SmsResponseDto>::error("The stored state is not a state of this machine"))),
+    };
     let sm = SmsHooksStateMachine::from_state(current_state);
     if !sm.can_transition(SmsHooksTransition::DeliveryConfirmed) {
         return (StatusCode::BAD_REQUEST, Json(ApiResponse::<SmsResponseDto>::error("Transition not allowed from current state")));
@@ -339,9 +357,9 @@ pub async fn delivery_confirmed_transition(
 
     // Apply transition via partial update
     let mut fields: HashMap<String, serde_json::Value> = HashMap::new();
-    fields.insert("state".to_string(), serde_json::Value::String("Sent".to_string()));
+    fields.insert("state".to_string(), serde_json::Value::String("sent".to_string()));
 
-    match service.partial_update(&id, fields).await {
+    match backbone_core::write_guard::as_transition("delivery_confirmed", service.partial_update(&id, fields)).await {
         Ok(Some(updated)) => {
             let response: SmsResponseDto = updated.into();
             (StatusCode::OK, Json(ApiResponse::ok(response)))
@@ -374,14 +392,20 @@ pub async fn send_failed_transition(
         let allowed_roles = SmsHooksTransition::SendFailed.allowed_roles();
         let has_specific_perm = auth.permissions.iter().any(|p| p == "sms:transition:send_failed");
         let has_update_perm = auth.permissions.iter().any(|p| p == "sms:update");
-        if !has_specific_perm && !has_update_perm {
-            return (StatusCode::FORBIDDEN, Json(ApiResponse::<SmsResponseDto>::error("Insufficient permissions for send_failed transition")));
+        let _ = &allowed_roles;
+        if !has_specific_perm {
+            if !has_update_perm {
+                return (StatusCode::FORBIDDEN, Json(ApiResponse::<SmsResponseDto>::error("Insufficient permissions for send_failed transition")));
+            }
+            tracing::warn!(target: "backbone::write_guard", entity = "Sms", verb = "send_failed", code = "transition_by_update_permission", "a transition granted only by sms:update, running in shadow; it needs sms:transition:send_failed");
         }
     }
 
     // Create state machine from entity's actual status and validate transition
-    let current_state: SmsHooksState = entity.state.to_string().parse()
-        .unwrap_or(SmsHooksState::default());
+    let current_state: SmsHooksState = match entity.state.to_string().parse() {
+        Ok(s) => s,
+        Err(_) => return (StatusCode::CONFLICT, Json(ApiResponse::<SmsResponseDto>::error("The stored state is not a state of this machine"))),
+    };
     let sm = SmsHooksStateMachine::from_state(current_state);
     if !sm.can_transition(SmsHooksTransition::SendFailed) {
         return (StatusCode::BAD_REQUEST, Json(ApiResponse::<SmsResponseDto>::error("Transition not allowed from current state")));
@@ -389,9 +413,9 @@ pub async fn send_failed_transition(
 
     // Apply transition via partial update
     let mut fields: HashMap<String, serde_json::Value> = HashMap::new();
-    fields.insert("state".to_string(), serde_json::Value::String("Error".to_string()));
+    fields.insert("state".to_string(), serde_json::Value::String("error".to_string()));
 
-    match service.partial_update(&id, fields).await {
+    match backbone_core::write_guard::as_transition("send_failed", service.partial_update(&id, fields)).await {
         Ok(Some(updated)) => {
             let response: SmsResponseDto = updated.into();
             (StatusCode::OK, Json(ApiResponse::ok(response)))
@@ -424,14 +448,20 @@ pub async fn canceled_transition(
         let allowed_roles = SmsHooksTransition::Canceled.allowed_roles();
         let has_specific_perm = auth.permissions.iter().any(|p| p == "sms:transition:canceled");
         let has_update_perm = auth.permissions.iter().any(|p| p == "sms:update");
-        if !has_specific_perm && !has_update_perm {
-            return (StatusCode::FORBIDDEN, Json(ApiResponse::<SmsResponseDto>::error("Insufficient permissions for canceled transition")));
+        let _ = &allowed_roles;
+        if !has_specific_perm {
+            if !has_update_perm {
+                return (StatusCode::FORBIDDEN, Json(ApiResponse::<SmsResponseDto>::error("Insufficient permissions for canceled transition")));
+            }
+            tracing::warn!(target: "backbone::write_guard", entity = "Sms", verb = "canceled", code = "transition_by_update_permission", "a transition granted only by sms:update, running in shadow; it needs sms:transition:canceled");
         }
     }
 
     // Create state machine from entity's actual status and validate transition
-    let current_state: SmsHooksState = entity.state.to_string().parse()
-        .unwrap_or(SmsHooksState::default());
+    let current_state: SmsHooksState = match entity.state.to_string().parse() {
+        Ok(s) => s,
+        Err(_) => return (StatusCode::CONFLICT, Json(ApiResponse::<SmsResponseDto>::error("The stored state is not a state of this machine"))),
+    };
     let sm = SmsHooksStateMachine::from_state(current_state);
     if !sm.can_transition(SmsHooksTransition::Canceled) {
         return (StatusCode::BAD_REQUEST, Json(ApiResponse::<SmsResponseDto>::error("Transition not allowed from current state")));
@@ -439,9 +469,9 @@ pub async fn canceled_transition(
 
     // Apply transition via partial update
     let mut fields: HashMap<String, serde_json::Value> = HashMap::new();
-    fields.insert("state".to_string(), serde_json::Value::String("Canceled".to_string()));
+    fields.insert("state".to_string(), serde_json::Value::String("canceled".to_string()));
 
-    match service.partial_update(&id, fields).await {
+    match backbone_core::write_guard::as_transition("canceled", service.partial_update(&id, fields)).await {
         Ok(Some(updated)) => {
             let response: SmsResponseDto = updated.into();
             (StatusCode::OK, Json(ApiResponse::ok(response)))

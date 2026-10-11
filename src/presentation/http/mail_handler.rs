@@ -216,14 +216,20 @@ pub async fn smtp_accepted_transition(
         let allowed_roles = MailHooksTransition::SmtpAccepted.allowed_roles();
         let has_specific_perm = auth.permissions.iter().any(|p| p == "mail:transition:smtp_accepted");
         let has_update_perm = auth.permissions.iter().any(|p| p == "mail:update");
-        if !has_specific_perm && !has_update_perm {
-            return (StatusCode::FORBIDDEN, Json(ApiResponse::<MailResponseDto>::error("Insufficient permissions for smtp_accepted transition")));
+        let _ = &allowed_roles;
+        if !has_specific_perm {
+            if !has_update_perm {
+                return (StatusCode::FORBIDDEN, Json(ApiResponse::<MailResponseDto>::error("Insufficient permissions for smtp_accepted transition")));
+            }
+            tracing::warn!(target: "backbone::write_guard", entity = "Mail", verb = "smtp_accepted", code = "transition_by_update_permission", "a transition granted only by mail:update, running in shadow; it needs mail:transition:smtp_accepted");
         }
     }
 
     // Create state machine from entity's actual status and validate transition
-    let current_state: MailHooksState = entity.state.to_string().parse()
-        .unwrap_or(MailHooksState::default());
+    let current_state: MailHooksState = match entity.state.to_string().parse() {
+        Ok(s) => s,
+        Err(_) => return (StatusCode::CONFLICT, Json(ApiResponse::<MailResponseDto>::error("The stored state is not a state of this machine"))),
+    };
     let sm = MailHooksStateMachine::from_state(current_state);
     if !sm.can_transition(MailHooksTransition::SmtpAccepted) {
         return (StatusCode::BAD_REQUEST, Json(ApiResponse::<MailResponseDto>::error("Transition not allowed from current state")));
@@ -231,9 +237,9 @@ pub async fn smtp_accepted_transition(
 
     // Apply transition via partial update
     let mut fields: HashMap<String, serde_json::Value> = HashMap::new();
-    fields.insert("state".to_string(), serde_json::Value::String("Sent".to_string()));
+    fields.insert("state".to_string(), serde_json::Value::String("sent".to_string()));
 
-    match service.partial_update(&id, fields).await {
+    match backbone_core::write_guard::as_transition("smtp_accepted", service.partial_update(&id, fields)).await {
         Ok(Some(updated)) => {
             let response: MailResponseDto = updated.into();
             (StatusCode::OK, Json(ApiResponse::ok(response)))
@@ -266,14 +272,20 @@ pub async fn smtp_failed_transition(
         let allowed_roles = MailHooksTransition::SmtpFailed.allowed_roles();
         let has_specific_perm = auth.permissions.iter().any(|p| p == "mail:transition:smtp_failed");
         let has_update_perm = auth.permissions.iter().any(|p| p == "mail:update");
-        if !has_specific_perm && !has_update_perm {
-            return (StatusCode::FORBIDDEN, Json(ApiResponse::<MailResponseDto>::error("Insufficient permissions for smtp_failed transition")));
+        let _ = &allowed_roles;
+        if !has_specific_perm {
+            if !has_update_perm {
+                return (StatusCode::FORBIDDEN, Json(ApiResponse::<MailResponseDto>::error("Insufficient permissions for smtp_failed transition")));
+            }
+            tracing::warn!(target: "backbone::write_guard", entity = "Mail", verb = "smtp_failed", code = "transition_by_update_permission", "a transition granted only by mail:update, running in shadow; it needs mail:transition:smtp_failed");
         }
     }
 
     // Create state machine from entity's actual status and validate transition
-    let current_state: MailHooksState = entity.state.to_string().parse()
-        .unwrap_or(MailHooksState::default());
+    let current_state: MailHooksState = match entity.state.to_string().parse() {
+        Ok(s) => s,
+        Err(_) => return (StatusCode::CONFLICT, Json(ApiResponse::<MailResponseDto>::error("The stored state is not a state of this machine"))),
+    };
     let sm = MailHooksStateMachine::from_state(current_state);
     if !sm.can_transition(MailHooksTransition::SmtpFailed) {
         return (StatusCode::BAD_REQUEST, Json(ApiResponse::<MailResponseDto>::error("Transition not allowed from current state")));
@@ -281,9 +293,9 @@ pub async fn smtp_failed_transition(
 
     // Apply transition via partial update
     let mut fields: HashMap<String, serde_json::Value> = HashMap::new();
-    fields.insert("state".to_string(), serde_json::Value::String("Exception".to_string()));
+    fields.insert("state".to_string(), serde_json::Value::String("exception".to_string()));
 
-    match service.partial_update(&id, fields).await {
+    match backbone_core::write_guard::as_transition("smtp_failed", service.partial_update(&id, fields)).await {
         Ok(Some(updated)) => {
             let response: MailResponseDto = updated.into();
             (StatusCode::OK, Json(ApiResponse::ok(response)))
@@ -316,14 +328,20 @@ pub async fn inbound_acknowledged_transition(
         let allowed_roles = MailHooksTransition::InboundAcknowledged.allowed_roles();
         let has_specific_perm = auth.permissions.iter().any(|p| p == "mail:transition:inbound_acknowledged");
         let has_update_perm = auth.permissions.iter().any(|p| p == "mail:update");
-        if !has_specific_perm && !has_update_perm {
-            return (StatusCode::FORBIDDEN, Json(ApiResponse::<MailResponseDto>::error("Insufficient permissions for inbound_acknowledged transition")));
+        let _ = &allowed_roles;
+        if !has_specific_perm {
+            if !has_update_perm {
+                return (StatusCode::FORBIDDEN, Json(ApiResponse::<MailResponseDto>::error("Insufficient permissions for inbound_acknowledged transition")));
+            }
+            tracing::warn!(target: "backbone::write_guard", entity = "Mail", verb = "inbound_acknowledged", code = "transition_by_update_permission", "a transition granted only by mail:update, running in shadow; it needs mail:transition:inbound_acknowledged");
         }
     }
 
     // Create state machine from entity's actual status and validate transition
-    let current_state: MailHooksState = entity.state.to_string().parse()
-        .unwrap_or(MailHooksState::default());
+    let current_state: MailHooksState = match entity.state.to_string().parse() {
+        Ok(s) => s,
+        Err(_) => return (StatusCode::CONFLICT, Json(ApiResponse::<MailResponseDto>::error("The stored state is not a state of this machine"))),
+    };
     let sm = MailHooksStateMachine::from_state(current_state);
     if !sm.can_transition(MailHooksTransition::InboundAcknowledged) {
         return (StatusCode::BAD_REQUEST, Json(ApiResponse::<MailResponseDto>::error("Transition not allowed from current state")));
@@ -331,9 +349,9 @@ pub async fn inbound_acknowledged_transition(
 
     // Apply transition via partial update
     let mut fields: HashMap<String, serde_json::Value> = HashMap::new();
-    fields.insert("state".to_string(), serde_json::Value::String("Received".to_string()));
+    fields.insert("state".to_string(), serde_json::Value::String("received".to_string()));
 
-    match service.partial_update(&id, fields).await {
+    match backbone_core::write_guard::as_transition("inbound_acknowledged", service.partial_update(&id, fields)).await {
         Ok(Some(updated)) => {
             let response: MailResponseDto = updated.into();
             (StatusCode::OK, Json(ApiResponse::ok(response)))
@@ -366,14 +384,20 @@ pub async fn requeued_transition(
         let allowed_roles = MailHooksTransition::Requeued.allowed_roles();
         let has_specific_perm = auth.permissions.iter().any(|p| p == "mail:transition:requeued");
         let has_update_perm = auth.permissions.iter().any(|p| p == "mail:update");
-        if !has_specific_perm && !has_update_perm {
-            return (StatusCode::FORBIDDEN, Json(ApiResponse::<MailResponseDto>::error("Insufficient permissions for requeued transition")));
+        let _ = &allowed_roles;
+        if !has_specific_perm {
+            if !has_update_perm {
+                return (StatusCode::FORBIDDEN, Json(ApiResponse::<MailResponseDto>::error("Insufficient permissions for requeued transition")));
+            }
+            tracing::warn!(target: "backbone::write_guard", entity = "Mail", verb = "requeued", code = "transition_by_update_permission", "a transition granted only by mail:update, running in shadow; it needs mail:transition:requeued");
         }
     }
 
     // Create state machine from entity's actual status and validate transition
-    let current_state: MailHooksState = entity.state.to_string().parse()
-        .unwrap_or(MailHooksState::default());
+    let current_state: MailHooksState = match entity.state.to_string().parse() {
+        Ok(s) => s,
+        Err(_) => return (StatusCode::CONFLICT, Json(ApiResponse::<MailResponseDto>::error("The stored state is not a state of this machine"))),
+    };
     let sm = MailHooksStateMachine::from_state(current_state);
     if !sm.can_transition(MailHooksTransition::Requeued) {
         return (StatusCode::BAD_REQUEST, Json(ApiResponse::<MailResponseDto>::error("Transition not allowed from current state")));
@@ -381,9 +405,9 @@ pub async fn requeued_transition(
 
     // Apply transition via partial update
     let mut fields: HashMap<String, serde_json::Value> = HashMap::new();
-    fields.insert("state".to_string(), serde_json::Value::String("Outgoing".to_string()));
+    fields.insert("state".to_string(), serde_json::Value::String("outgoing".to_string()));
 
-    match service.partial_update(&id, fields).await {
+    match backbone_core::write_guard::as_transition("requeued", service.partial_update(&id, fields)).await {
         Ok(Some(updated)) => {
             let response: MailResponseDto = updated.into();
             (StatusCode::OK, Json(ApiResponse::ok(response)))
@@ -416,14 +440,20 @@ pub async fn cancelled_transition(
         let allowed_roles = MailHooksTransition::Cancelled.allowed_roles();
         let has_specific_perm = auth.permissions.iter().any(|p| p == "mail:transition:cancelled");
         let has_update_perm = auth.permissions.iter().any(|p| p == "mail:update");
-        if !has_specific_perm && !has_update_perm {
-            return (StatusCode::FORBIDDEN, Json(ApiResponse::<MailResponseDto>::error("Insufficient permissions for cancelled transition")));
+        let _ = &allowed_roles;
+        if !has_specific_perm {
+            if !has_update_perm {
+                return (StatusCode::FORBIDDEN, Json(ApiResponse::<MailResponseDto>::error("Insufficient permissions for cancelled transition")));
+            }
+            tracing::warn!(target: "backbone::write_guard", entity = "Mail", verb = "cancelled", code = "transition_by_update_permission", "a transition granted only by mail:update, running in shadow; it needs mail:transition:cancelled");
         }
     }
 
     // Create state machine from entity's actual status and validate transition
-    let current_state: MailHooksState = entity.state.to_string().parse()
-        .unwrap_or(MailHooksState::default());
+    let current_state: MailHooksState = match entity.state.to_string().parse() {
+        Ok(s) => s,
+        Err(_) => return (StatusCode::CONFLICT, Json(ApiResponse::<MailResponseDto>::error("The stored state is not a state of this machine"))),
+    };
     let sm = MailHooksStateMachine::from_state(current_state);
     if !sm.can_transition(MailHooksTransition::Cancelled) {
         return (StatusCode::BAD_REQUEST, Json(ApiResponse::<MailResponseDto>::error("Transition not allowed from current state")));
@@ -431,9 +461,9 @@ pub async fn cancelled_transition(
 
     // Apply transition via partial update
     let mut fields: HashMap<String, serde_json::Value> = HashMap::new();
-    fields.insert("state".to_string(), serde_json::Value::String("Cancel".to_string()));
+    fields.insert("state".to_string(), serde_json::Value::String("cancel".to_string()));
 
-    match service.partial_update(&id, fields).await {
+    match backbone_core::write_guard::as_transition("cancelled", service.partial_update(&id, fields)).await {
         Ok(Some(updated)) => {
             let response: MailResponseDto = updated.into();
             (StatusCode::OK, Json(ApiResponse::ok(response)))

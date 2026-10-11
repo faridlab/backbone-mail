@@ -15,6 +15,7 @@ model: MailNotification
 
 states:
   field: notification_status
+  verbs: hand
   values:
     ready:
       initial: true

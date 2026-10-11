@@ -69,6 +69,11 @@ pub use mail_scheduled_message_service::MailScheduledMessageService;
 pub use sms_service::SmsService;
 pub use sms_template_service::SmsTemplateService;
 pub use sms_tracker_service::SmsTrackerService;
+pub use mail_activity_type_service::MailActivityTypeRowRules;
+pub use mail_service::MailRowRules;
+pub use mail_notification_service::MailNotificationRowRules;
+pub use mail_presence_service::MailPresenceRowRules;
+pub use sms_service::SmsRowRules;
 
 // This directory's extension (hand-written; ADR-0031).
 include!("mod.ext.rs");

@@ -11,6 +11,7 @@ model: MailActivityType
 
 states:
   field: chaining_type
+  verbs: generated
   values:
     suggest:
       initial: true
