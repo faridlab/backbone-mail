@@ -214,8 +214,13 @@ pub async fn enable_trigger_transition(
     };
     {
         let allowed_roles = MailActivityTypeHooksTransition::EnableTrigger.allowed_roles();
-        let has_specific_perm = auth.permissions.iter().any(|p| p == "mail_activity_type:transition:enable_trigger");
-        let has_update_perm = auth.permissions.iter().any(|p| p == "mail_activity_type:update");
+        let granted = |required: &str| auth.permissions.iter().any(|p| {
+            let (have, want): (Vec<&str>, Vec<&str>) = (p.split(':').collect(), required.split(':').collect());
+            have.iter().enumerate().all(|(i, h)| *h == "*" || want.get(i) == Some(h))
+                && (have.len() == want.len() || (have.len() < want.len() && have.last() == Some(&"*")))
+        });
+        let has_specific_perm = granted("mail_activity_type:transition:enable_trigger");
+        let has_update_perm = granted("mail_activity_type:update");
         let _ = &allowed_roles;
         if !has_specific_perm {
             if !has_update_perm {

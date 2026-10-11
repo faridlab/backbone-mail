@@ -223,8 +223,13 @@ pub async fn dispatch_started_transition(
     };
     {
         let allowed_roles = MailNotificationHooksTransition::DispatchStarted.allowed_roles();
-        let has_specific_perm = auth.permissions.iter().any(|p| p == "mail_notification:transition:dispatch_started");
-        let has_update_perm = auth.permissions.iter().any(|p| p == "mail_notification:update");
+        let granted = |required: &str| auth.permissions.iter().any(|p| {
+            let (have, want): (Vec<&str>, Vec<&str>) = (p.split(':').collect(), required.split(':').collect());
+            have.iter().enumerate().all(|(i, h)| *h == "*" || want.get(i) == Some(h))
+                && (have.len() == want.len() || (have.len() < want.len() && have.last() == Some(&"*")))
+        });
+        let has_specific_perm = granted("mail_notification:transition:dispatch_started");
+        let has_update_perm = granted("mail_notification:update");
         let _ = &allowed_roles;
         if !has_specific_perm {
             if !has_update_perm {
@@ -281,8 +286,13 @@ pub async fn smtp_accepted_transition(
     };
     {
         let allowed_roles = MailNotificationHooksTransition::SmtpAccepted.allowed_roles();
-        let has_specific_perm = auth.permissions.iter().any(|p| p == "mail_notification:transition:smtp_accepted");
-        let has_update_perm = auth.permissions.iter().any(|p| p == "mail_notification:update");
+        let granted = |required: &str| auth.permissions.iter().any(|p| {
+            let (have, want): (Vec<&str>, Vec<&str>) = (p.split(':').collect(), required.split(':').collect());
+            have.iter().enumerate().all(|(i, h)| *h == "*" || want.get(i) == Some(h))
+                && (have.len() == want.len() || (have.len() < want.len() && have.last() == Some(&"*")))
+        });
+        let has_specific_perm = granted("mail_notification:transition:smtp_accepted");
+        let has_update_perm = granted("mail_notification:update");
         let _ = &allowed_roles;
         if !has_specific_perm {
             if !has_update_perm {
@@ -339,8 +349,13 @@ pub async fn delivery_confirmed_transition(
     };
     {
         let allowed_roles = MailNotificationHooksTransition::DeliveryConfirmed.allowed_roles();
-        let has_specific_perm = auth.permissions.iter().any(|p| p == "mail_notification:transition:delivery_confirmed");
-        let has_update_perm = auth.permissions.iter().any(|p| p == "mail_notification:update");
+        let granted = |required: &str| auth.permissions.iter().any(|p| {
+            let (have, want): (Vec<&str>, Vec<&str>) = (p.split(':').collect(), required.split(':').collect());
+            have.iter().enumerate().all(|(i, h)| *h == "*" || want.get(i) == Some(h))
+                && (have.len() == want.len() || (have.len() < want.len() && have.last() == Some(&"*")))
+        });
+        let has_specific_perm = granted("mail_notification:transition:delivery_confirmed");
+        let has_update_perm = granted("mail_notification:update");
         let _ = &allowed_roles;
         if !has_specific_perm {
             if !has_update_perm {
@@ -397,8 +412,13 @@ pub async fn instant_delivered_transition(
     };
     {
         let allowed_roles = MailNotificationHooksTransition::InstantDelivered.allowed_roles();
-        let has_specific_perm = auth.permissions.iter().any(|p| p == "mail_notification:transition:instant_delivered");
-        let has_update_perm = auth.permissions.iter().any(|p| p == "mail_notification:update");
+        let granted = |required: &str| auth.permissions.iter().any(|p| {
+            let (have, want): (Vec<&str>, Vec<&str>) = (p.split(':').collect(), required.split(':').collect());
+            have.iter().enumerate().all(|(i, h)| *h == "*" || want.get(i) == Some(h))
+                && (have.len() == want.len() || (have.len() < want.len() && have.last() == Some(&"*")))
+        });
+        let has_specific_perm = granted("mail_notification:transition:instant_delivered");
+        let has_update_perm = granted("mail_notification:update");
         let _ = &allowed_roles;
         if !has_specific_perm {
             if !has_update_perm {
@@ -455,8 +475,13 @@ pub async fn bounced_transition(
     };
     {
         let allowed_roles = MailNotificationHooksTransition::Bounced.allowed_roles();
-        let has_specific_perm = auth.permissions.iter().any(|p| p == "mail_notification:transition:bounced");
-        let has_update_perm = auth.permissions.iter().any(|p| p == "mail_notification:update");
+        let granted = |required: &str| auth.permissions.iter().any(|p| {
+            let (have, want): (Vec<&str>, Vec<&str>) = (p.split(':').collect(), required.split(':').collect());
+            have.iter().enumerate().all(|(i, h)| *h == "*" || want.get(i) == Some(h))
+                && (have.len() == want.len() || (have.len() < want.len() && have.last() == Some(&"*")))
+        });
+        let has_specific_perm = granted("mail_notification:transition:bounced");
+        let has_update_perm = granted("mail_notification:update");
         let _ = &allowed_roles;
         if !has_specific_perm {
             if !has_update_perm {
@@ -513,8 +538,13 @@ pub async fn send_failed_transition(
     };
     {
         let allowed_roles = MailNotificationHooksTransition::SendFailed.allowed_roles();
-        let has_specific_perm = auth.permissions.iter().any(|p| p == "mail_notification:transition:send_failed");
-        let has_update_perm = auth.permissions.iter().any(|p| p == "mail_notification:update");
+        let granted = |required: &str| auth.permissions.iter().any(|p| {
+            let (have, want): (Vec<&str>, Vec<&str>) = (p.split(':').collect(), required.split(':').collect());
+            have.iter().enumerate().all(|(i, h)| *h == "*" || want.get(i) == Some(h))
+                && (have.len() == want.len() || (have.len() < want.len() && have.last() == Some(&"*")))
+        });
+        let has_specific_perm = granted("mail_notification:transition:send_failed");
+        let has_update_perm = granted("mail_notification:update");
         let _ = &allowed_roles;
         if !has_specific_perm {
             if !has_update_perm {
@@ -571,8 +601,13 @@ pub async fn canceled_transition(
     };
     {
         let allowed_roles = MailNotificationHooksTransition::Canceled.allowed_roles();
-        let has_specific_perm = auth.permissions.iter().any(|p| p == "mail_notification:transition:canceled");
-        let has_update_perm = auth.permissions.iter().any(|p| p == "mail_notification:update");
+        let granted = |required: &str| auth.permissions.iter().any(|p| {
+            let (have, want): (Vec<&str>, Vec<&str>) = (p.split(':').collect(), required.split(':').collect());
+            have.iter().enumerate().all(|(i, h)| *h == "*" || want.get(i) == Some(h))
+                && (have.len() == want.len() || (have.len() < want.len() && have.last() == Some(&"*")))
+        });
+        let has_specific_perm = granted("mail_notification:transition:canceled");
+        let has_update_perm = granted("mail_notification:update");
         let _ = &allowed_roles;
         if !has_specific_perm {
             if !has_update_perm {

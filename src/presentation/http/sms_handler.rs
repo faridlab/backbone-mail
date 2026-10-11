@@ -223,8 +223,13 @@ pub async fn pickup_transition(
     };
     {
         let allowed_roles = SmsHooksTransition::Pickup.allowed_roles();
-        let has_specific_perm = auth.permissions.iter().any(|p| p == "sms:transition:pickup");
-        let has_update_perm = auth.permissions.iter().any(|p| p == "sms:update");
+        let granted = |required: &str| auth.permissions.iter().any(|p| {
+            let (have, want): (Vec<&str>, Vec<&str>) = (p.split(':').collect(), required.split(':').collect());
+            have.iter().enumerate().all(|(i, h)| *h == "*" || want.get(i) == Some(h))
+                && (have.len() == want.len() || (have.len() < want.len() && have.last() == Some(&"*")))
+        });
+        let has_specific_perm = granted("sms:transition:pickup");
+        let has_update_perm = granted("sms:update");
         let _ = &allowed_roles;
         if !has_specific_perm {
             if !has_update_perm {
@@ -281,8 +286,13 @@ pub async fn iap_accepted_transition(
     };
     {
         let allowed_roles = SmsHooksTransition::IapAccepted.allowed_roles();
-        let has_specific_perm = auth.permissions.iter().any(|p| p == "sms:transition:iap_accepted");
-        let has_update_perm = auth.permissions.iter().any(|p| p == "sms:update");
+        let granted = |required: &str| auth.permissions.iter().any(|p| {
+            let (have, want): (Vec<&str>, Vec<&str>) = (p.split(':').collect(), required.split(':').collect());
+            have.iter().enumerate().all(|(i, h)| *h == "*" || want.get(i) == Some(h))
+                && (have.len() == want.len() || (have.len() < want.len() && have.last() == Some(&"*")))
+        });
+        let has_specific_perm = granted("sms:transition:iap_accepted");
+        let has_update_perm = granted("sms:update");
         let _ = &allowed_roles;
         if !has_specific_perm {
             if !has_update_perm {
@@ -339,8 +349,13 @@ pub async fn delivery_confirmed_transition(
     };
     {
         let allowed_roles = SmsHooksTransition::DeliveryConfirmed.allowed_roles();
-        let has_specific_perm = auth.permissions.iter().any(|p| p == "sms:transition:delivery_confirmed");
-        let has_update_perm = auth.permissions.iter().any(|p| p == "sms:update");
+        let granted = |required: &str| auth.permissions.iter().any(|p| {
+            let (have, want): (Vec<&str>, Vec<&str>) = (p.split(':').collect(), required.split(':').collect());
+            have.iter().enumerate().all(|(i, h)| *h == "*" || want.get(i) == Some(h))
+                && (have.len() == want.len() || (have.len() < want.len() && have.last() == Some(&"*")))
+        });
+        let has_specific_perm = granted("sms:transition:delivery_confirmed");
+        let has_update_perm = granted("sms:update");
         let _ = &allowed_roles;
         if !has_specific_perm {
             if !has_update_perm {
@@ -397,8 +412,13 @@ pub async fn send_failed_transition(
     };
     {
         let allowed_roles = SmsHooksTransition::SendFailed.allowed_roles();
-        let has_specific_perm = auth.permissions.iter().any(|p| p == "sms:transition:send_failed");
-        let has_update_perm = auth.permissions.iter().any(|p| p == "sms:update");
+        let granted = |required: &str| auth.permissions.iter().any(|p| {
+            let (have, want): (Vec<&str>, Vec<&str>) = (p.split(':').collect(), required.split(':').collect());
+            have.iter().enumerate().all(|(i, h)| *h == "*" || want.get(i) == Some(h))
+                && (have.len() == want.len() || (have.len() < want.len() && have.last() == Some(&"*")))
+        });
+        let has_specific_perm = granted("sms:transition:send_failed");
+        let has_update_perm = granted("sms:update");
         let _ = &allowed_roles;
         if !has_specific_perm {
             if !has_update_perm {
@@ -455,8 +475,13 @@ pub async fn canceled_transition(
     };
     {
         let allowed_roles = SmsHooksTransition::Canceled.allowed_roles();
-        let has_specific_perm = auth.permissions.iter().any(|p| p == "sms:transition:canceled");
-        let has_update_perm = auth.permissions.iter().any(|p| p == "sms:update");
+        let granted = |required: &str| auth.permissions.iter().any(|p| {
+            let (have, want): (Vec<&str>, Vec<&str>) = (p.split(':').collect(), required.split(':').collect());
+            have.iter().enumerate().all(|(i, h)| *h == "*" || want.get(i) == Some(h))
+                && (have.len() == want.len() || (have.len() < want.len() && have.last() == Some(&"*")))
+        });
+        let has_specific_perm = granted("sms:transition:canceled");
+        let has_update_perm = granted("sms:update");
         let _ = &allowed_roles;
         if !has_specific_perm {
             if !has_update_perm {

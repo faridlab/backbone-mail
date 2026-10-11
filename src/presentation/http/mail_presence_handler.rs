@@ -215,8 +215,13 @@ pub async fn go_online_transition(
     };
     {
         let allowed_roles = MailPresenceHooksTransition::GoOnline.allowed_roles();
-        let has_specific_perm = auth.permissions.iter().any(|p| p == "mail_presence:transition:go_online");
-        let has_update_perm = auth.permissions.iter().any(|p| p == "mail_presence:update");
+        let granted = |required: &str| auth.permissions.iter().any(|p| {
+            let (have, want): (Vec<&str>, Vec<&str>) = (p.split(':').collect(), required.split(':').collect());
+            have.iter().enumerate().all(|(i, h)| *h == "*" || want.get(i) == Some(h))
+                && (have.len() == want.len() || (have.len() < want.len() && have.last() == Some(&"*")))
+        });
+        let has_specific_perm = granted("mail_presence:transition:go_online");
+        let has_update_perm = granted("mail_presence:update");
         let _ = &allowed_roles;
         if !has_specific_perm {
             if !has_update_perm {
@@ -273,8 +278,13 @@ pub async fn go_away_transition(
     };
     {
         let allowed_roles = MailPresenceHooksTransition::GoAway.allowed_roles();
-        let has_specific_perm = auth.permissions.iter().any(|p| p == "mail_presence:transition:go_away");
-        let has_update_perm = auth.permissions.iter().any(|p| p == "mail_presence:update");
+        let granted = |required: &str| auth.permissions.iter().any(|p| {
+            let (have, want): (Vec<&str>, Vec<&str>) = (p.split(':').collect(), required.split(':').collect());
+            have.iter().enumerate().all(|(i, h)| *h == "*" || want.get(i) == Some(h))
+                && (have.len() == want.len() || (have.len() < want.len() && have.last() == Some(&"*")))
+        });
+        let has_specific_perm = granted("mail_presence:transition:go_away");
+        let has_update_perm = granted("mail_presence:update");
         let _ = &allowed_roles;
         if !has_specific_perm {
             if !has_update_perm {
@@ -331,8 +341,13 @@ pub async fn go_offline_transition(
     };
     {
         let allowed_roles = MailPresenceHooksTransition::GoOffline.allowed_roles();
-        let has_specific_perm = auth.permissions.iter().any(|p| p == "mail_presence:transition:go_offline");
-        let has_update_perm = auth.permissions.iter().any(|p| p == "mail_presence:update");
+        let granted = |required: &str| auth.permissions.iter().any(|p| {
+            let (have, want): (Vec<&str>, Vec<&str>) = (p.split(':').collect(), required.split(':').collect());
+            have.iter().enumerate().all(|(i, h)| *h == "*" || want.get(i) == Some(h))
+                && (have.len() == want.len() || (have.len() < want.len() && have.last() == Some(&"*")))
+        });
+        let has_specific_perm = granted("mail_presence:transition:go_offline");
+        let has_update_perm = granted("mail_presence:update");
         let _ = &allowed_roles;
         if !has_specific_perm {
             if !has_update_perm {
