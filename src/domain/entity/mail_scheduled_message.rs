@@ -220,8 +220,6 @@ impl MailScheduledMessage {
         }
     }
 
-    // <<< CUSTOM METHODS START >>>
-    // <<< CUSTOM METHODS END >>>
 }
 
 impl super::Entity for MailScheduledMessage {

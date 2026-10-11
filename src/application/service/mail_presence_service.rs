@@ -32,5 +32,3 @@ pub type MailPresenceService = GenericCrudService<
     MailPresenceRepository,
 >;
 
-// <<< CUSTOM
-// END CUSTOM

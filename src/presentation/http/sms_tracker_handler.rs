@@ -195,3 +195,4 @@ pub fn create_protected_sms_tracker_routes<A: AuthMiddleware + Send + Sync + 'st
             }
         }))
 }
+

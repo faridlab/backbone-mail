@@ -17,9 +17,5 @@ pub fn mail_activity_plan_validator() -> MailActivityPlanValidator {
     EntityValidator::new()
         .rule(RequiredString::new("name", |e: &MailActivityPlan| &e.name))
         .rule(OptionalNotBlank::new("res_model", |e: &MailActivityPlan| e.res_model.as_deref()))
-    // <<< CUSTOM RULES
-    // END CUSTOM RULES
 }
 
-// <<< CUSTOM
-// END CUSTOM

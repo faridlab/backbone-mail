@@ -14,12 +14,8 @@ pub type DiscussChannelMemberValidator = EntityValidator<DiscussChannelMember>;
 /// Build a validator for DiscussChannelMember with all schema-defined field rules.
 pub fn discuss_channel_member_validator() -> DiscussChannelMemberValidator {
     EntityValidator::new()
-    // <<< CUSTOM RULES
     // hook rule: G-MAIL-8-xor (implement in CUSTOM zone)
     // hook rule: G-MAIL-8-unique (implement in CUSTOM zone)
-    // END CUSTOM RULES
         // No schema-derived rules — add custom rules above.
 }
 
-// <<< CUSTOM
-// END CUSTOM

@@ -67,5 +67,3 @@ pub use sms_validator::{SmsValidator, sms_validator};
 pub use sms_template_validator::{SmsTemplateValidator, sms_template_validator};
 pub use sms_tracker_validator::{SmsTrackerValidator, sms_tracker_validator};
 
-// <<< CUSTOM
-// END CUSTOM

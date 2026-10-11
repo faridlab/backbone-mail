@@ -32,5 +32,3 @@ pub type MailMessageReactionService = GenericCrudService<
     MailMessageReactionRepository,
 >;
 
-// <<< CUSTOM
-// END CUSTOM

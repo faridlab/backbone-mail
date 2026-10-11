@@ -14,7 +14,6 @@ pub struct MailAliasDomainDomainPolicy;
 
 #[async_trait]
 impl DomainPolicy<MailAliasDomain> for MailAliasDomainDomainPolicy {
-    // <<< CUSTOM
     // Add entity-specific invariant checks here.
     // Example:
     // async fn can_delete(&self, entity: &MailAliasDomain) -> PolicyDecision {
@@ -22,5 +21,4 @@ impl DomainPolicy<MailAliasDomain> for MailAliasDomainDomainPolicy {
     //         Err("locked mail_alias_domain cannot be deleted".into())
     //     } else { Ok(true) }
     // }
-    // END CUSTOM
 }

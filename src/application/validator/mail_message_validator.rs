@@ -23,9 +23,5 @@ pub fn mail_message_validator() -> MailMessageValidator {
         .rule(OptionalNotBlank::new("model", |e: &MailMessage| e.model.as_deref()))
         .rule(OptionalNotBlank::new("record_name", |e: &MailMessage| e.record_name.as_deref()))
         .rule(OptionalNotBlank::new("failure_reason", |e: &MailMessage| e.failure_reason.as_deref()))
-    // <<< CUSTOM RULES
-    // END CUSTOM RULES
 }
 
-// <<< CUSTOM
-// END CUSTOM

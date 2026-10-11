@@ -118,6 +118,4 @@ mod tests {
 // CUSTOM TESTS
 // ============================================================================
 
-// <<< CUSTOM TESTS START >>>
 // Add Mail specific tests here
-// <<< CUSTOM TESTS END >>>

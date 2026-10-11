@@ -101,6 +101,4 @@ mod tests {
 // CUSTOM TESTS
 // ============================================================================
 
-// <<< CUSTOM TESTS START >>>
 // Add MailGatewayAllowed specific tests here
-// <<< CUSTOM TESTS END >>>

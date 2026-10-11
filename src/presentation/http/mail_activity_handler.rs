@@ -200,3 +200,4 @@ pub fn create_protected_mail_activity_routes<A: AuthMiddleware + Send + Sync + '
             }
         }))
 }
+

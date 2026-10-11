@@ -32,5 +32,3 @@ pub type DiscussChannelService = GenericCrudService<
     DiscussChannelRepository,
 >;
 
-// <<< CUSTOM
-// END CUSTOM

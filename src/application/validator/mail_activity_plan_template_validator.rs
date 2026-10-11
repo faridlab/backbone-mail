@@ -17,9 +17,5 @@ pub fn mail_activity_plan_template_validator() -> MailActivityPlanTemplateValida
     EntityValidator::new()
         .rule(OptionalNotBlank::new("summary", |e: &MailActivityPlanTemplate| e.summary.as_deref()))
         .rule(OptionalNotBlank::new("note", |e: &MailActivityPlanTemplate| e.note.as_deref()))
-    // <<< CUSTOM RULES
-    // END CUSTOM RULES
 }
 
-// <<< CUSTOM
-// END CUSTOM

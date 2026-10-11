@@ -18,5 +18,3 @@ use crate::domain::entity::MailScheduledMessage;
 /// service. `PermitAllPolicy` is the safe default until then.
 pub type MailScheduledMessageDomainPolicy = PermitAllPolicy<MailScheduledMessage>;
 
-// <<< CUSTOM
-// END CUSTOM

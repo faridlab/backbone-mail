@@ -18,5 +18,3 @@ use crate::domain::entity::PhoneBlacklist;
 /// service. `PermitAllPolicy` is the safe default until then.
 pub type PhoneBlacklistDomainPolicy = PermitAllPolicy<PhoneBlacklist>;
 
-// <<< CUSTOM
-// END CUSTOM

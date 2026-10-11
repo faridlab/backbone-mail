@@ -271,7 +271,7 @@ impl backbone_core::ApplyUpdateDto<UpdateMailFollowersDto> for MailFollowers {
 // Custom DTOs
 // =============================================================================
 
-// <<< CUSTOM DTOs
 // Add custom DTOs specific to MailFollowers here.
 // This section will be preserved during regeneration.
 // >>> END CUSTOM DTOs
+

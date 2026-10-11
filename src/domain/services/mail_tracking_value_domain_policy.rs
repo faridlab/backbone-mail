@@ -18,5 +18,3 @@ use crate::domain::entity::MailTrackingValue;
 /// service. `PermitAllPolicy` is the safe default until then.
 pub type MailTrackingValueDomainPolicy = PermitAllPolicy<MailTrackingValue>;
 
-// <<< CUSTOM
-// END CUSTOM

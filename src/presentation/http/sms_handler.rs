@@ -463,3 +463,4 @@ pub fn create_sms_transition_routes(service: Arc<SmsService>) -> Router {
         .route("/smses/:id/transitions/canceled", post(canceled_transition))
         .with_state(service)
 }
+

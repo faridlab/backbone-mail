@@ -14,7 +14,6 @@ pub struct MailFollowersDomainPolicy;
 
 #[async_trait]
 impl DomainPolicy<MailFollowers> for MailFollowersDomainPolicy {
-    // <<< CUSTOM
     // Add entity-specific invariant checks here.
     // Example:
     // async fn can_delete(&self, entity: &MailFollowers) -> PolicyDecision {
@@ -22,5 +21,4 @@ impl DomainPolicy<MailFollowers> for MailFollowersDomainPolicy {
     //         Err("locked mail_followers cannot be deleted".into())
     //     } else { Ok(true) }
     // }
-    // END CUSTOM
 }

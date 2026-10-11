@@ -14,7 +14,6 @@ pub struct MailBlacklistDomainPolicy;
 
 #[async_trait]
 impl DomainPolicy<MailBlacklist> for MailBlacklistDomainPolicy {
-    // <<< CUSTOM
     // Add entity-specific invariant checks here.
     // Example:
     // async fn can_delete(&self, entity: &MailBlacklist) -> PolicyDecision {
@@ -22,5 +21,4 @@ impl DomainPolicy<MailBlacklist> for MailBlacklistDomainPolicy {
     //         Err("locked mail_blacklist cannot be deleted".into())
     //     } else { Ok(true) }
     // }
-    // END CUSTOM
 }

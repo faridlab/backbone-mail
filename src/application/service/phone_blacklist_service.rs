@@ -32,5 +32,3 @@ pub type PhoneBlacklistService = GenericCrudService<
     PhoneBlacklistRepository,
 >;
 
-// <<< CUSTOM
-// END CUSTOM

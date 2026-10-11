@@ -16,9 +16,5 @@ pub type MailMessageScheduleValidator = EntityValidator<MailMessageSchedule>;
 pub fn mail_message_schedule_validator() -> MailMessageScheduleValidator {
     EntityValidator::new()
         .rule(OptionalNotBlank::new("notification_parameters", |e: &MailMessageSchedule| e.notification_parameters.as_deref()))
-    // <<< CUSTOM RULES
-    // END CUSTOM RULES
 }
 
-// <<< CUSTOM
-// END CUSTOM

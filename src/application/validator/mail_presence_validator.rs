@@ -14,10 +14,6 @@ pub type MailPresenceValidator = EntityValidator<MailPresence>;
 /// Build a validator for MailPresence with all schema-defined field rules.
 pub fn mail_presence_validator() -> MailPresenceValidator {
     EntityValidator::new()
-    // <<< CUSTOM RULES
-    // END CUSTOM RULES
         // No schema-derived rules — add custom rules above.
 }
 
-// <<< CUSTOM
-// END CUSTOM

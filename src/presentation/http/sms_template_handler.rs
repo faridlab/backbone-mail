@@ -186,3 +186,4 @@ pub fn create_protected_sms_template_routes<A: AuthMiddleware + Send + Sync + 's
             }
         }))
 }
+

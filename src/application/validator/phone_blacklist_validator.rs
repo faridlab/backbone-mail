@@ -16,9 +16,5 @@ pub type PhoneBlacklistValidator = EntityValidator<PhoneBlacklist>;
 pub fn phone_blacklist_validator() -> PhoneBlacklistValidator {
     EntityValidator::new()
         .rule(RequiredString::new("number", |e: &PhoneBlacklist| &e.number))
-    // <<< CUSTOM RULES
-    // END CUSTOM RULES
 }
 
-// <<< CUSTOM
-// END CUSTOM

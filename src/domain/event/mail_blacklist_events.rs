@@ -11,8 +11,6 @@ use crate::domain::entity::MailBlacklist;
 /// enum containing a `Crud(CrudEvent<MailBlacklist>)` variant.
 pub type MailBlacklistEvent = CrudEvent<MailBlacklist>;
 
-// <<< CUSTOM
-// END CUSTOM
 
 use backbone_messaging::{CrudEventPublisher, NoOpCrudEventPublisher};
 use std::sync::Arc;

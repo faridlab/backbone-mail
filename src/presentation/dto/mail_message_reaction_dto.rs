@@ -258,7 +258,7 @@ impl backbone_core::ApplyUpdateDto<UpdateMailMessageReactionDto> for MailMessage
 // Custom DTOs
 // =============================================================================
 
-// <<< CUSTOM DTOs
 // Add custom DTOs specific to MailMessageReaction here.
 // This section will be preserved during regeneration.
 // >>> END CUSTOM DTOs
+

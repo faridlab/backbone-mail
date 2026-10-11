@@ -18,9 +18,5 @@ pub fn mail_alias_validator() -> MailAliasValidator {
         .rule(OptionalNotBlank::new("alias_name", |e: &MailAlias| e.alias_name.as_deref()))
         .rule(OptionalNotBlank::new("alias_defaults", |e: &MailAlias| e.alias_defaults.as_deref()))
         .rule(OptionalNotBlank::new("alias_reply_to_address", |e: &MailAlias| e.alias_reply_to_address.as_deref()))
-    // <<< CUSTOM RULES
-    // END CUSTOM RULES
 }
 
-// <<< CUSTOM
-// END CUSTOM

@@ -117,6 +117,4 @@ mod tests {
 // CUSTOM TESTS
 // ============================================================================
 
-// <<< CUSTOM TESTS START >>>
 // Add DiscussChannel specific tests here
-// <<< CUSTOM TESTS END >>>

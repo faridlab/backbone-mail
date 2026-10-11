@@ -32,5 +32,3 @@ pub type FetchmailServerService = GenericCrudService<
     FetchmailServerRepository,
 >;
 
-// <<< CUSTOM
-// END CUSTOM

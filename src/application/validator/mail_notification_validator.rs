@@ -16,10 +16,6 @@ pub type MailNotificationValidator = EntityValidator<MailNotification>;
 pub fn mail_notification_validator() -> MailNotificationValidator {
     EntityValidator::new()
         .rule(OptionalNotBlank::new("failure_reason", |e: &MailNotification| e.failure_reason.as_deref()))
-    // <<< CUSTOM RULES
     // hook rule: G-MAIL-7 (implement in CUSTOM zone)
-    // END CUSTOM RULES
 }
 
-// <<< CUSTOM
-// END CUSTOM

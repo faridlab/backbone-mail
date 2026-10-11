@@ -36,8 +36,6 @@ pub mod sms_handler;
 pub mod sms_template_handler;
 pub mod sms_tracker_handler;
 
-// <<< CUSTOM
-// END CUSTOM
 
 // Re-exports
 pub use mail_activity_handler::{create_mail_activity_routes, create_mail_activity_read_routes, create_mail_activity_write_routes};
@@ -70,8 +68,6 @@ pub use mail_scheduled_message_handler::{create_mail_scheduled_message_routes, c
 pub use sms_handler::{create_sms_routes, create_sms_read_routes, create_sms_write_routes};
 pub use sms_template_handler::{create_sms_template_routes, create_sms_template_read_routes, create_sms_template_write_routes};
 pub use sms_tracker_handler::{create_sms_tracker_routes, create_sms_tracker_read_routes, create_sms_tracker_write_routes};
-// <<< CUSTOM
-// END CUSTOM
 
 // This directory's extension (hand-written; ADR-0031).
 include!("mod.ext.rs");

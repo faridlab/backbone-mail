@@ -16,9 +16,5 @@ pub type MailGatewayAllowedValidator = EntityValidator<MailGatewayAllowed>;
 pub fn mail_gateway_allowed_validator() -> MailGatewayAllowedValidator {
     EntityValidator::new()
         .rule(RequiredString::new("pattern", |e: &MailGatewayAllowed| &e.pattern))
-    // <<< CUSTOM RULES
-    // END CUSTOM RULES
 }
 
-// <<< CUSTOM
-// END CUSTOM

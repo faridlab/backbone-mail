@@ -245,7 +245,7 @@ impl backbone_core::ApplyUpdateDto<UpdateMailBlacklistDto> for MailBlacklist {
 // Custom DTOs
 // =============================================================================
 
-// <<< CUSTOM DTOs
 // Add custom DTOs specific to MailBlacklist here.
 // This section will be preserved during regeneration.
 // >>> END CUSTOM DTOs
+

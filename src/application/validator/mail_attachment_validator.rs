@@ -19,9 +19,5 @@ pub fn mail_attachment_validator() -> MailAttachmentValidator {
         .rule(OptionalNotBlank::new("mimetype", |e: &MailAttachment| e.mimetype.as_deref()))
         .rule(OptionalNotBlank::new("datas", |e: &MailAttachment| e.datas.as_deref()))
         .rule(OptionalNotBlank::new("checksum", |e: &MailAttachment| e.checksum.as_deref()))
-    // <<< CUSTOM RULES
-    // END CUSTOM RULES
 }
 
-// <<< CUSTOM
-// END CUSTOM

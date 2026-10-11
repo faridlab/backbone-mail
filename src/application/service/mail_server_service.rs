@@ -32,5 +32,3 @@ pub type MailServerService = GenericCrudService<
     MailServerRepository,
 >;
 
-// <<< CUSTOM
-// END CUSTOM

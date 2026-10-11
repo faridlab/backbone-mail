@@ -32,5 +32,3 @@ pub type MailAliasDomainService = GenericCrudService<
     MailAliasDomainRepository,
 >;
 
-// <<< CUSTOM
-// END CUSTOM

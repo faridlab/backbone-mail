@@ -406,7 +406,7 @@ impl backbone_core::ApplyUpdateDto<UpdateDiscussChannelMemberDto> for DiscussCha
 // Custom DTOs
 // =============================================================================
 
-// <<< CUSTOM DTOs
 // Add custom DTOs specific to DiscussChannelMember here.
 // This section will be preserved during regeneration.
 // >>> END CUSTOM DTOs
+

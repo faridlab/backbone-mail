@@ -32,5 +32,3 @@ pub type MailAttachmentService = GenericCrudService<
     MailAttachmentRepository,
 >;
 
-// <<< CUSTOM
-// END CUSTOM

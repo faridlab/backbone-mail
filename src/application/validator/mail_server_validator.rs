@@ -20,9 +20,5 @@ pub fn mail_server_validator() -> MailServerValidator {
         .rule(RequiredString::new("smtp_host", |e: &MailServer| &e.smtp_host))
         .rule(OptionalNotBlank::new("smtp_user", |e: &MailServer| e.smtp_user.as_deref()))
         .rule(OptionalNotBlank::new("smtp_pass_ref", |e: &MailServer| e.smtp_pass_ref.as_deref()))
-    // <<< CUSTOM RULES
-    // END CUSTOM RULES
 }
 
-// <<< CUSTOM
-// END CUSTOM

@@ -32,5 +32,3 @@ pub type MailMessageStarService = GenericCrudService<
     MailMessageStarRepository,
 >;
 
-// <<< CUSTOM
-// END CUSTOM

@@ -32,5 +32,3 @@ pub type MailActivityTypeService = GenericCrudService<
     MailActivityTypeRepository,
 >;
 
-// <<< CUSTOM
-// END CUSTOM

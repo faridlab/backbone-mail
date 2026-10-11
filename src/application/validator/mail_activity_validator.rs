@@ -18,11 +18,7 @@ pub fn mail_activity_validator() -> MailActivityValidator {
         .rule(RequiredString::new("res_model", |e: &MailActivity| &e.res_model))
         .rule(OptionalNotBlank::new("summary", |e: &MailActivity| e.summary.as_deref()))
         .rule(OptionalNotBlank::new("note", |e: &MailActivity| e.note.as_deref()))
-    // <<< CUSTOM RULES
     // hook rule: G-MAIL-3 (implement in CUSTOM zone)
     // hook rule: G-MAIL-4 (implement in CUSTOM zone)
-    // END CUSTOM RULES
 }
 
-// <<< CUSTOM
-// END CUSTOM

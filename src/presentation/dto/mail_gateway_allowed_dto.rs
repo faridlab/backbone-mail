@@ -245,7 +245,7 @@ impl backbone_core::ApplyUpdateDto<UpdateMailGatewayAllowedDto> for MailGatewayA
 // Custom DTOs
 // =============================================================================
 
-// <<< CUSTOM DTOs
 // Add custom DTOs specific to MailGatewayAllowed here.
 // This section will be preserved during regeneration.
 // >>> END CUSTOM DTOs
+

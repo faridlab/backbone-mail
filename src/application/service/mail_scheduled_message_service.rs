@@ -32,5 +32,3 @@ pub type MailScheduledMessageService = GenericCrudService<
     MailScheduledMessageRepository,
 >;
 
-// <<< CUSTOM
-// END CUSTOM

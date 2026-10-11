@@ -186,3 +186,4 @@ pub fn create_protected_discuss_channel_routes<A: AuthMiddleware + Send + Sync +
             }
         }))
 }
+

@@ -32,5 +32,3 @@ pub type MailNotificationService = GenericCrudService<
     MailNotificationRepository,
 >;
 
-// <<< CUSTOM
-// END CUSTOM

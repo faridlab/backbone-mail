@@ -18,5 +18,3 @@ use crate::domain::entity::MailMessageStar;
 /// service. `PermitAllPolicy` is the safe default until then.
 pub type MailMessageStarDomainPolicy = PermitAllPolicy<MailMessageStar>;
 
-// <<< CUSTOM
-// END CUSTOM

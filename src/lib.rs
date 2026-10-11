@@ -24,8 +24,6 @@ pub mod application;
 pub mod presentation;
 pub mod seeders;
 pub mod exports;
-// <<< CUSTOM MODULES
-// END CUSTOM
 
 // The module's extension (hand-written; ADR-0031).
 #[path = "lib.ext.rs"]
@@ -130,8 +128,6 @@ pub struct MessagingModule {
     pub(crate) sms_tracker_service: Arc<SmsTrackerService>,
     /// The module's extension state (`lib.ext.rs`); its fields read through `Deref`.
     pub(crate) ext: ModuleExt,
-    // <<< CUSTOM FIELDS
-    // END CUSTOM
 }
 
 impl std::ops::Deref for MessagingModule {
@@ -400,8 +396,6 @@ impl MessagingModule {
             .merge(create_sms_tracker_read_routes(self.sms_tracker_service.clone()))
     }
 
-    // <<< CUSTOM METHODS
-    // END CUSTOM
 }
 
 /// Builder for MessagingModule
@@ -409,8 +403,6 @@ pub struct MessagingModuleBuilder {
     db_pool: Option<PgPool>,
     /// The builder's extension state (`lib.ext.rs`); its fields read through `Deref`.
     ext: ModuleBuilderExt,
-    // <<< CUSTOM BUILDER FIELDS
-    // END CUSTOM
 }
 
 impl std::ops::Deref for MessagingModuleBuilder {
@@ -432,8 +424,6 @@ impl MessagingModuleBuilder {
         Self {
             db_pool: None,
             ext: Default::default(),
-            // <<< CUSTOM BUILDER DEFAULTS
-            // END CUSTOM
         }
     }
 
@@ -443,8 +433,6 @@ impl MessagingModuleBuilder {
         self
     }
 
-    // <<< CUSTOM - custom builder methods
-    // END CUSTOM
 
     /// Build the module with configured dependencies
     pub fn build(self) -> anyhow::Result<MessagingModule> {
@@ -571,8 +559,6 @@ impl MessagingModuleBuilder {
         let sms_tracker_repository = Arc::new(SmsTrackerRepository::new(db_pool.clone()));
         let sms_tracker_service = Arc::new(SmsTrackerService::with_repository(sms_tracker_repository.clone()));
 
-        // <<< CUSTOM
-        // END CUSTOM
 
         // The extension builds its own state from what the generated build made.
         let ext = self.ext.build(&ModuleParts {
@@ -671,8 +657,6 @@ impl MessagingModuleBuilder {
             sms_template_service,
             sms_tracker_service,
             ext,
-            // <<< CUSTOM
-            // END CUSTOM
         })
     }
 }

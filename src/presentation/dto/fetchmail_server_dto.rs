@@ -316,7 +316,7 @@ impl backbone_core::ApplyUpdateDto<UpdateFetchmailServerDto> for FetchmailServer
 // Custom DTOs
 // =============================================================================
 
-// <<< CUSTOM DTOs
 // Add custom DTOs specific to FetchmailServer here.
 // This section will be preserved during regeneration.
 // >>> END CUSTOM DTOs
+

@@ -18,5 +18,3 @@ use crate::domain::entity::MailMessageAttachment;
 /// service. `PermitAllPolicy` is the safe default until then.
 pub type MailMessageAttachmentDomainPolicy = PermitAllPolicy<MailMessageAttachment>;
 
-// <<< CUSTOM
-// END CUSTOM

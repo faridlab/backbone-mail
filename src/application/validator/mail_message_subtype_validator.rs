@@ -19,9 +19,5 @@ pub fn mail_message_subtype_validator() -> MailMessageSubtypeValidator {
         .rule(OptionalNotBlank::new("description", |e: &MailMessageSubtype| e.description.as_deref()))
         .rule(OptionalNotBlank::new("relation_field", |e: &MailMessageSubtype| e.relation_field.as_deref()))
         .rule(OptionalNotBlank::new("res_model", |e: &MailMessageSubtype| e.res_model.as_deref()))
-    // <<< CUSTOM RULES
-    // END CUSTOM RULES
 }
 
-// <<< CUSTOM
-// END CUSTOM

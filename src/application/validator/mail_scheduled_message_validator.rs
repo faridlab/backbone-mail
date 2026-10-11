@@ -20,9 +20,5 @@ pub fn mail_scheduled_message_validator() -> MailScheduledMessageValidator {
         .rule(OptionalNotBlank::new("composition_comment_option", |e: &MailScheduledMessage| e.composition_comment_option.as_deref()))
         .rule(RequiredString::new("model", |e: &MailScheduledMessage| &e.model))
         .rule(OptionalNotBlank::new("notification_parameters", |e: &MailScheduledMessage| e.notification_parameters.as_deref()))
-    // <<< CUSTOM RULES
-    // END CUSTOM RULES
 }
 
-// <<< CUSTOM
-// END CUSTOM

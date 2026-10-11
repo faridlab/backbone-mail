@@ -32,5 +32,3 @@ pub type MailBlacklistService = GenericCrudService<
     MailBlacklistRepository,
 >;
 
-// <<< CUSTOM
-// END CUSTOM

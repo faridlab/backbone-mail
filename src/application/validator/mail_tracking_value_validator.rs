@@ -20,9 +20,5 @@ pub fn mail_tracking_value_validator() -> MailTrackingValueValidator {
         .rule(OptionalNotBlank::new("field_type", |e: &MailTrackingValue| e.field_type.as_deref()))
         .rule(OptionalNotBlank::new("old_value_text", |e: &MailTrackingValue| e.old_value_text.as_deref()))
         .rule(OptionalNotBlank::new("new_value_text", |e: &MailTrackingValue| e.new_value_text.as_deref()))
-    // <<< CUSTOM RULES
-    // END CUSTOM RULES
 }
 
-// <<< CUSTOM
-// END CUSTOM

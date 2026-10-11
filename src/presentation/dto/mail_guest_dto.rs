@@ -256,7 +256,7 @@ impl backbone_core::ApplyUpdateDto<UpdateMailGuestDto> for MailGuest {
 // Custom DTOs
 // =============================================================================
 
-// <<< CUSTOM DTOs
 // Add custom DTOs specific to MailGuest here.
 // This section will be preserved during regeneration.
 // >>> END CUSTOM DTOs
+

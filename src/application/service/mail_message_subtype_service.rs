@@ -32,5 +32,3 @@ pub type MailMessageSubtypeService = GenericCrudService<
     MailMessageSubtypeRepository,
 >;
 
-// <<< CUSTOM
-// END CUSTOM

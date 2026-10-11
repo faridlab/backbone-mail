@@ -18,5 +18,3 @@ use crate::domain::entity::MailMessageSubtype;
 /// service. `PermitAllPolicy` is the safe default until then.
 pub type MailMessageSubtypeDomainPolicy = PermitAllPolicy<MailMessageSubtype>;
 
-// <<< CUSTOM
-// END CUSTOM

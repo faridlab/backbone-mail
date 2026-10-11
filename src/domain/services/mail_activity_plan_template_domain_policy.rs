@@ -18,5 +18,3 @@ use crate::domain::entity::MailActivityPlanTemplate;
 /// service. `PermitAllPolicy` is the safe default until then.
 pub type MailActivityPlanTemplateDomainPolicy = PermitAllPolicy<MailActivityPlanTemplate>;
 
-// <<< CUSTOM
-// END CUSTOM

@@ -21,9 +21,5 @@ pub fn mail_activity_type_validator() -> MailActivityTypeValidator {
         .rule(OptionalNotBlank::new("default_note", |e: &MailActivityType| e.default_note.as_deref()))
         .rule(OptionalNotBlank::new("icon", |e: &MailActivityType| e.icon.as_deref()))
         .rule(OptionalNotBlank::new("res_model", |e: &MailActivityType| e.res_model.as_deref()))
-    // <<< CUSTOM RULES
-    // END CUSTOM RULES
 }
 
-// <<< CUSTOM
-// END CUSTOM

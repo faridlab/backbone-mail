@@ -16,10 +16,6 @@ pub type MailBlacklistValidator = EntityValidator<MailBlacklist>;
 pub fn mail_blacklist_validator() -> MailBlacklistValidator {
     EntityValidator::new()
         .rule(RequiredString::new("email", |e: &MailBlacklist| &e.email))
-    // <<< CUSTOM RULES
     // hook rule: G-MAIL-2 (implement in CUSTOM zone)
-    // END CUSTOM RULES
 }
 
-// <<< CUSTOM
-// END CUSTOM

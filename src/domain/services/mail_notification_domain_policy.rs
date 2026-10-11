@@ -14,7 +14,6 @@ pub struct MailNotificationDomainPolicy;
 
 #[async_trait]
 impl DomainPolicy<MailNotification> for MailNotificationDomainPolicy {
-    // <<< CUSTOM
     // Add entity-specific invariant checks here.
     // Example:
     // async fn can_delete(&self, entity: &MailNotification) -> PolicyDecision {
@@ -22,5 +21,4 @@ impl DomainPolicy<MailNotification> for MailNotificationDomainPolicy {
     //         Err("locked mail_notification cannot be deleted".into())
     //     } else { Ok(true) }
     // }
-    // END CUSTOM
 }

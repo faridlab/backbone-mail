@@ -32,5 +32,3 @@ pub type MailActivityPlanTemplateService = GenericCrudService<
     MailActivityPlanTemplateRepository,
 >;
 
-// <<< CUSTOM
-// END CUSTOM

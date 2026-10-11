@@ -11,8 +11,6 @@ use crate::domain::entity::SmsTracker;
 /// enum containing a `Crud(CrudEvent<SmsTracker>)` variant.
 pub type SmsTrackerEvent = CrudEvent<SmsTracker>;
 
-// <<< CUSTOM
-// END CUSTOM
 
 use backbone_messaging::{CrudEventPublisher, NoOpCrudEventPublisher};
 use std::sync::Arc;

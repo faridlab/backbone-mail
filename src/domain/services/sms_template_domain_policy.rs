@@ -18,5 +18,3 @@ use crate::domain::entity::SmsTemplate;
 /// service. `PermitAllPolicy` is the safe default until then.
 pub type SmsTemplateDomainPolicy = PermitAllPolicy<SmsTemplate>;
 
-// <<< CUSTOM
-// END CUSTOM

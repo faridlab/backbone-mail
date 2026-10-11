@@ -103,6 +103,4 @@ mod tests {
 // CUSTOM TESTS
 // ============================================================================
 
-// <<< CUSTOM TESTS START >>>
 // Add MailMessageReaction specific tests here
-// <<< CUSTOM TESTS END >>>

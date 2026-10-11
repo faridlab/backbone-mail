@@ -64,5 +64,3 @@ pub use sms_domain_policy::SmsDomainPolicy;
 pub use sms_template_domain_policy::SmsTemplateDomainPolicy;
 pub use sms_tracker_domain_policy::SmsTrackerDomainPolicy;
 
-// <<< CUSTOM
-// END CUSTOM

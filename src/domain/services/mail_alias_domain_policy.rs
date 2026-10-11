@@ -18,5 +18,3 @@ use crate::domain::entity::MailAlias;
 /// service. `PermitAllPolicy` is the safe default until then.
 pub type MailAliasDomainPolicy = PermitAllPolicy<MailAlias>;
 
-// <<< CUSTOM
-// END CUSTOM

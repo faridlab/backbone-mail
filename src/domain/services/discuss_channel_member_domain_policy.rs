@@ -14,7 +14,6 @@ pub struct DiscussChannelMemberDomainPolicy;
 
 #[async_trait]
 impl DomainPolicy<DiscussChannelMember> for DiscussChannelMemberDomainPolicy {
-    // <<< CUSTOM
     // Add entity-specific invariant checks here.
     // Example:
     // async fn can_delete(&self, entity: &DiscussChannelMember) -> PolicyDecision {
@@ -22,5 +21,4 @@ impl DomainPolicy<DiscussChannelMember> for DiscussChannelMemberDomainPolicy {
     //         Err("locked discuss_channel_member cannot be deleted".into())
     //     } else { Ok(true) }
     // }
-    // END CUSTOM
 }

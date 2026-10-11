@@ -21,11 +21,7 @@ pub fn mail_alias_domain_validator() -> MailAliasDomainValidator {
         .rule(OptionalNotBlank::new("bounce_alias_email", |e: &MailAliasDomain| e.bounce_alias_email.as_deref()))
         .rule(OptionalNotBlank::new("catchall_alias_email", |e: &MailAliasDomain| e.catchall_alias_email.as_deref()))
         .rule(OptionalNotBlank::new("from_filter", |e: &MailAliasDomain| e.from_filter.as_deref()))
-    // <<< CUSTOM RULES
     // hook rule: G-MAIL-5-bounce (implement in CUSTOM zone)
     // hook rule: G-MAIL-5-catchall (implement in CUSTOM zone)
-    // END CUSTOM RULES
 }
 
-// <<< CUSTOM
-// END CUSTOM

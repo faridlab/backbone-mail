@@ -16,9 +16,5 @@ pub type MailGuestValidator = EntityValidator<MailGuest>;
 pub fn mail_guest_validator() -> MailGuestValidator {
     EntityValidator::new()
         .rule(RequiredString::new("name", |e: &MailGuest| &e.name))
-    // <<< CUSTOM RULES
-    // END CUSTOM RULES
 }
 
-// <<< CUSTOM
-// END CUSTOM

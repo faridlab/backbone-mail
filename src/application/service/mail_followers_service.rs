@@ -32,5 +32,3 @@ pub type MailFollowersService = GenericCrudService<
     MailFollowersRepository,
 >;
 
-// <<< CUSTOM
-// END CUSTOM

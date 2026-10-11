@@ -32,5 +32,3 @@ pub type MailGuestService = GenericCrudService<
     MailGuestRepository,
 >;
 
-// <<< CUSTOM
-// END CUSTOM

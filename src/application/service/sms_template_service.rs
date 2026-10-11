@@ -32,5 +32,3 @@ pub type SmsTemplateService = GenericCrudService<
     SmsTemplateRepository,
 >;
 
-// <<< CUSTOM
-// END CUSTOM

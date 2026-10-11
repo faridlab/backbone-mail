@@ -20,9 +20,5 @@ pub fn discuss_channel_validator() -> DiscussChannelValidator {
         .rule(OptionalNotBlank::new("uuid", |e: &DiscussChannel| e.uuid.as_deref()))
         .rule(OptionalNotBlank::new("default_access_mode", |e: &DiscussChannel| e.default_access_mode.as_deref()))
         .rule(OptionalNotBlank::new("avatar_128", |e: &DiscussChannel| e.avatar_128.as_deref()))
-    // <<< CUSTOM RULES
-    // END CUSTOM RULES
 }
 
-// <<< CUSTOM
-// END CUSTOM

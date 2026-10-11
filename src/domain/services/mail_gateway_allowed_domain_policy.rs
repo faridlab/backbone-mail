@@ -18,5 +18,3 @@ use crate::domain::entity::MailGatewayAllowed;
 /// service. `PermitAllPolicy` is the safe default until then.
 pub type MailGatewayAllowedDomainPolicy = PermitAllPolicy<MailGatewayAllowed>;
 
-// <<< CUSTOM
-// END CUSTOM

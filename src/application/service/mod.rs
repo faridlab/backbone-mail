@@ -38,8 +38,6 @@ pub mod sms_service;
 pub mod sms_template_service;
 pub mod sms_tracker_service;
 
-// <<< CUSTOM
-// END CUSTOM
 
 pub use mail_activity_service::MailActivityService;
 pub use mail_activity_type_service::MailActivityTypeService;
@@ -71,8 +69,6 @@ pub use mail_scheduled_message_service::MailScheduledMessageService;
 pub use sms_service::SmsService;
 pub use sms_template_service::SmsTemplateService;
 pub use sms_tracker_service::SmsTrackerService;
-// <<< CUSTOM
-// END CUSTOM
 
 // This directory's extension (hand-written; ADR-0031).
 include!("mod.ext.rs");

@@ -18,5 +18,3 @@ use crate::domain::entity::FetchmailServer;
 /// service. `PermitAllPolicy` is the safe default until then.
 pub type FetchmailServerDomainPolicy = PermitAllPolicy<FetchmailServer>;
 
-// <<< CUSTOM
-// END CUSTOM

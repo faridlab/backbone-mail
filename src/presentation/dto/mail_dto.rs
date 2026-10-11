@@ -324,7 +324,7 @@ impl backbone_core::ApplyUpdateDto<UpdateMailDto> for Mail {
 // Custom DTOs
 // =============================================================================
 
-// <<< CUSTOM DTOs
 // Add custom DTOs specific to Mail here.
 // This section will be preserved during regeneration.
 // >>> END CUSTOM DTOs
+

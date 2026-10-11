@@ -19,9 +19,5 @@ pub fn mail_validator() -> MailValidator {
         .rule(OptionalNotBlank::new("email_to", |e: &Mail| e.email_to.as_deref()))
         .rule(OptionalNotBlank::new("email_cc", |e: &Mail| e.email_cc.as_deref()))
         .rule(OptionalNotBlank::new("reply_to", |e: &Mail| e.reply_to.as_deref()))
-    // <<< CUSTOM RULES
-    // END CUSTOM RULES
 }
 
-// <<< CUSTOM
-// END CUSTOM

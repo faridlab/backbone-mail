@@ -19,9 +19,5 @@ pub fn fetchmail_server_validator() -> FetchmailServerValidator {
         .rule(OptionalNotBlank::new("default_thread_model", |e: &FetchmailServer| e.default_thread_model.as_deref()))
         .rule(RequiredString::new("token_hash", |e: &FetchmailServer| &e.token_hash))
         .rule(OptionalNotBlank::new("error_message", |e: &FetchmailServer| e.error_message.as_deref()))
-    // <<< CUSTOM RULES
-    // END CUSTOM RULES
 }
 
-// <<< CUSTOM
-// END CUSTOM

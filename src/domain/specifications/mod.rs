@@ -37,5 +37,3 @@ pub mod sms_specification;
 pub mod sms_template_specification;
 pub mod sms_tracker_specification;
 
-// <<< CUSTOM
-// END CUSTOM

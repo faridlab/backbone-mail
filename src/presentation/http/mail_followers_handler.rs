@@ -195,3 +195,4 @@ pub fn create_protected_mail_followers_routes<A: AuthMiddleware + Send + Sync + 
             }
         }))
 }
+

@@ -16,10 +16,6 @@ pub type MailFollowersValidator = EntityValidator<MailFollowers>;
 pub fn mail_followers_validator() -> MailFollowersValidator {
     EntityValidator::new()
         .rule(RequiredString::new("res_model", |e: &MailFollowers| &e.res_model))
-    // <<< CUSTOM RULES
     // hook rule: G-MAIL-1 (implement in CUSTOM zone)
-    // END CUSTOM RULES
 }
 
-// <<< CUSTOM
-// END CUSTOM

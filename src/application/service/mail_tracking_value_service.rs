@@ -32,5 +32,3 @@ pub type MailTrackingValueService = GenericCrudService<
     MailTrackingValueRepository,
 >;
 
-// <<< CUSTOM
-// END CUSTOM

@@ -187,3 +187,4 @@ pub fn create_protected_mail_guest_routes<A: AuthMiddleware + Send + Sync + 'sta
             }
         }))
 }
+

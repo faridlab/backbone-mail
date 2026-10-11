@@ -11,8 +11,6 @@ use crate::domain::entity::MailGatewayAllowed;
 /// enum containing a `Crud(CrudEvent<MailGatewayAllowed>)` variant.
 pub type MailGatewayAllowedEvent = CrudEvent<MailGatewayAllowed>;
 
-// <<< CUSTOM
-// END CUSTOM
 
 use backbone_messaging::{CrudEventPublisher, NoOpCrudEventPublisher};
 use std::sync::Arc;

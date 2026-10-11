@@ -19,9 +19,5 @@ pub fn sms_template_validator() -> SmsTemplateValidator {
         .rule(RequiredString::new("body", |e: &SmsTemplate| &e.body))
         .rule(OptionalNotBlank::new("lang", |e: &SmsTemplate| e.lang.as_deref()))
         .rule(OptionalNotBlank::new("condition", |e: &SmsTemplate| e.condition.as_deref()))
-    // <<< CUSTOM RULES
-    // END CUSTOM RULES
 }
 
-// <<< CUSTOM
-// END CUSTOM

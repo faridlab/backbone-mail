@@ -32,5 +32,3 @@ pub type SmsTrackerService = GenericCrudService<
     SmsTrackerRepository,
 >;
 
-// <<< CUSTOM
-// END CUSTOM

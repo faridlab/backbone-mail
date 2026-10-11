@@ -16,9 +16,5 @@ pub type MailMessageReactionValidator = EntityValidator<MailMessageReaction>;
 pub fn mail_message_reaction_validator() -> MailMessageReactionValidator {
     EntityValidator::new()
         .rule(RequiredString::new("content", |e: &MailMessageReaction| &e.content))
-    // <<< CUSTOM RULES
-    // END CUSTOM RULES
 }
 
-// <<< CUSTOM
-// END CUSTOM

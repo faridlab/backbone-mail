@@ -32,5 +32,3 @@ pub type MailGatewayAllowedService = GenericCrudService<
     MailGatewayAllowedRepository,
 >;
 
-// <<< CUSTOM
-// END CUSTOM

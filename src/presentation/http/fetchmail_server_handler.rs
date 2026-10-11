@@ -187,3 +187,4 @@ pub fn create_protected_fetchmail_server_routes<A: AuthMiddleware + Send + Sync 
             }
         }))
 }
+

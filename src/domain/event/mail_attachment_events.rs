@@ -11,8 +11,6 @@ use crate::domain::entity::MailAttachment;
 /// enum containing a `Crud(CrudEvent<MailAttachment>)` variant.
 pub type MailAttachmentEvent = CrudEvent<MailAttachment>;
 
-// <<< CUSTOM
-// END CUSTOM
 
 use backbone_messaging::{CrudEventPublisher, NoOpCrudEventPublisher};
 use std::sync::Arc;

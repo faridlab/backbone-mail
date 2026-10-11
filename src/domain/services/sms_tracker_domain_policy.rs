@@ -14,7 +14,6 @@ pub struct SmsTrackerDomainPolicy;
 
 #[async_trait]
 impl DomainPolicy<SmsTracker> for SmsTrackerDomainPolicy {
-    // <<< CUSTOM
     // Add entity-specific invariant checks here.
     // Example:
     // async fn can_delete(&self, entity: &SmsTracker) -> PolicyDecision {
@@ -22,5 +21,4 @@ impl DomainPolicy<SmsTracker> for SmsTrackerDomainPolicy {
     //         Err("locked sms_tracker cannot be deleted".into())
     //     } else { Ok(true) }
     // }
-    // END CUSTOM
 }

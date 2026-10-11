@@ -319,7 +319,7 @@ impl backbone_core::ApplyUpdateDto<UpdateMailAliasDto> for MailAlias {
 // Custom DTOs
 // =============================================================================
 
-// <<< CUSTOM DTOs
 // Add custom DTOs specific to MailAlias here.
 // This section will be preserved during regeneration.
 // >>> END CUSTOM DTOs
+

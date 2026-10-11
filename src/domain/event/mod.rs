@@ -124,8 +124,6 @@ pub use sms_template_event_handlers::SmsTemplateEventHandler;
 pub use sms_tracker_events::{SmsTrackerEvent, SmsTrackerEventPublisher, NoopSmsTrackerEventPublisher};
 pub use sms_tracker_event_handlers::SmsTrackerEventHandler;
 
-// <<< CUSTOM
-// END CUSTOM
 
 // This directory's extension (hand-written; ADR-0031).
 include!("mod.ext.rs");

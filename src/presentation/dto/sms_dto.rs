@@ -302,7 +302,7 @@ impl backbone_core::ApplyUpdateDto<UpdateSmsDto> for Sms {
 // Custom DTOs
 // =============================================================================
 
-// <<< CUSTOM DTOs
 // Add custom DTOs specific to Sms here.
 // This section will be preserved during regeneration.
 // >>> END CUSTOM DTOs
+

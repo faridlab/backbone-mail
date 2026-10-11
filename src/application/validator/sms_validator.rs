@@ -19,10 +19,6 @@ pub fn sms_validator() -> SmsValidator {
         .rule(RequiredString::new("number", |e: &Sms| &e.number))
         .rule(RequiredString::new("body", |e: &Sms| &e.body))
         .rule(OptionalNotBlank::new("error_message", |e: &Sms| e.error_message.as_deref()))
-    // <<< CUSTOM RULES
     // hook rule: G-SM1 (implement in CUSTOM zone)
-    // END CUSTOM RULES
 }
 
-// <<< CUSTOM
-// END CUSTOM

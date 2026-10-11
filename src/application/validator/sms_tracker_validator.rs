@@ -18,10 +18,6 @@ pub fn sms_tracker_validator() -> SmsTrackerValidator {
         .rule(RequiredString::new("sms_uuid", |e: &SmsTracker| &e.sms_uuid))
         .rule(OptionalNotBlank::new("failure_reason", |e: &SmsTracker| e.failure_reason.as_deref()))
         .rule(OptionalNotBlank::new("recipient", |e: &SmsTracker| e.recipient.as_deref()))
-    // <<< CUSTOM RULES
     // hook rule: G-SM2 (implement in CUSTOM zone)
-    // END CUSTOM RULES
 }
 
-// <<< CUSTOM
-// END CUSTOM
