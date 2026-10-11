@@ -37,16 +37,6 @@ pub mod sms_template_handler;
 pub mod sms_tracker_handler;
 
 // <<< CUSTOM
-// Increment-2 hand-written route groups (user-owned; survive regen).
-pub mod thread_routes;
-pub mod channel_routes;
-pub mod guest_routes;
-pub mod presence_routes;
-pub mod attachment_routes;
-pub mod webhook_routes;
-pub mod public_routes;
-// Increment 3 — the inbound email webhook (MAIL-M27; token consteq, bare mount).
-pub mod inbound_routes;
 // END CUSTOM
 
 // Re-exports
@@ -82,3 +72,6 @@ pub use sms_template_handler::{create_sms_template_routes, create_sms_template_r
 pub use sms_tracker_handler::{create_sms_tracker_routes, create_sms_tracker_read_routes, create_sms_tracker_write_routes};
 // <<< CUSTOM
 // END CUSTOM
+
+// This directory's extension (hand-written; ADR-0031).
+include!("mod.ext.rs");

@@ -39,7 +39,6 @@ pub mod sms_template_service;
 pub mod sms_tracker_service;
 
 // <<< CUSTOM
-pub mod relay_b7;
 // END CUSTOM
 
 pub use mail_activity_service::MailActivityService;
@@ -73,112 +72,7 @@ pub use sms_service::SmsService;
 pub use sms_template_service::SmsTemplateService;
 pub use sms_tracker_service::SmsTrackerService;
 // <<< CUSTOM
-// Hand-authored messaging write services (increment 1; user-owned files declared in
-// metaphor.codegen.yaml — regen never touches them).
-pub mod sms_ports;
-pub mod message_write_service;
-pub mod follower_write_service;
-pub mod activity_write_service;
-pub mod sms_write_service;
-pub mod mail_queue_write_service;
-pub mod alias_write_service;
-
-pub use alias_write_service::{AliasError, AliasWriteService};
-pub use follower_write_service::{FollowerError, FollowerWriteService};
-pub use message_write_service::{
-    MailError, MessagePostCommand, MessageWriteService, NotificationChannel, PostRecipient,
-    PostedMessage,
-};
-pub use activity_write_service::{ActivityError, ActivityWriteService, ScheduleActivity};
-pub use mail_queue_write_service::{MailDrainOutcome, MailQueueError, MailQueueWriteService};
-pub use sms_ports::{
-    NoopSmsApi, SmsApiPort, SmsSendFailure, SmsSendOutcome, SmsSendRequest,
-};
-pub use sms_write_service::{DrainOutcome, SmsError, SmsWriteService};
-pub use crate::infrastructure::persistence::follower_repository::ExistingPolicy;
-pub use crate::infrastructure::persistence::follower_repository::SubscribeOutcome;
-
-// Increment-2 surface (user-owned): channel/member ops, typing, reactions,
-// presence, guests, schedules, webhook, GC, attachments, query services,
-// and the chatter ACL seam + host facade.
-pub mod chatter_acl;
-pub mod channel_write_service;
-pub mod channel_member_write_service;
-pub mod channel_query_service;
-pub mod typing_service;
-pub mod reaction_write_service;
-pub mod message_edit_service;
-pub mod guest_write_service;
-pub mod presence_write_service;
-pub mod schedule_write_service;
-pub mod sms_status_webhook_service;
-pub mod gc_service;
-pub mod attachment_write_service;
-pub mod message_query_service;
-pub mod recipient_query_service;
-pub mod thread_chatter_service;
-
-pub use chatter_acl::{
-    DenyHostDocs, MessagingIdentity, StaticThreadAccess, ThreadAclSlot, ThreadAccessResolver,
-};
-pub use channel_write_service::{ChannelError, ChannelWriteService};
-pub use channel_member_write_service::{ChannelMemberWriteService, MemberError};
-pub use channel_query_service::{ChannelQueryError, ChannelQueryService, ChannelSearchHit};
-pub use typing_service::{TypingError, TypingService};
-pub use reaction_write_service::{ReactionError, ReactionWriteService};
-pub use message_edit_service::{MessageEditError, MessageEditService};
-pub use guest_write_service::{GuestError, GuestWriteService};
-pub use presence_write_service::{PresenceError, PresenceWriteService};
-pub use schedule_write_service::{ScheduleError, ScheduleWriteService};
-pub use sms_status_webhook_service::{
-    SmsStatusWebhookService, WebhookError, WebhookOutcome, WEBHOOK_SCHEME,
-};
-pub use gc_service::{GcError, GcService};
-pub use attachment_write_service::{AttachmentError, AttachmentWriteService};
-pub use message_query_service::{MessageQueryError, MessageQueryService};
-pub use recipient_query_service::{
-    RecipientQueryError, RecipientQueryService, SuggestedRecipient,
-};
-pub use thread_chatter_service::{ChatterError, ThreadChatterService};
-
-// Increment-3 gateway core (user-owned): the outbound transport port and the
-// server-selection ladder query service (MAIL-M26), plus the inbound webhook
-// pipeline (MAIL-M27/M28; MAIL-B2/B6; token consteq).
-pub mod mail_ports;
-pub mod mail_server_query_service;
-pub mod mail_inbound_service;
-
-pub use mail_ports::{MailApiPort, MailSendFailure, MailSendOutcome, MailSendRequest, NoopMailApi};
-pub use mail_server_query_service::{MailServerQueryError, MailServerQueryService};
-pub use mail_inbound_service::{
-    InboundMessage, InboundOutcome, MailInboundError, MailInboundService,
-};
-
-// Phone-validation opener (user-owned): the recipient-candidate port + the
-// fail-closed slot, the typed E.164 formatter service, and the phone
-// blacklist verbs.
-pub mod phone_ports;
-pub mod phone_validation_service;
-pub mod phone_blacklist_write_service;
-
-pub use phone_ports::{
-    NoopPhoneBook, PhoneBookPort, PhoneBookSlot, PhoneCandidate, PhoneSourceError,
-    RefusingPhoneBook,
-};
-pub use phone_validation_service::{
-    E164Number, PhoneFormatError, PhoneValidationError, PhoneValidationService, SanitizeFailure,
-    SanitizedPhone, phone_format, sanitize_candidates,
-};
-pub use phone_blacklist_write_service::{
-    AddOutcome, PhoneBlacklistError, PhoneBlacklistWriteService, RemoveOutcome,
-};
-
-// Email-blacklist verbs (user-owned): the mail.blacklist sanctioned write
-// path — the same add/remove/membership shape as the phone side, with the
-// app-layer lowercase fold and the opt_out_reason_id column persisted by add.
-pub mod mail_blacklist_write_service;
-pub use mail_blacklist_write_service::{
-    AddOutcome as MailAddOutcome, MailBlacklistError, MailBlacklistWriteService,
-    RemoveOutcome as MailRemoveOutcome,
-};
 // END CUSTOM
+
+// This directory's extension (hand-written; ADR-0031).
+include!("mod.ext.rs");
