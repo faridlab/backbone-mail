@@ -1,0 +1,18 @@
+# The rule ratchet (schema doctor): these counts may only go down. Regenerate with
+# `metaphor schema rules . --update-baseline` after enforcing a rule.
+unenforced: 11
+warnings: 0
+machines_without_verbs: 0
+untested_rule_ids: 0
+unenforced_rules:
+- 'discuss_channel_member.hook.yaml: G-MAIL-8-unique'
+- 'discuss_channel_member.hook.yaml: G-MAIL-8-xor'
+- 'mail_activity.hook.yaml: G-MAIL-3'
+- 'mail_activity.hook.yaml: G-MAIL-4'
+- 'mail_alias_domain.hook.yaml: G-MAIL-5-bounce'
+- 'mail_alias_domain.hook.yaml: G-MAIL-5-catchall'
+- 'mail_blacklist.hook.yaml: G-MAIL-2'
+- 'mail_followers.hook.yaml: G-MAIL-1'
+- 'mail_notification.hook.yaml: G-MAIL-7'
+- 'sms.hook.yaml: G-SM1'
+- 'sms_tracker.hook.yaml: G-SM2'
