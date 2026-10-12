@@ -21,6 +21,7 @@ rules:
     code: mail_activity_res_id_required
     severity: error
     enforcement: both
+    justification: "Holds, more strictly than stated, by NOT NULL on res_model and res_id; the columns' constraints are unnamed, so no claim can cite them, and no CHECK exists despite the message."
   G-MAIL-4:
     when: [create, update]
     condition: "res_model is null or user_id is not null"
@@ -28,3 +29,4 @@ rules:
     code: mail_activity_user_id_required
     severity: error
     enforcement: both
+    justification: "Holds by NOT NULL on user_id, as G-MAIL-3; unnamed, so not citable."

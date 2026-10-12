@@ -66,3 +66,5 @@ rules:
     code: mail_notification_message_partner_duplicate
     severity: error
     enforcement: db
+    enforced_by: "migrations/20260426220019_create_mail_notification_table.up.sql::mail_notification_message_partner_uniq"
+    justification: "Database only: message_post does not de-duplicate recipients, so a repeated partner aborts the whole post with a unique violation."

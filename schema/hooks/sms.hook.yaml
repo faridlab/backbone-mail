@@ -56,3 +56,4 @@ rules:
     code: sms_uuid_duplicate
     severity: error
     enforcement: db
+    enforced_by: "migrations/20260426220023_create_sms_table.up.sql::idx_sms_uuid, src/application/service/sms_write_service.rs::enqueue"

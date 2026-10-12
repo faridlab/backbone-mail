@@ -36,3 +36,4 @@ rules:
     code: sms_tracker_uuid_duplicate
     severity: error
     enforcement: db
+    enforced_by: "migrations/20260426220025_create_sms_tracker_table.up.sql::idx_sms_trackers_sms_uuid, src/infrastructure/persistence/sms_queue_repository.rs::enqueue, src/infrastructure/persistence/message_pipeline_repository.rs::insert_sms_with_tracker"

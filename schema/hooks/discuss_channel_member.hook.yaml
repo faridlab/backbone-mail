@@ -21,6 +21,7 @@ rules:
     code: discuss_channel_member_persona_missing
     severity: error
     enforcement: both
+    justification: "PARTLY: the module's own writers derive a member from one identity, a partner or a guest and never both, but no CHECK exists despite the message, and the generic member create accepts both or neither; the composing service does not mount it."
   G-MAIL-8-unique:
     when: [create, update]
     condition: "no two rows share (channel_id, partner_id), and no two rows share (channel_id, guest_id)"
@@ -28,3 +29,5 @@ rules:
     code: discuss_channel_member_duplicate
     severity: error
     enforcement: db
+    enforced_by: "migrations/20260426220005_create_discuss_channel_member_table.up.sql::discuss_channel_member_partner_uniq, migrations/20260426220005_create_discuss_channel_member_table.up.sql::discuss_channel_member_guest_uniq, src/infrastructure/persistence/channel_member_repository.rs::upsert_join"
+    justification: "insert_creator_member is a plain insert, so a conflict there answers 500; two concurrent 1:1 chat opens each mint a channel, since chats carry no uuid to collide on."

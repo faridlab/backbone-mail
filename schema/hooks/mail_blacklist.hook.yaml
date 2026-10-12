@@ -22,3 +22,4 @@ rules:
     code: mail_blacklist_duplicate_email
     severity: error
     enforcement: both
+    justification: "PARTLY: the email unique holds on the stored value, but only MailBlacklistWriteService lowercases, and nothing calls it; the live writer, mass mailing's auto-blacklist sweep, inserts the address as received, so a case variant slips past the module's exact-match lookups."

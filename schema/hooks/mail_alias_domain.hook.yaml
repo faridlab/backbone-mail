@@ -18,6 +18,8 @@ rules:
     code: mail_alias_domain_bounce_conflict
     severity: error
     enforcement: db
+    enforced_by: "migrations/20260426220011_create_mail_alias_domain_table.up.sql::mail_alias_domain_bounce_uniq"
+    justification: "Database only; the index compares case-sensitively."
   G-MAIL-5-catchall:
     when: [create, update]
     condition: "no two rows share (catchall_alias, name)"
@@ -25,3 +27,5 @@ rules:
     code: mail_alias_domain_catchall_conflict
     severity: error
     enforcement: db
+    enforced_by: "migrations/20260426220011_create_mail_alias_domain_table.up.sql::mail_alias_domain_catchall_uniq"
+    justification: "Database only; the index compares case-sensitively."

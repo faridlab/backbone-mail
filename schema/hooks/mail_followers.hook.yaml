@@ -18,3 +18,5 @@ rules:
     code: mail_followers_duplicate_subscription
     severity: error
     enforcement: db
+    enforced_by: "migrations/20260426220014_create_mail_followers_table.up.sql::mail_followers_document_partner_uniq, src/infrastructure/persistence/follower_repository.rs::subscribe"
+    justification: "A repeat subscription is absorbed as already following rather than refused with this code."
