@@ -19,6 +19,8 @@ use crate::infrastructure::persistence::channel_member_repository::{
 pub enum TypingError {
     #[error("db: {0}")]
     Db(#[from] sqlx::Error),
+    #[error("not a member of channel {0}")]
+    NotMember(Uuid),
 }
 
 pub struct TypingService {
@@ -41,9 +43,10 @@ impl TypingService {
     ) -> Result<(), TypingError> {
         let mut tx = self.pool.begin().await?;
         let key = MemberKey { channel_id, identity };
-        if typing {
-            // Find-or-create: the indicator implies presence.
-            ChannelMemberRepository::upsert_join(&mut tx, &key).await?;
+        // Only a member types in a channel; the indicator never adds one (joining has its own
+        // access rules).
+        if ChannelMemberRepository::member_id(&mut tx, &key, false).await?.is_none() {
+            return Err(TypingError::NotMember(channel_id));
         }
         stage_bus_event(
             &mut tx,

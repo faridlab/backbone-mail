@@ -27,6 +27,9 @@ fn attachment_err(e: AttachmentError) -> Response {
         AttachmentError::Forbidden(_) => {
             (StatusCode::FORBIDDEN, Json(json_err("attachment is not yours"))).into_response()
         }
+        AttachmentError::NotMessageAuthor(_) => {
+            (StatusCode::FORBIDDEN, Json(json_err("message is not yours"))).into_response()
+        }
         AttachmentError::NeedsOwner => unauthorized(),
         AttachmentError::Invalid(m) => {
             (StatusCode::UNPROCESSABLE_ENTITY, Json(json_err(&m))).into_response()

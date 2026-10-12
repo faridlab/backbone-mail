@@ -328,10 +328,9 @@ async fn cancel_scheduled(
     axum::Extension(identity): axum::Extension<WireIdentity>,
     Path(id): Path<Uuid>,
 ) -> Response {
-    if identity.partner_id().is_none() && !identity.is_guest() {
-        return unauthorized();
-    }
-    match app.schedule_write_service.cancel_scheduled_message(id).await {
+    // Only the author cancels, and a scheduled message's author is a partner.
+    let Some(author) = identity.partner_id() else { return unauthorized() };
+    match app.schedule_write_service.cancel_scheduled_message(id, author).await {
         Ok(()) => ok_json(serde_json::json!({ "canceled": true })),
         Err(e) => match e {
             crate::application::service::schedule_write_service::ScheduleError::NotFound(_) => {
@@ -340,6 +339,9 @@ async fn cancel_scheduled(
             }
             crate::application::service::schedule_write_service::ScheduleError::Invalid(m) => {
                 (StatusCode::UNPROCESSABLE_ENTITY, Json(json_err(&m))).into_response()
+            }
+            crate::application::service::schedule_write_service::ScheduleError::NotAuthor(_) => {
+                (StatusCode::FORBIDDEN, Json(json_err("not your scheduled message"))).into_response()
             }
             other => (
                 StatusCode::INTERNAL_SERVER_ERROR,

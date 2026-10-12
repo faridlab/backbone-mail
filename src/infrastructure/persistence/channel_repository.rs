@@ -130,6 +130,23 @@ impl ChannelRepository {
             .await
     }
 
+    /// Whether a caller may join this channel by themselves: only a live channel-type channel
+    /// whose access mode is public. Private channels, groups and 1:1 chats take members by
+    /// invitation. `None` = no such live channel.
+    pub async fn open_to_join(
+        conn: &mut PgConnection,
+        channel_id: Uuid,
+    ) -> Result<Option<bool>, sqlx::Error> {
+        sqlx::query_scalar::<_, bool>(r#"
+            SELECT channel_type::text = 'channel' AND default_access_mode IS NOT DISTINCT FROM 'public'
+            FROM messaging.discuss_channels
+            WHERE id = $1 AND (metadata->>'deleted_at') IS NULL
+        "#)
+            .bind(channel_id)
+            .fetch_optional(&mut *conn)
+            .await
+    }
+
     /// Update name/description/email_send (guarded writes — channel_type is
     /// immutable post-create and has no UPDATE path at all).
     pub async fn update_channel_fields(

@@ -32,6 +32,11 @@ fn member_err(e: MemberError) -> Response {
             Json(serde_json::json!({"error": format!("not a member of channel {id}")})),
         )
             .into_response(),
+        MemberError::NotJoinable(id) => (
+            StatusCode::FORBIDDEN,
+            Json(serde_json::json!({"error": format!("channel {id} is not open to join")})),
+        )
+            .into_response(),
         MemberError::Invalid(m) => {
             (StatusCode::UNPROCESSABLE_ENTITY, Json(json_err(&m))).into_response()
         }
@@ -79,6 +84,10 @@ async fn create_channel(
     Json(body): Json<CreateChannelBody>,
 ) -> Response {
     let Ok(id) = require_identity(&identity) else { return unauthorized() };
+    // A guest is a visitor to a public channel, not someone who opens new ones.
+    if identity.is_guest() {
+        return (StatusCode::FORBIDDEN, Json(json_err("guests cannot create channels"))).into_response();
+    }
     match app
         .channel_write_service
         .create(CreateChannelCommand {
@@ -369,6 +378,11 @@ async fn notify_typing(
     let Ok(id) = require_identity(&identity) else { return unauthorized() };
     match app.typing_service.notify_typing(channel_id, &id, body.typing).await {
         Ok(()) => ok_json(serde_json::json!({ "ok": true })),
+        Err(TypingError::NotMember(id)) => (
+            StatusCode::FORBIDDEN,
+            Json(serde_json::json!({"error": format!("not a member of channel {id}")})),
+        )
+            .into_response(),
         Err(TypingError::Db(err)) => db_err(err),
     }
 }

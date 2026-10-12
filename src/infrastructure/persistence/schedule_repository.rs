@@ -78,6 +78,20 @@ impl ScheduleRepository {
     }
 
     /// Cancel M9 by id.
+    /// The author of a pending scheduled message, read under its row lock so the cancel that
+    /// follows acts on the row it checked. `None` = no such pending message.
+    pub async fn scheduled_author_for_update(
+        conn: &mut PgConnection,
+        id: Uuid,
+    ) -> Result<Option<Option<Uuid>>, sqlx::Error> {
+        sqlx::query_scalar::<_, Option<Uuid>>(
+            r#"SELECT author_party_id FROM messaging.mail_scheduled_messages WHERE id = $1 FOR UPDATE"#,
+        )
+        .bind(id)
+        .fetch_optional(&mut *conn)
+        .await
+    }
+
     pub async fn cancel_scheduled_message(
         conn: &mut PgConnection,
         id: Uuid,

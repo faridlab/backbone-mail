@@ -12,6 +12,7 @@ use uuid::Uuid;
 
 use crate::application::service::chatter_acl::MessagingIdentity;
 use crate::domain::event::constants::{discuss_channel, stage_bus_event};
+use crate::infrastructure::persistence::channel_repository::ChannelRepository;
 use crate::infrastructure::persistence::channel_member_repository::{
     ChannelMemberRepository, MemberKey,
 };
@@ -24,6 +25,10 @@ pub enum MemberError {
     Invalid(String),
     #[error("not a member of channel {0}")]
     NotMember(Uuid),
+    /// The channel takes members by invitation only (private, group or 1:1 chat), or does not
+    /// exist.
+    #[error("channel {0} is not open to join")]
+    NotJoinable(Uuid),
 }
 
 pub struct ChannelMemberWriteService {
@@ -118,6 +123,13 @@ impl ChannelMemberWriteService {
     ) -> Result<bool, MemberError> {
         let mut tx = self.pool.begin().await?;
         let key = MemberKey { channel_id, identity };
+        // A member re-joining is a no-op; anyone else joins only a public channel. Private
+        // channels, groups and 1:1 chats take members by invitation.
+        if ChannelMemberRepository::member_id(&mut tx, &key, false).await?.is_none()
+            && ChannelRepository::open_to_join(&mut tx, channel_id).await? != Some(true)
+        {
+            return Err(MemberError::NotJoinable(channel_id));
+        }
         let joined = ChannelMemberRepository::upsert_join(&mut tx, &key).await?;
         if joined {
             stage_bus_event(

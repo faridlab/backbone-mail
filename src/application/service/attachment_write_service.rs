@@ -29,6 +29,8 @@ pub enum AttachmentError {
     Forbidden(Uuid),
     #[error("an attachment needs an owner (partner or guest)")]
     NeedsOwner,
+    #[error("forbidden: message {0} is not yours")]
+    NotMessageAuthor(Uuid),
 }
 
 pub struct AttachmentWriteService {
@@ -105,6 +107,21 @@ impl AttachmentWriteService {
     ) -> Result<bool, AttachmentError> {
         self.owner_gate(attachment_id, identity, is_admin).await?;
         let mut tx = self.pool.begin().await?;
+        // A file goes onto a message its author wrote (or an admin's): owning the file is not
+        // a licence to add it to someone else's message.
+        if !is_admin {
+            let (author_id, author_guest_id) =
+                crate::infrastructure::persistence::message_edit_repository::MessageEditRepository::message_authors(&mut tx, message_id)
+                    .await?
+                    .ok_or(AttachmentError::Invalid(format!("no such message {message_id}")))?;
+            let is_author = match identity {
+                MessagingIdentity::User { partner_id } => author_id == Some(*partner_id),
+                MessagingIdentity::Guest { guest_id } => author_guest_id == Some(*guest_id),
+            };
+            if !is_author {
+                return Err(AttachmentError::NotMessageAuthor(message_id));
+            }
+        }
         let attached =
             AttachmentRepository::attach_to_message(&mut tx, Uuid::new_v4(), message_id, attachment_id)
                 .await?;

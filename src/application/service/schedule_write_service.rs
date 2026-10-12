@@ -41,6 +41,8 @@ pub enum ScheduleError {
     NotFound(Uuid),
     #[error("forbidden: cannot post on {0} {1}")]
     CannotPost(String, Uuid),
+    #[error("forbidden: scheduled message {0} is not yours")]
+    NotAuthor(Uuid),
 }
 
 pub struct ScheduleWriteService {
@@ -215,8 +217,14 @@ impl ScheduleWriteService {
     }
 
     /// Cancel M9 (before it fires). Only the author (route-gated) reaches here.
-    pub async fn cancel_scheduled_message(&self, id: Uuid) -> Result<(), ScheduleError> {
+    /// Cancel a pending scheduled message. Only its author may: `author` is the caller's partner.
+    pub async fn cancel_scheduled_message(&self, id: Uuid, author: Uuid) -> Result<(), ScheduleError> {
         let mut tx = self.pool.begin().await?;
+        match ScheduleRepository::scheduled_author_for_update(&mut tx, id).await? {
+            None => return Err(ScheduleError::NotFound(id)),
+            Some(a) if a != Some(author) => return Err(ScheduleError::NotAuthor(id)),
+            Some(_) => {}
+        }
         if !ScheduleRepository::cancel_scheduled_message(&mut tx, id).await? {
             return Err(ScheduleError::NotFound(id));
         }

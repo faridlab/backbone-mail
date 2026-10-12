@@ -68,6 +68,11 @@ impl ChannelWriteService {
                 "chats are minted via get_or_create_chat, not create (1:1 dedup)".into(),
             ));
         }
+        if let Some(mode) = cmd.default_access_mode.as_deref() {
+            if !matches!(mode, "public" | "private" | "group") {
+                return Err(ChannelError::Invalid(format!("unknown default_access_mode {mode:?}")));
+            }
+        }
 
         let mut tx = self.pool.begin().await?;
         let channel_id = Uuid::new_v4();
