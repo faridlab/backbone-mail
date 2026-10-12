@@ -143,6 +143,8 @@ pub struct MailSendRequest {
     pub body_html: String,
     /// The References header seed, when the parent message had a message_id.
     pub in_reply_to: Option<String>,
+    /// The Reply-To address the queue row carries, when the producer set one.
+    pub reply_to: Option<String>,
     /// Per-mail custom headers from the queue row (already through the
     /// single-line guard). Supplements — never overrides — the transport's
     /// own headers; see the module-doc precedence contract above.
@@ -302,4 +304,16 @@ mod tests {
             Err(MailHeaderError::EmptyName { .. })
         ));
     }
+}
+
+/// Where the envelope sender comes from when a queued message names none.
+///
+/// Most in-process producers (notifications, security notices, digests) leave the sender to the
+/// deployment, as Odoo does with its default-from setting. The composing service implements this
+/// over its settings store; with no implementation installed, or no setting, a message with no
+/// sender is refused as `mail_from_missing` rather than sent from a guessed address.
+#[async_trait::async_trait]
+pub trait DefaultSenderSource: Send + Sync {
+    /// The address to send from, or `None` when the deployment has not set one.
+    async fn default_from(&self) -> Option<String>;
 }

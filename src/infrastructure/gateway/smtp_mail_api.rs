@@ -92,6 +92,8 @@ pub struct SmtpMailApi {
     /// One built transport per MailServer row (the lettre transport is expensive
     /// to build — TLS params + relay resolution — and safe to share).
     transports: Mutex<HashMap<Uuid, Arc<SmtpEmailService>>>,
+    /// Where the sender comes from when a queued message names none.
+    default_sender: Option<Arc<dyn crate::application::service::mail_ports::DefaultSenderSource>>,
 }
 
 impl SmtpMailApi {
@@ -99,7 +101,17 @@ impl SmtpMailApi {
         Self {
             servers: MailServerQueryService::new(pool),
             transports: Mutex::new(HashMap::new()),
+            default_sender: None,
         }
+    }
+
+    /// Send a message that names no sender from the deployment's default sender.
+    pub fn with_default_sender(
+        mut self,
+        source: Arc<dyn crate::application::service::mail_ports::DefaultSenderSource>,
+    ) -> Self {
+        self.default_sender = Some(source);
+        self
     }
 
     /// Build (or fetch the cached) transport for a selected endpoint.
@@ -163,14 +175,20 @@ impl SmtpMailApi {
 #[async_trait::async_trait]
 impl MailApiPort for SmtpMailApi {
     async fn send(&self, req: &MailSendRequest) -> Result<MailSendOutcome, MailSendFailure> {
-        // The ladder cannot even be walked without a domain — Odoo's
-        // mail_from_missing folds onto mail_server.
-        if req.from.trim().is_empty() {
+        // A message that names no sender goes from the deployment's default sender. The ladder
+        // cannot even be walked without a domain — Odoo's mail_from_missing folds onto
+        // mail_server.
+        let default_from = match (&self.default_sender, req.from.trim().is_empty()) {
+            (Some(source), true) => source.default_from().await,
+            _ => None,
+        };
+        let Some(from) = envelope_sender(&req.from, default_from) else {
             return Err(MailSendFailure {
                 failure_type: "mail_server".into(),
-                message: "mail_from_missing: the queue row carries no envelope sender".into(),
+                message: "mail_from_missing: the queue row carries no envelope sender and no default sender is set".into(),
             });
-        }
+        };
+        let req = &MailSendRequest { from, ..req.clone() };
 
         let ep = self
             .servers
@@ -205,7 +223,7 @@ impl MailApiPort for SmtpMailApi {
         let message = EmailMessage {
             id: req.mail_id.to_string(),
             from: EmailAddress::new(&req.from),
-            reply_to: None,
+            reply_to: req.reply_to.as_deref().filter(|r| !r.trim().is_empty()).map(EmailAddress::new),
             recipients: EmailRecipients::new(
                 req.to.iter().map(EmailAddress::new).collect(),
             ),
@@ -311,5 +329,27 @@ mod tests {
         assert!(refusal.message.contains("CR/LF"));
         // The name side too.
         assert!(merge_transport_headers(None, &per_mail(&[("Bad\r\nName", "v")])).is_err());
+    }
+}
+
+/// The envelope sender: the message's own, else the default; `None` when neither is set.
+fn envelope_sender(own: &str, default: Option<String>) -> Option<String> {
+    let own = own.trim();
+    if !own.is_empty() {
+        return Some(own.to_string());
+    }
+    default.map(|d| d.trim().to_string()).filter(|d| !d.is_empty())
+}
+
+#[cfg(test)]
+mod sender_tests {
+    use super::envelope_sender;
+
+    #[test]
+    fn a_message_without_a_sender_goes_from_the_default() {
+        assert_eq!(envelope_sender("", Some("noreply@example.test".into())).as_deref(), Some("noreply@example.test"));
+        assert_eq!(envelope_sender("hr@example.test", Some("noreply@example.test".into())).as_deref(), Some("hr@example.test"));
+        assert_eq!(envelope_sender("  ", None), None, "no sender and no default is refused");
+        assert_eq!(envelope_sender("", Some(" ".into())), None);
     }
 }

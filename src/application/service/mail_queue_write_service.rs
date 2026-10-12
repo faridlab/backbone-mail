@@ -206,6 +206,7 @@ impl MailQueueWriteService {
                         // shape keeps the field so a threading producer can set
                         // it; the drainer has nothing to seed it with.
                         in_reply_to: None,
+                        reply_to: row.reply_to.clone(),
                         headers: row_headers,
                     })
                     .await;
