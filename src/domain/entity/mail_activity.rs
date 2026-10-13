@@ -312,6 +312,9 @@ impl backbone_orm::EntityRepoMeta for MailActivity {
     fn search_fields() -> &'static [&'static str] {
         &["res_model"]
     }
+    fn relations() -> &'static [(&'static str, &'static str, &'static str)] {
+        &[("activityType", "mail_activity_types", "activityTypeId")]
+    }
 }
 
 /// Builder for MailActivity entity

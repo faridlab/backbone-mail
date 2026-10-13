@@ -299,6 +299,9 @@ impl backbone_orm::EntityRepoMeta for DiscussChannel {
     fn search_fields() -> &'static [&'static str] {
         &[]
     }
+    fn relations() -> &'static [(&'static str, &'static str, &'static str)] {
+        &[("alias", "mail_aliases", "aliasId"), ("lastMessage", "mail_messages", "lastMessageId")]
+    }
 }
 
 /// Builder for DiscussChannel entity

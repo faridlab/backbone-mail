@@ -279,6 +279,9 @@ impl backbone_orm::EntityRepoMeta for MailNotification {
     fn search_fields() -> &'static [&'static str] {
         &[]
     }
+    fn relations() -> &'static [(&'static str, &'static str, &'static str)] {
+        &[("mailMessage", "mail_messages", "mailMessageId")]
+    }
 }
 
 /// Builder for MailNotification entity

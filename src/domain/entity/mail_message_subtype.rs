@@ -257,6 +257,9 @@ impl backbone_orm::EntityRepoMeta for MailMessageSubtype {
     fn search_fields() -> &'static [&'static str] {
         &["name"]
     }
+    fn relations() -> &'static [(&'static str, &'static str, &'static str)] {
+        &[("parent", "mail_message_subtypes", "parentId")]
+    }
 }
 
 /// Builder for MailMessageSubtype entity

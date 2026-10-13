@@ -385,6 +385,9 @@ impl backbone_orm::EntityRepoMeta for MailMessage {
     fn search_fields() -> &'static [&'static str] {
         &["body"]
     }
+    fn relations() -> &'static [(&'static str, &'static str, &'static str)] {
+        &[("subtype", "mail_message_subtypes", "subtypeId"), ("authorGuest", "mail_guests", "authorGuestId")]
+    }
 }
 
 /// Builder for MailMessage entity

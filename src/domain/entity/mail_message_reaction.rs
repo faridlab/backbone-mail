@@ -222,6 +222,9 @@ impl backbone_orm::EntityRepoMeta for MailMessageReaction {
     fn search_fields() -> &'static [&'static str] {
         &["content"]
     }
+    fn relations() -> &'static [(&'static str, &'static str, &'static str)] {
+        &[("message", "mail_messages", "messageId"), ("guest", "mail_guests", "guestId")]
+    }
 }
 
 /// Builder for MailMessageReaction entity

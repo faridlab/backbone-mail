@@ -210,6 +210,9 @@ impl backbone_orm::EntityRepoMeta for MailMessageSchedule {
     fn search_fields() -> &'static [&'static str] {
         &[]
     }
+    fn relations() -> &'static [(&'static str, &'static str, &'static str)] {
+        &[("mailMessage", "mail_messages", "mailMessageId")]
+    }
 }
 
 /// Builder for MailMessageSchedule entity

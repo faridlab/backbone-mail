@@ -277,6 +277,9 @@ impl backbone_orm::EntityRepoMeta for MailAttachment {
     fn secret_fields() -> &'static [&'static str] {
         &["accessToken"]
     }
+    fn relations() -> &'static [(&'static str, &'static str, &'static str)] {
+        &[("ownerGuest", "mail_guests", "ownerGuestId")]
+    }
 }
 
 /// Builder for MailAttachment entity

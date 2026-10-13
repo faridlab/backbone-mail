@@ -262,6 +262,9 @@ impl backbone_orm::EntityRepoMeta for SmsTracker {
     fn search_fields() -> &'static [&'static str] {
         &["sms_uuid"]
     }
+    fn relations() -> &'static [(&'static str, &'static str, &'static str)] {
+        &[("message", "mail_messages", "messageId"), ("notification", "mail_notifications", "notificationId")]
+    }
 }
 
 /// Builder for SmsTracker entity

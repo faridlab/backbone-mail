@@ -255,6 +255,9 @@ impl backbone_orm::EntityRepoMeta for MailPresence {
     fn search_fields() -> &'static [&'static str] {
         &[]
     }
+    fn relations() -> &'static [(&'static str, &'static str, &'static str)] {
+        &[("guest", "mail_guests", "guestId")]
+    }
 }
 
 /// Builder for MailPresence entity

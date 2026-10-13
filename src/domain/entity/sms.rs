@@ -276,6 +276,9 @@ impl backbone_orm::EntityRepoMeta for Sms {
     fn search_fields() -> &'static [&'static str] {
         &["uuid", "number", "body"]
     }
+    fn relations() -> &'static [(&'static str, &'static str, &'static str)] {
+        &[("mailMessage", "mail_messages", "mailMessageId")]
+    }
 }
 
 /// Builder for Sms entity

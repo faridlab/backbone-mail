@@ -258,6 +258,9 @@ impl backbone_orm::EntityRepoMeta for MailActivityPlanTemplate {
     fn search_fields() -> &'static [&'static str] {
         &[]
     }
+    fn relations() -> &'static [(&'static str, &'static str, &'static str)] {
+        &[("plan", "mail_activity_plans", "planId"), ("activityType", "mail_activity_types", "activityTypeId")]
+    }
 }
 
 /// Builder for MailActivityPlanTemplate entity

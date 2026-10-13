@@ -322,6 +322,9 @@ impl backbone_orm::EntityRepoMeta for MailTrackingValue {
     fn search_fields() -> &'static [&'static str] {
         &["field"]
     }
+    fn relations() -> &'static [(&'static str, &'static str, &'static str)] {
+        &[("mailMessage", "mail_messages", "mailMessageId")]
+    }
 }
 
 /// Builder for MailTrackingValue entity

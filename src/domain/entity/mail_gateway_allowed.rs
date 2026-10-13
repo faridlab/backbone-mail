@@ -209,6 +209,15 @@ impl backbone_orm::EntityRepoMeta for MailGatewayAllowed {
     fn search_fields() -> &'static [&'static str] {
         &["pattern"]
     }
+    fn relation_secret_fields(relation: &str) -> &'static [&'static str] {
+        match relation {
+            "fetchmailServer" => &["tokenHash"],
+            _ => &[],
+        }
+    }
+    fn relations() -> &'static [(&'static str, &'static str, &'static str)] {
+        &[("fetchmailServer", "fetchmail_servers", "fetchmailServerId")]
+    }
 }
 
 /// Builder for MailGatewayAllowed entity

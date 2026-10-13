@@ -195,6 +195,9 @@ impl backbone_orm::EntityRepoMeta for MailMessageStar {
     fn search_fields() -> &'static [&'static str] {
         &[]
     }
+    fn relations() -> &'static [(&'static str, &'static str, &'static str)] {
+        &[("message", "mail_messages", "messageId")]
+    }
 }
 
 /// Builder for MailMessageStar entity
