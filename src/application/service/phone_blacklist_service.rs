@@ -32,3 +32,37 @@ pub type PhoneBlacklistService = GenericCrudService<
     PhoneBlacklistRepository,
 >;
 
+/// The rules the schema declares for PhoneBlacklist, checked against the row a create or update
+/// would store. The generated build attaches it to [`PhoneBlacklistService`]. A refusing rule's
+/// break answers 422; a rule in shadow is logged under `backbone::write_guard` and the
+/// write goes ahead.
+pub struct PhoneBlacklistRowRules;
+
+#[async_trait::async_trait]
+impl backbone_core::write_guard::WriteGuard<PhoneBlacklist> for PhoneBlacklistRowRules {
+    async fn check(
+        &self,
+        ctx: &backbone_core::write_guard::WriteCtx<'_, PhoneBlacklist>,
+    ) -> backbone_core::write_guard::GuardOutcome {
+        use backbone_core::row_rule as r;
+        use backbone_core::violation::Violation;
+        use backbone_core::write_guard::{GuardOutcome, WriteKind};
+        let (create, update) = (ctx.kind == WriteKind::Create, ctx.kind == WriteKind::Update);
+        let Some(after) = ctx.after.filter(|_| create || update) else {
+            return GuardOutcome::allow();
+        };
+        let Ok(row) = serde_json::to_value(after) else {
+            return GuardOutcome::allow();
+        };
+        let row = &row;
+        let old = ctx.before.and_then(|b| serde_json::to_value(b).ok());
+        let shadow = Vec::new();
+        let mut refuse = Vec::new();
+        // `number_required` (@required on PhoneBlacklist.number)
+        if (create || (update && r::changed(old.as_ref(), row, &["number"]))) && !r::holds(&r::and(r::is_not_null(r::field(row, "number")), r::not(r::is_empty(r::trim(r::field(row, "number")))))) {
+            refuse.push(Violation::new("number", "required", "number is required"));
+        }
+        GuardOutcome { refuse, shadow }
+    }
+}
+

@@ -76,9 +76,6 @@ pub use application::service::SmsService;
 pub use application::service::SmsTemplateService;
 pub use application::service::SmsTrackerService;
 
-// Re-exports - Validation
-pub use application::validator::{ValidationError, ValidationResult};
-
 use std::sync::Arc;
 use axum::Router;
 use sqlx::PgPool;
@@ -449,7 +446,7 @@ impl MessagingModuleBuilder {
 
         // MailActivity service
         let mail_activity_repository = Arc::new(MailActivityRepository::new(db_pool.clone()));
-        let mail_activity_service = Arc::new(MailActivityService::with_repository(mail_activity_repository.clone()));
+        let mail_activity_service = Arc::new(MailActivityService::with_repository(mail_activity_repository.clone()).with_guard(Arc::new(crate::application::service::MailActivityRowRules)));
 
         // MailActivityType service
         let mail_activity_type_repository = Arc::new(MailActivityTypeRepository::new(db_pool.clone()));
@@ -457,15 +454,15 @@ impl MessagingModuleBuilder {
 
         // MailActivityPlan service
         let mail_activity_plan_repository = Arc::new(MailActivityPlanRepository::new(db_pool.clone()));
-        let mail_activity_plan_service = Arc::new(MailActivityPlanService::with_repository(mail_activity_plan_repository.clone()));
+        let mail_activity_plan_service = Arc::new(MailActivityPlanService::with_repository(mail_activity_plan_repository.clone()).with_guard(Arc::new(crate::application::service::MailActivityPlanRowRules)));
 
         // MailActivityPlanTemplate service
         let mail_activity_plan_template_repository = Arc::new(MailActivityPlanTemplateRepository::new(db_pool.clone()));
-        let mail_activity_plan_template_service = Arc::new(MailActivityPlanTemplateService::with_repository(mail_activity_plan_template_repository.clone()));
+        let mail_activity_plan_template_service = Arc::new(MailActivityPlanTemplateService::with_repository(mail_activity_plan_template_repository.clone()).with_guard(Arc::new(crate::application::service::MailActivityPlanTemplateRowRules)));
 
         // MailAliasDomain service
         let mail_alias_domain_repository = Arc::new(MailAliasDomainRepository::new(db_pool.clone()));
-        let mail_alias_domain_service = Arc::new(MailAliasDomainService::with_repository(mail_alias_domain_repository.clone()));
+        let mail_alias_domain_service = Arc::new(MailAliasDomainService::with_repository(mail_alias_domain_repository.clone()).with_guard(Arc::new(crate::application::service::MailAliasDomainRowRules)));
 
         // MailAlias service
         let mail_alias_repository = Arc::new(MailAliasRepository::new(db_pool.clone()));
@@ -473,15 +470,15 @@ impl MessagingModuleBuilder {
 
         // MailAttachment service
         let mail_attachment_repository = Arc::new(MailAttachmentRepository::new(db_pool.clone()));
-        let mail_attachment_service = Arc::new(MailAttachmentService::with_repository(mail_attachment_repository.clone()));
+        let mail_attachment_service = Arc::new(MailAttachmentService::with_repository(mail_attachment_repository.clone()).with_guard(Arc::new(crate::application::service::MailAttachmentRowRules)));
 
         // MailMessageAttachment service
         let mail_message_attachment_repository = Arc::new(MailMessageAttachmentRepository::new(db_pool.clone()));
-        let mail_message_attachment_service = Arc::new(MailMessageAttachmentService::with_repository(mail_message_attachment_repository.clone()));
+        let mail_message_attachment_service = Arc::new(MailMessageAttachmentService::with_repository(mail_message_attachment_repository.clone()).with_guard(Arc::new(crate::application::service::MailMessageAttachmentRowRules)));
 
         // MailMessageStar service
         let mail_message_star_repository = Arc::new(MailMessageStarRepository::new(db_pool.clone()));
-        let mail_message_star_service = Arc::new(MailMessageStarService::with_repository(mail_message_star_repository.clone()));
+        let mail_message_star_service = Arc::new(MailMessageStarService::with_repository(mail_message_star_repository.clone()).with_guard(Arc::new(crate::application::service::MailMessageStarRowRules)));
 
         // MailMessage service
         let mail_message_repository = Arc::new(MailMessageRepository::new(db_pool.clone()));
@@ -497,15 +494,15 @@ impl MessagingModuleBuilder {
 
         // MailMessageSubtype service
         let mail_message_subtype_repository = Arc::new(MailMessageSubtypeRepository::new(db_pool.clone()));
-        let mail_message_subtype_service = Arc::new(MailMessageSubtypeService::with_repository(mail_message_subtype_repository.clone()));
+        let mail_message_subtype_service = Arc::new(MailMessageSubtypeService::with_repository(mail_message_subtype_repository.clone()).with_guard(Arc::new(crate::application::service::MailMessageSubtypeRowRules)));
 
         // MailMessageReaction service
         let mail_message_reaction_repository = Arc::new(MailMessageReactionRepository::new(db_pool.clone()));
-        let mail_message_reaction_service = Arc::new(MailMessageReactionService::with_repository(mail_message_reaction_repository.clone()));
+        let mail_message_reaction_service = Arc::new(MailMessageReactionService::with_repository(mail_message_reaction_repository.clone()).with_guard(Arc::new(crate::application::service::MailMessageReactionRowRules)));
 
         // MailFollowers service
         let mail_followers_repository = Arc::new(MailFollowersRepository::new(db_pool.clone()));
-        let mail_followers_service = Arc::new(MailFollowersService::with_repository(mail_followers_repository.clone()));
+        let mail_followers_service = Arc::new(MailFollowersService::with_repository(mail_followers_repository.clone()).with_guard(Arc::new(crate::application::service::MailFollowersRowRules)));
 
         // MailPresence service
         let mail_presence_repository = Arc::new(MailPresenceRepository::new(db_pool.clone()));
@@ -513,11 +510,11 @@ impl MessagingModuleBuilder {
 
         // MailBlacklist service
         let mail_blacklist_repository = Arc::new(MailBlacklistRepository::new(db_pool.clone()));
-        let mail_blacklist_service = Arc::new(MailBlacklistService::with_repository(mail_blacklist_repository.clone()));
+        let mail_blacklist_service = Arc::new(MailBlacklistService::with_repository(mail_blacklist_repository.clone()).with_guard(Arc::new(crate::application::service::MailBlacklistRowRules)));
 
         // MailTrackingValue service
         let mail_tracking_value_repository = Arc::new(MailTrackingValueRepository::new(db_pool.clone()));
-        let mail_tracking_value_service = Arc::new(MailTrackingValueService::with_repository(mail_tracking_value_repository.clone()));
+        let mail_tracking_value_service = Arc::new(MailTrackingValueService::with_repository(mail_tracking_value_repository.clone()).with_guard(Arc::new(crate::application::service::MailTrackingValueRowRules)));
 
         // DiscussChannel service
         let discuss_channel_repository = Arc::new(DiscussChannelRepository::new(db_pool.clone()));
@@ -525,35 +522,35 @@ impl MessagingModuleBuilder {
 
         // DiscussChannelMember service
         let discuss_channel_member_repository = Arc::new(DiscussChannelMemberRepository::new(db_pool.clone()));
-        let discuss_channel_member_service = Arc::new(DiscussChannelMemberService::with_repository(discuss_channel_member_repository.clone()));
+        let discuss_channel_member_service = Arc::new(DiscussChannelMemberService::with_repository(discuss_channel_member_repository.clone()).with_guard(Arc::new(crate::application::service::DiscussChannelMemberRowRules)));
 
         // MailGuest service
         let mail_guest_repository = Arc::new(MailGuestRepository::new(db_pool.clone()));
-        let mail_guest_service = Arc::new(MailGuestService::with_repository(mail_guest_repository.clone()));
+        let mail_guest_service = Arc::new(MailGuestService::with_repository(mail_guest_repository.clone()).with_guard(Arc::new(crate::application::service::MailGuestRowRules)));
 
         // MailServer service
         let mail_server_repository = Arc::new(MailServerRepository::new(db_pool.clone()));
-        let mail_server_service = Arc::new(MailServerService::with_repository(mail_server_repository.clone()));
+        let mail_server_service = Arc::new(MailServerService::with_repository(mail_server_repository.clone()).with_guard(Arc::new(crate::application::service::MailServerRowRules)));
 
         // FetchmailServer service
         let fetchmail_server_repository = Arc::new(FetchmailServerRepository::new(db_pool.clone()));
-        let fetchmail_server_service = Arc::new(FetchmailServerService::with_repository(fetchmail_server_repository.clone()));
+        let fetchmail_server_service = Arc::new(FetchmailServerService::with_repository(fetchmail_server_repository.clone()).with_guard(Arc::new(crate::application::service::FetchmailServerRowRules)));
 
         // MailGatewayAllowed service
         let mail_gateway_allowed_repository = Arc::new(MailGatewayAllowedRepository::new(db_pool.clone()));
-        let mail_gateway_allowed_service = Arc::new(MailGatewayAllowedService::with_repository(mail_gateway_allowed_repository.clone()));
+        let mail_gateway_allowed_service = Arc::new(MailGatewayAllowedService::with_repository(mail_gateway_allowed_repository.clone()).with_guard(Arc::new(crate::application::service::MailGatewayAllowedRowRules)));
 
         // PhoneBlacklist service
         let phone_blacklist_repository = Arc::new(PhoneBlacklistRepository::new(db_pool.clone()));
-        let phone_blacklist_service = Arc::new(PhoneBlacklistService::with_repository(phone_blacklist_repository.clone()));
+        let phone_blacklist_service = Arc::new(PhoneBlacklistService::with_repository(phone_blacklist_repository.clone()).with_guard(Arc::new(crate::application::service::PhoneBlacklistRowRules)));
 
         // MailMessageSchedule service
         let mail_message_schedule_repository = Arc::new(MailMessageScheduleRepository::new(db_pool.clone()));
-        let mail_message_schedule_service = Arc::new(MailMessageScheduleService::with_repository(mail_message_schedule_repository.clone()));
+        let mail_message_schedule_service = Arc::new(MailMessageScheduleService::with_repository(mail_message_schedule_repository.clone()).with_guard(Arc::new(crate::application::service::MailMessageScheduleRowRules)));
 
         // MailScheduledMessage service
         let mail_scheduled_message_repository = Arc::new(MailScheduledMessageRepository::new(db_pool.clone()));
-        let mail_scheduled_message_service = Arc::new(MailScheduledMessageService::with_repository(mail_scheduled_message_repository.clone()));
+        let mail_scheduled_message_service = Arc::new(MailScheduledMessageService::with_repository(mail_scheduled_message_repository.clone()).with_guard(Arc::new(crate::application::service::MailScheduledMessageRowRules)));
 
         // Sms service
         let sms_repository = Arc::new(SmsRepository::new(db_pool.clone()));
@@ -561,11 +558,11 @@ impl MessagingModuleBuilder {
 
         // SmsTemplate service
         let sms_template_repository = Arc::new(SmsTemplateRepository::new(db_pool.clone()));
-        let sms_template_service = Arc::new(SmsTemplateService::with_repository(sms_template_repository.clone()));
+        let sms_template_service = Arc::new(SmsTemplateService::with_repository(sms_template_repository.clone()).with_guard(Arc::new(crate::application::service::SmsTemplateRowRules)));
 
         // SmsTracker service
         let sms_tracker_repository = Arc::new(SmsTrackerRepository::new(db_pool.clone()));
-        let sms_tracker_service = Arc::new(SmsTrackerService::with_repository(sms_tracker_repository.clone()));
+        let sms_tracker_service = Arc::new(SmsTrackerService::with_repository(sms_tracker_repository.clone()).with_guard(Arc::new(crate::application::service::SmsTrackerRowRules)));
 
 
         // The extension builds its own state from what the generated build made.

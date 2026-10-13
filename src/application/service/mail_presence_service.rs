@@ -32,9 +32,10 @@ pub type MailPresenceService = GenericCrudService<
     MailPresenceRepository,
 >;
 
-/// The row rules the schema declares for MailPresence, checked against the row a create or
-/// update would store. The generated build attaches it to [`MailPresenceService`]. Every rule
-/// runs in shadow: a break is logged under `backbone::write_guard` and the write goes ahead.
+/// The rules the schema declares for MailPresence, checked against the row a create or update
+/// would store. The generated build attaches it to [`MailPresenceService`]. A refusing rule's
+/// break answers 422; a rule in shadow is logged under `backbone::write_guard` and the
+/// write goes ahead.
 pub struct MailPresenceRowRules;
 
 #[async_trait::async_trait]

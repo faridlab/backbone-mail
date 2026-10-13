@@ -32,3 +32,41 @@ pub type MailMessageReactionService = GenericCrudService<
     MailMessageReactionRepository,
 >;
 
+/// The rules the schema declares for MailMessageReaction, checked against the row a create or update
+/// would store. The generated build attaches it to [`MailMessageReactionService`]. A refusing rule's
+/// break answers 422; a rule in shadow is logged under `backbone::write_guard` and the
+/// write goes ahead.
+pub struct MailMessageReactionRowRules;
+
+#[async_trait::async_trait]
+impl backbone_core::write_guard::WriteGuard<MailMessageReaction> for MailMessageReactionRowRules {
+    async fn check(
+        &self,
+        ctx: &backbone_core::write_guard::WriteCtx<'_, MailMessageReaction>,
+    ) -> backbone_core::write_guard::GuardOutcome {
+        use backbone_core::row_rule as r;
+        use backbone_core::violation::Violation;
+        use backbone_core::write_guard::{GuardOutcome, WriteKind};
+        let (create, update) = (ctx.kind == WriteKind::Create, ctx.kind == WriteKind::Update);
+        let Some(after) = ctx.after.filter(|_| create || update) else {
+            return GuardOutcome::allow();
+        };
+        let Ok(row) = serde_json::to_value(after) else {
+            return GuardOutcome::allow();
+        };
+        let row = &row;
+        let old = ctx.before.and_then(|b| serde_json::to_value(b).ok());
+        let shadow = Vec::new();
+        let mut refuse = Vec::new();
+        // `message_id_required` (@required on MailMessageReaction.message_id)
+        if (create || (update && r::changed(old.as_ref(), row, &["message_id"]))) && !r::holds(&r::and(r::is_not_null(r::field(row, "message_id")), r::not(r::is_empty(r::trim(r::field(row, "message_id")))))) {
+            refuse.push(Violation::new("message_id", "required", "message_id is required"));
+        }
+        // `content_required` (@required on MailMessageReaction.content)
+        if (create || (update && r::changed(old.as_ref(), row, &["content"]))) && !r::holds(&r::and(r::is_not_null(r::field(row, "content")), r::not(r::is_empty(r::trim(r::field(row, "content")))))) {
+            refuse.push(Violation::new("content", "required", "content is required"));
+        }
+        GuardOutcome { refuse, shadow }
+    }
+}
+

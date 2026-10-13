@@ -32,9 +32,10 @@ pub type SmsService = GenericCrudService<
     SmsRepository,
 >;
 
-/// The row rules the schema declares for Sms, checked against the row a create or
-/// update would store. The generated build attaches it to [`SmsService`]. Every rule
-/// runs in shadow: a break is logged under `backbone::write_guard` and the write goes ahead.
+/// The rules the schema declares for Sms, checked against the row a create or update
+/// would store. The generated build attaches it to [`SmsService`]. A refusing rule's
+/// break answers 422; a rule in shadow is logged under `backbone::write_guard` and the
+/// write goes ahead.
 pub struct SmsRowRules;
 
 #[async_trait::async_trait]
@@ -56,11 +57,24 @@ impl backbone_core::write_guard::WriteGuard<Sms> for SmsRowRules {
         let row = &row;
         let old = ctx.before.and_then(|b| serde_json::to_value(b).ok());
         let mut shadow = Vec::new();
+        let mut refuse = Vec::new();
         // `state` belongs to a state machine: only its verbs move it
         if update && ctx.transition.is_none() && r::changed(old.as_ref(), row, &["state"]) {
             shadow.push(Violation::new("state", "state_field_verbs_only", "the state field moves only through its verbs"));
         }
-        GuardOutcome { refuse: Vec::new(), shadow }
+        // `uuid_required` (@required on Sms.uuid)
+        if (create || (update && r::changed(old.as_ref(), row, &["uuid"]))) && !r::holds(&r::and(r::is_not_null(r::field(row, "uuid")), r::not(r::is_empty(r::trim(r::field(row, "uuid")))))) {
+            refuse.push(Violation::new("uuid", "required", "uuid is required"));
+        }
+        // `number_required` (@required on Sms.number)
+        if (create || (update && r::changed(old.as_ref(), row, &["number"]))) && !r::holds(&r::and(r::is_not_null(r::field(row, "number")), r::not(r::is_empty(r::trim(r::field(row, "number")))))) {
+            refuse.push(Violation::new("number", "required", "number is required"));
+        }
+        // `body_required` (@required on Sms.body)
+        if (create || (update && r::changed(old.as_ref(), row, &["body"]))) && !r::holds(&r::and(r::is_not_null(r::field(row, "body")), r::not(r::is_empty(r::trim(r::field(row, "body")))))) {
+            refuse.push(Violation::new("body", "required", "body is required"));
+        }
+        GuardOutcome { refuse, shadow }
     }
 }
 

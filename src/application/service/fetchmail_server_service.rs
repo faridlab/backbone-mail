@@ -32,3 +32,41 @@ pub type FetchmailServerService = GenericCrudService<
     FetchmailServerRepository,
 >;
 
+/// The rules the schema declares for FetchmailServer, checked against the row a create or update
+/// would store. The generated build attaches it to [`FetchmailServerService`]. A refusing rule's
+/// break answers 422; a rule in shadow is logged under `backbone::write_guard` and the
+/// write goes ahead.
+pub struct FetchmailServerRowRules;
+
+#[async_trait::async_trait]
+impl backbone_core::write_guard::WriteGuard<FetchmailServer> for FetchmailServerRowRules {
+    async fn check(
+        &self,
+        ctx: &backbone_core::write_guard::WriteCtx<'_, FetchmailServer>,
+    ) -> backbone_core::write_guard::GuardOutcome {
+        use backbone_core::row_rule as r;
+        use backbone_core::violation::Violation;
+        use backbone_core::write_guard::{GuardOutcome, WriteKind};
+        let (create, update) = (ctx.kind == WriteKind::Create, ctx.kind == WriteKind::Update);
+        let Some(after) = ctx.after.filter(|_| create || update) else {
+            return GuardOutcome::allow();
+        };
+        let Ok(row) = serde_json::to_value(after) else {
+            return GuardOutcome::allow();
+        };
+        let row = &row;
+        let old = ctx.before.and_then(|b| serde_json::to_value(b).ok());
+        let shadow = Vec::new();
+        let mut refuse = Vec::new();
+        // `name_required` (@required on FetchmailServer.name)
+        if (create || (update && r::changed(old.as_ref(), row, &["name"]))) && !r::holds(&r::and(r::is_not_null(r::field(row, "name")), r::not(r::is_empty(r::trim(r::field(row, "name")))))) {
+            refuse.push(Violation::new("name", "required", "name is required"));
+        }
+        // `token_hash_required` (@required on FetchmailServer.token_hash)
+        if (create || (update && r::changed(old.as_ref(), row, &["token_hash"]))) && !r::holds(&r::and(r::is_not_null(r::field(row, "token_hash")), r::not(r::is_empty(r::trim(r::field(row, "token_hash")))))) {
+            refuse.push(Violation::new("token_hash", "required", "token_hash is required"));
+        }
+        GuardOutcome { refuse, shadow }
+    }
+}
+

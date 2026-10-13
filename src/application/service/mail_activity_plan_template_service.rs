@@ -32,3 +32,41 @@ pub type MailActivityPlanTemplateService = GenericCrudService<
     MailActivityPlanTemplateRepository,
 >;
 
+/// The rules the schema declares for MailActivityPlanTemplate, checked against the row a create or update
+/// would store. The generated build attaches it to [`MailActivityPlanTemplateService`]. A refusing rule's
+/// break answers 422; a rule in shadow is logged under `backbone::write_guard` and the
+/// write goes ahead.
+pub struct MailActivityPlanTemplateRowRules;
+
+#[async_trait::async_trait]
+impl backbone_core::write_guard::WriteGuard<MailActivityPlanTemplate> for MailActivityPlanTemplateRowRules {
+    async fn check(
+        &self,
+        ctx: &backbone_core::write_guard::WriteCtx<'_, MailActivityPlanTemplate>,
+    ) -> backbone_core::write_guard::GuardOutcome {
+        use backbone_core::row_rule as r;
+        use backbone_core::violation::Violation;
+        use backbone_core::write_guard::{GuardOutcome, WriteKind};
+        let (create, update) = (ctx.kind == WriteKind::Create, ctx.kind == WriteKind::Update);
+        let Some(after) = ctx.after.filter(|_| create || update) else {
+            return GuardOutcome::allow();
+        };
+        let Ok(row) = serde_json::to_value(after) else {
+            return GuardOutcome::allow();
+        };
+        let row = &row;
+        let old = ctx.before.and_then(|b| serde_json::to_value(b).ok());
+        let shadow = Vec::new();
+        let mut refuse = Vec::new();
+        // `plan_id_required` (@required on MailActivityPlanTemplate.plan_id)
+        if (create || (update && r::changed(old.as_ref(), row, &["plan_id"]))) && !r::holds(&r::and(r::is_not_null(r::field(row, "plan_id")), r::not(r::is_empty(r::trim(r::field(row, "plan_id")))))) {
+            refuse.push(Violation::new("plan_id", "required", "plan_id is required"));
+        }
+        // `activity_type_id_required` (@required on MailActivityPlanTemplate.activity_type_id)
+        if (create || (update && r::changed(old.as_ref(), row, &["activity_type_id"]))) && !r::holds(&r::and(r::is_not_null(r::field(row, "activity_type_id")), r::not(r::is_empty(r::trim(r::field(row, "activity_type_id")))))) {
+            refuse.push(Violation::new("activity_type_id", "required", "activity_type_id is required"));
+        }
+        GuardOutcome { refuse, shadow }
+    }
+}
+

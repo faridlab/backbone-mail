@@ -32,3 +32,49 @@ pub type MailScheduledMessageService = GenericCrudService<
     MailScheduledMessageRepository,
 >;
 
+/// The rules the schema declares for MailScheduledMessage, checked against the row a create or update
+/// would store. The generated build attaches it to [`MailScheduledMessageService`]. A refusing rule's
+/// break answers 422; a rule in shadow is logged under `backbone::write_guard` and the
+/// write goes ahead.
+pub struct MailScheduledMessageRowRules;
+
+#[async_trait::async_trait]
+impl backbone_core::write_guard::WriteGuard<MailScheduledMessage> for MailScheduledMessageRowRules {
+    async fn check(
+        &self,
+        ctx: &backbone_core::write_guard::WriteCtx<'_, MailScheduledMessage>,
+    ) -> backbone_core::write_guard::GuardOutcome {
+        use backbone_core::row_rule as r;
+        use backbone_core::violation::Violation;
+        use backbone_core::write_guard::{GuardOutcome, WriteKind};
+        let (create, update) = (ctx.kind == WriteKind::Create, ctx.kind == WriteKind::Update);
+        let Some(after) = ctx.after.filter(|_| create || update) else {
+            return GuardOutcome::allow();
+        };
+        let Ok(row) = serde_json::to_value(after) else {
+            return GuardOutcome::allow();
+        };
+        let row = &row;
+        let old = ctx.before.and_then(|b| serde_json::to_value(b).ok());
+        let shadow = Vec::new();
+        let mut refuse = Vec::new();
+        // `body_required` (@required on MailScheduledMessage.body)
+        if (create || (update && r::changed(old.as_ref(), row, &["body"]))) && !r::holds(&r::and(r::is_not_null(r::field(row, "body")), r::not(r::is_empty(r::trim(r::field(row, "body")))))) {
+            refuse.push(Violation::new("body", "required", "body is required"));
+        }
+        // `model_required` (@required on MailScheduledMessage.model)
+        if (create || (update && r::changed(old.as_ref(), row, &["model"]))) && !r::holds(&r::and(r::is_not_null(r::field(row, "model")), r::not(r::is_empty(r::trim(r::field(row, "model")))))) {
+            refuse.push(Violation::new("model", "required", "model is required"));
+        }
+        // `res_id_required` (@required on MailScheduledMessage.res_id)
+        if (create || (update && r::changed(old.as_ref(), row, &["res_id"]))) && !r::holds(&r::and(r::is_not_null(r::field(row, "res_id")), r::not(r::is_empty(r::trim(r::field(row, "res_id")))))) {
+            refuse.push(Violation::new("res_id", "required", "res_id is required"));
+        }
+        // `author_party_id_required` (@required on MailScheduledMessage.author_party_id)
+        if (create || (update && r::changed(old.as_ref(), row, &["author_party_id"]))) && !r::holds(&r::and(r::is_not_null(r::field(row, "author_party_id")), r::not(r::is_empty(r::trim(r::field(row, "author_party_id")))))) {
+            refuse.push(Violation::new("author_party_id", "required", "author_party_id is required"));
+        }
+        GuardOutcome { refuse, shadow }
+    }
+}
+

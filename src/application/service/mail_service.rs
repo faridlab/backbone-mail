@@ -32,9 +32,10 @@ pub type MailService = GenericCrudService<
     MailRepository,
 >;
 
-/// The row rules the schema declares for Mail, checked against the row a create or
-/// update would store. The generated build attaches it to [`MailService`]. Every rule
-/// runs in shadow: a break is logged under `backbone::write_guard` and the write goes ahead.
+/// The rules the schema declares for Mail, checked against the row a create or update
+/// would store. The generated build attaches it to [`MailService`]. A refusing rule's
+/// break answers 422; a rule in shadow is logged under `backbone::write_guard` and the
+/// write goes ahead.
 pub struct MailRowRules;
 
 #[async_trait::async_trait]
@@ -56,11 +57,16 @@ impl backbone_core::write_guard::WriteGuard<Mail> for MailRowRules {
         let row = &row;
         let old = ctx.before.and_then(|b| serde_json::to_value(b).ok());
         let mut shadow = Vec::new();
+        let mut refuse = Vec::new();
         // `state` belongs to a state machine: only its verbs move it
         if update && ctx.transition.is_none() && r::changed(old.as_ref(), row, &["state"]) {
             shadow.push(Violation::new("state", "state_field_verbs_only", "the state field moves only through its verbs"));
         }
-        GuardOutcome { refuse: Vec::new(), shadow }
+        // `mail_message_id_required` (@required on Mail.mail_message_id)
+        if (create || (update && r::changed(old.as_ref(), row, &["mail_message_id"]))) && !r::holds(&r::and(r::is_not_null(r::field(row, "mail_message_id")), r::not(r::is_empty(r::trim(r::field(row, "mail_message_id")))))) {
+            refuse.push(Violation::new("mail_message_id", "required", "mail_message_id is required"));
+        }
+        GuardOutcome { refuse, shadow }
     }
 }
 
