@@ -16,12 +16,12 @@ model: DiscussChannelMember
 rules:
   G-MAIL-8-xor:
     when: [create, update]
-    condition: "partner_id is not null or guest_id is not null"
+    condition: "partner_id != null || guest_id != null"
     message: "A channel member must be a partner or a guest (CHECK partner_id IS NOT NULL OR guest_id IS NOT NULL — fires on raw SQL)."
     code: discuss_channel_member_persona_missing
     severity: error
     enforcement: both
-    justification: "PARTLY: the module's own writers derive a member from one identity, a partner or a guest and never both, but no CHECK exists despite the message, and the generic member create accepts both or neither; the composing service does not mount it."
+    justification: "Compiled into the generated write guard, so every create and update of a member, the generic member create included, refuses a row with neither a partner nor a guest. The module's own writers derive a member from one identity; no database CHECK exists, so a raw SQL write is not refused."
   G-MAIL-8-unique:
     when: [create, update]
     condition: "no two rows share (channel_id, partner_id), and no two rows share (channel_id, guest_id)"

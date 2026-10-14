@@ -16,17 +16,17 @@ model: MailActivity
 rules:
   G-MAIL-3:
     when: [create, update]
-    condition: "res_model is null or res_id is not null"
+    condition: "res_model == null || res_id != null"
     message: "An activity attached to a model MUST have a res_id (CHECK res_model IS NULL OR res_id IS NOT NULL — fires on raw SQL)."
     code: mail_activity_res_id_required
     severity: error
     enforcement: both
-    justification: "Holds, more strictly than stated, by NOT NULL on res_model and res_id; the columns' constraints are unnamed, so no claim can cite them, and no CHECK exists despite the message."
+    justification: "Compiled into the generated write guard on every create and update; it also holds, more strictly than stated, by NOT NULL on res_model and res_id. No database CHECK exists, so the guard is the named enforcement."
   G-MAIL-4:
     when: [create, update]
-    condition: "res_model is null or user_id is not null"
+    condition: "res_model == null || user_id != null"
     message: "An activity attached to a model MUST have an assignee (CHECK res_model IS NULL OR user_id IS NOT NULL — fires on raw SQL)."
     code: mail_activity_user_id_required
     severity: error
     enforcement: both
-    justification: "Holds by NOT NULL on user_id, as G-MAIL-3; unnamed, so not citable."
+    justification: "Compiled into the generated write guard on every create and update; it also holds by NOT NULL on user_id, as G-MAIL-3."

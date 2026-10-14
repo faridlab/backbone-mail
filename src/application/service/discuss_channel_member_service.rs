@@ -62,6 +62,10 @@ impl backbone_core::write_guard::WriteGuard<DiscussChannelMember> for DiscussCha
         if (create || (update && r::changed(old.as_ref(), row, &["channel_id"]))) && !r::holds(&r::and(r::is_not_null(r::field(row, "channel_id")), r::not(r::is_empty(r::trim(r::field(row, "channel_id")))))) {
             refuse.push(Violation::new("channel_id", "required", "channel_id is required"));
         }
+        // `G-MAIL-8-xor` (discuss_channel_member.hook.yaml:17)
+        if (create || update) && !r::holds(&r::or(r::is_not_null(r::field(row, "partner_id")), r::is_not_null(r::field(row, "guest_id")))) {
+            refuse.push(Violation::new("partner_id", "discuss_channel_member_persona_missing", "A channel member must be a partner or a guest (CHECK partner_id IS NOT NULL OR guest_id IS NOT NULL — fires on raw SQL)."));
+        }
         GuardOutcome { refuse, shadow }
     }
 }

@@ -70,6 +70,14 @@ impl backbone_core::write_guard::WriteGuard<MailActivity> for MailActivityRowRul
         if (create || (update && r::changed(old.as_ref(), row, &["user_id"]))) && !r::holds(&r::and(r::is_not_null(r::field(row, "user_id")), r::not(r::is_empty(r::trim(r::field(row, "user_id")))))) {
             refuse.push(Violation::new("user_id", "required", "user_id is required"));
         }
+        // `G-MAIL-3` (mail_activity.hook.yaml:17)
+        if (create || update) && !r::holds(&r::or(r::is_null(r::field(row, "res_model")), r::is_not_null(r::field(row, "res_id")))) {
+            refuse.push(Violation::new("res_model", "mail_activity_res_id_required", "An activity attached to a model MUST have a res_id (CHECK res_model IS NULL OR res_id IS NOT NULL — fires on raw SQL)."));
+        }
+        // `G-MAIL-4` (mail_activity.hook.yaml:25)
+        if (create || update) && !r::holds(&r::or(r::is_null(r::field(row, "res_model")), r::is_not_null(r::field(row, "user_id")))) {
+            refuse.push(Violation::new("res_model", "mail_activity_user_id_required", "An activity attached to a model MUST have an assignee (CHECK res_model IS NULL OR user_id IS NOT NULL — fires on raw SQL)."));
+        }
         GuardOutcome { refuse, shadow }
     }
 }
