@@ -53,6 +53,21 @@ states:
       from: [process, pending]
       to: exception
       message: "Transient failure (SMTP 4xx/transport) — failure_type set"
+    accepted_unpicked:
+      # mail mark_sent and the sms pump advance a row the notify pump never moved to process
+      from: ready
+      to: pending
+      message: "Handed off straight from ready (email 250 or sms provider acceptance)"
+    delivered_unpicked:
+      # the sms pump applies a synchronous delivery verdict to a row still ready
+      from: ready
+      to: sent
+      message: "Delivered straight from ready (sms provider confirmed on send)"
+    failed_unpicked:
+      # mail mark_failed and the sms pump fail a row still ready
+      from: ready
+      to: exception
+      message: "Failed straight from ready — failure_type set"
     canceled:
       from: [ready, process, pending]
       to: canceled

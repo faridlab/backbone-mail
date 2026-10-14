@@ -229,13 +229,9 @@ pub async fn pickup_transition(
                 && (have.len() == want.len() || (have.len() < want.len() && have.last() == Some(&"*")))
         });
         let has_specific_perm = granted("sms:transition:pickup");
-        let has_update_perm = granted("sms:update");
         let _ = &allowed_roles;
         if !has_specific_perm {
-            if !has_update_perm {
-                return (StatusCode::FORBIDDEN, Json(ApiResponse::<SmsResponseDto>::error("Insufficient permissions for pickup transition")));
-            }
-            tracing::warn!(target: "backbone::write_guard", entity = "Sms", verb = "pickup", code = "transition_by_update_permission", "a transition granted only by sms:update, running in shadow; it needs sms:transition:pickup");
+            return (StatusCode::FORBIDDEN, Json(ApiResponse::<SmsResponseDto>::error("pickup needs sms:transition:pickup")));
         }
     }
 
@@ -292,13 +288,9 @@ pub async fn iap_accepted_transition(
                 && (have.len() == want.len() || (have.len() < want.len() && have.last() == Some(&"*")))
         });
         let has_specific_perm = granted("sms:transition:iap_accepted");
-        let has_update_perm = granted("sms:update");
         let _ = &allowed_roles;
         if !has_specific_perm {
-            if !has_update_perm {
-                return (StatusCode::FORBIDDEN, Json(ApiResponse::<SmsResponseDto>::error("Insufficient permissions for iap_accepted transition")));
-            }
-            tracing::warn!(target: "backbone::write_guard", entity = "Sms", verb = "iap_accepted", code = "transition_by_update_permission", "a transition granted only by sms:update, running in shadow; it needs sms:transition:iap_accepted");
+            return (StatusCode::FORBIDDEN, Json(ApiResponse::<SmsResponseDto>::error("iap_accepted needs sms:transition:iap_accepted")));
         }
     }
 
@@ -355,13 +347,9 @@ pub async fn delivery_confirmed_transition(
                 && (have.len() == want.len() || (have.len() < want.len() && have.last() == Some(&"*")))
         });
         let has_specific_perm = granted("sms:transition:delivery_confirmed");
-        let has_update_perm = granted("sms:update");
         let _ = &allowed_roles;
         if !has_specific_perm {
-            if !has_update_perm {
-                return (StatusCode::FORBIDDEN, Json(ApiResponse::<SmsResponseDto>::error("Insufficient permissions for delivery_confirmed transition")));
-            }
-            tracing::warn!(target: "backbone::write_guard", entity = "Sms", verb = "delivery_confirmed", code = "transition_by_update_permission", "a transition granted only by sms:update, running in shadow; it needs sms:transition:delivery_confirmed");
+            return (StatusCode::FORBIDDEN, Json(ApiResponse::<SmsResponseDto>::error("delivery_confirmed needs sms:transition:delivery_confirmed")));
         }
     }
 
@@ -418,13 +406,9 @@ pub async fn send_failed_transition(
                 && (have.len() == want.len() || (have.len() < want.len() && have.last() == Some(&"*")))
         });
         let has_specific_perm = granted("sms:transition:send_failed");
-        let has_update_perm = granted("sms:update");
         let _ = &allowed_roles;
         if !has_specific_perm {
-            if !has_update_perm {
-                return (StatusCode::FORBIDDEN, Json(ApiResponse::<SmsResponseDto>::error("Insufficient permissions for send_failed transition")));
-            }
-            tracing::warn!(target: "backbone::write_guard", entity = "Sms", verb = "send_failed", code = "transition_by_update_permission", "a transition granted only by sms:update, running in shadow; it needs sms:transition:send_failed");
+            return (StatusCode::FORBIDDEN, Json(ApiResponse::<SmsResponseDto>::error("send_failed needs sms:transition:send_failed")));
         }
     }
 
@@ -443,6 +427,65 @@ pub async fn send_failed_transition(
     fields.insert("state".to_string(), serde_json::Value::String("error".to_string()));
 
     match backbone_core::write_guard::as_transition("send_failed", service.partial_update(&id, fields)).await {
+        Ok(Some(updated)) => {
+            let response: SmsResponseDto = updated.into();
+            (StatusCode::OK, Json(ApiResponse::ok(response)))
+        }
+        Ok(None) => (StatusCode::NOT_FOUND, Json(ApiResponse::<SmsResponseDto>::not_found("Sms", &id))),
+        Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, Json(ApiResponse::<SmsResponseDto>::error(e.to_string()))),
+    }
+}
+
+/// Execute stuck_requeued transition on a Sms.
+///
+/// POST /smses/:id/transitions/stuck_requeued
+pub async fn stuck_requeued_transition(
+    axum::extract::State(service): axum::extract::State<Arc<SmsService>>,
+    axum::extract::Path(id): axum::extract::Path<String>,
+    auth: Option<axum::Extension<AuthContext>>,
+) -> impl axum::response::IntoResponse {
+    use axum::{http::StatusCode, Json};
+
+    // Get current entity
+    let entity = match service.get_by_id(&id).await {
+        Ok(Some(e)) => e,
+        Ok(None) => return (StatusCode::NOT_FOUND, Json(ApiResponse::<SmsResponseDto>::not_found("Sms", &id))),
+        Err(e) => return (StatusCode::INTERNAL_SERVER_ERROR, Json(ApiResponse::<SmsResponseDto>::error(e.to_string()))),
+    };
+
+    // Check permission
+    let Some(axum::Extension(auth)) = auth else {
+        return (StatusCode::UNAUTHORIZED, Json(ApiResponse::<SmsResponseDto>::error("A transition needs an authenticated caller")));
+    };
+    {
+        let allowed_roles = SmsHooksTransition::StuckRequeued.allowed_roles();
+        let granted = |required: &str| auth.permissions.iter().any(|p| {
+            let (have, want): (Vec<&str>, Vec<&str>) = (p.split(':').collect(), required.split(':').collect());
+            have.iter().enumerate().all(|(i, h)| *h == "*" || want.get(i) == Some(h))
+                && (have.len() == want.len() || (have.len() < want.len() && have.last() == Some(&"*")))
+        });
+        let has_specific_perm = granted("sms:transition:stuck_requeued");
+        let _ = &allowed_roles;
+        if !has_specific_perm {
+            return (StatusCode::FORBIDDEN, Json(ApiResponse::<SmsResponseDto>::error("stuck_requeued needs sms:transition:stuck_requeued")));
+        }
+    }
+
+    // Create state machine from entity's actual status and validate transition
+    let current_state: SmsHooksState = match entity.state.to_string().parse() {
+        Ok(s) => s,
+        Err(_) => return (StatusCode::CONFLICT, Json(ApiResponse::<SmsResponseDto>::error("The stored state is not a state of this machine"))),
+    };
+    let sm = SmsHooksStateMachine::from_state(current_state);
+    if !sm.can_transition(SmsHooksTransition::StuckRequeued) {
+        return (StatusCode::BAD_REQUEST, Json(ApiResponse::<SmsResponseDto>::error("Transition not allowed from current state")));
+    }
+
+    // Apply transition via partial update
+    let mut fields: HashMap<String, serde_json::Value> = HashMap::new();
+    fields.insert("state".to_string(), serde_json::Value::String("outgoing".to_string()));
+
+    match backbone_core::write_guard::as_transition("stuck_requeued", service.partial_update(&id, fields)).await {
         Ok(Some(updated)) => {
             let response: SmsResponseDto = updated.into();
             (StatusCode::OK, Json(ApiResponse::ok(response)))
@@ -481,13 +524,9 @@ pub async fn canceled_transition(
                 && (have.len() == want.len() || (have.len() < want.len() && have.last() == Some(&"*")))
         });
         let has_specific_perm = granted("sms:transition:canceled");
-        let has_update_perm = granted("sms:update");
         let _ = &allowed_roles;
         if !has_specific_perm {
-            if !has_update_perm {
-                return (StatusCode::FORBIDDEN, Json(ApiResponse::<SmsResponseDto>::error("Insufficient permissions for canceled transition")));
-            }
-            tracing::warn!(target: "backbone::write_guard", entity = "Sms", verb = "canceled", code = "transition_by_update_permission", "a transition granted only by sms:update, running in shadow; it needs sms:transition:canceled");
+            return (StatusCode::FORBIDDEN, Json(ApiResponse::<SmsResponseDto>::error("canceled needs sms:transition:canceled")));
         }
     }
 
@@ -524,6 +563,7 @@ pub fn create_sms_transition_routes(service: Arc<SmsService>) -> Router {
         .route("/smses/:id/transitions/iap_accepted", post(iap_accepted_transition))
         .route("/smses/:id/transitions/delivery_confirmed", post(delivery_confirmed_transition))
         .route("/smses/:id/transitions/send_failed", post(send_failed_transition))
+        .route("/smses/:id/transitions/stuck_requeued", post(stuck_requeued_transition))
         .route("/smses/:id/transitions/canceled", post(canceled_transition))
         .with_state(service)
 }

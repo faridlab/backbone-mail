@@ -36,13 +36,19 @@ states:
       to: pending
       message: "LABEL 'Sent' — accepted by IAP, awaiting delivery report"
     delivery_confirmed:
-      from: pending
+      # the provider may confirm delivery on send or in a webhook before the accepted report
+      from: [process, pending]
       to: sent
       message: "LABEL 'Delivered' — confirmed by the delivery report (tracker-written)"
     send_failed:
       from: [process, pending]
       to: error
       message: "Failed — failure_type set (number/credit/gateway/blacklist/...)"
+    stuck_requeued:
+      # the GC sweep re-queues a row a drainer claimed and never resolved (once, marked swept_at)
+      from: process
+      to: outgoing
+      message: "Stuck in process past the threshold — back to the claimable queue"
     canceled:
       from: [outgoing, process, pending]
       to: canceled

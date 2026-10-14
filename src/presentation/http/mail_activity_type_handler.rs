@@ -220,13 +220,9 @@ pub async fn enable_trigger_transition(
                 && (have.len() == want.len() || (have.len() < want.len() && have.last() == Some(&"*")))
         });
         let has_specific_perm = granted("mail_activity_type:transition:enable_trigger");
-        let has_update_perm = granted("mail_activity_type:update");
         let _ = &allowed_roles;
         if !has_specific_perm {
-            if !has_update_perm {
-                return (StatusCode::FORBIDDEN, Json(ApiResponse::<MailActivityTypeResponseDto>::error("Insufficient permissions for enable_trigger transition")));
-            }
-            tracing::warn!(target: "backbone::write_guard", entity = "MailActivityType", verb = "enable_trigger", code = "transition_by_update_permission", "a transition granted only by mail_activity_type:update, running in shadow; it needs mail_activity_type:transition:enable_trigger");
+            return (StatusCode::FORBIDDEN, Json(ApiResponse::<MailActivityTypeResponseDto>::error("enable_trigger needs mail_activity_type:transition:enable_trigger")));
         }
     }
 

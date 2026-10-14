@@ -100,6 +100,12 @@ pub enum MailNotificationHooksTransition {
     Bounced,
     /// process, pending -> exception
     SendFailed,
+    /// ready -> pending
+    AcceptedUnpicked,
+    /// ready -> sent
+    DeliveredUnpicked,
+    /// ready -> exception
+    FailedUnpicked,
     /// ready, process, pending -> canceled
     Canceled,
 }
@@ -113,6 +119,9 @@ impl std::fmt::Display for MailNotificationHooksTransition {
             Self::InstantDelivered => write!(f, "instant_delivered"),
             Self::Bounced => write!(f, "bounced"),
             Self::SendFailed => write!(f, "send_failed"),
+            Self::AcceptedUnpicked => write!(f, "accepted_unpicked"),
+            Self::DeliveredUnpicked => write!(f, "delivered_unpicked"),
+            Self::FailedUnpicked => write!(f, "failed_unpicked"),
             Self::Canceled => write!(f, "canceled"),
         }
     }
@@ -129,6 +138,9 @@ impl FromStr for MailNotificationHooksTransition {
             "instant_delivered" => Ok(Self::InstantDelivered),
             "bounced" => Ok(Self::Bounced),
             "send_failed" => Ok(Self::SendFailed),
+            "accepted_unpicked" => Ok(Self::AcceptedUnpicked),
+            "delivered_unpicked" => Ok(Self::DeliveredUnpicked),
+            "failed_unpicked" => Ok(Self::FailedUnpicked),
             "canceled" => Ok(Self::Canceled),
             _ => Err(StateMachineError::InvalidTransition(s.to_string())),
         }
@@ -145,6 +157,9 @@ impl MailNotificationHooksTransition {
             Self::InstantDelivered => MailNotificationHooksState::Sent,
             Self::Bounced => MailNotificationHooksState::Bounce,
             Self::SendFailed => MailNotificationHooksState::Exception,
+            Self::AcceptedUnpicked => MailNotificationHooksState::Pending,
+            Self::DeliveredUnpicked => MailNotificationHooksState::Sent,
+            Self::FailedUnpicked => MailNotificationHooksState::Exception,
             Self::Canceled => MailNotificationHooksState::Canceled,
         }
     }
@@ -158,6 +173,9 @@ impl MailNotificationHooksTransition {
             Self::InstantDelivered,
             Self::Bounced,
             Self::SendFailed,
+            Self::AcceptedUnpicked,
+            Self::DeliveredUnpicked,
+            Self::FailedUnpicked,
             Self::Canceled,
         ]
     }
@@ -171,6 +189,9 @@ impl MailNotificationHooksTransition {
             Self::InstantDelivered => &[],
             Self::Bounced => &[],
             Self::SendFailed => &[],
+            Self::AcceptedUnpicked => &[],
+            Self::DeliveredUnpicked => &[],
+            Self::FailedUnpicked => &[],
             Self::Canceled => &[],
         }
     }
@@ -219,6 +240,9 @@ impl MailNotificationHooksStateMachine {
             (MailNotificationHooksState::Exception, MailNotificationHooksTransition::Bounced) => true,
             (MailNotificationHooksState::Process, MailNotificationHooksTransition::SendFailed) => true,
             (MailNotificationHooksState::Pending, MailNotificationHooksTransition::SendFailed) => true,
+            (MailNotificationHooksState::Ready, MailNotificationHooksTransition::AcceptedUnpicked) => true,
+            (MailNotificationHooksState::Ready, MailNotificationHooksTransition::DeliveredUnpicked) => true,
+            (MailNotificationHooksState::Ready, MailNotificationHooksTransition::FailedUnpicked) => true,
             (MailNotificationHooksState::Ready, MailNotificationHooksTransition::Canceled) => true,
             (MailNotificationHooksState::Process, MailNotificationHooksTransition::Canceled) => true,
             (MailNotificationHooksState::Pending, MailNotificationHooksTransition::Canceled) => true,

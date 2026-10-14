@@ -27,7 +27,8 @@ states:
       final: true
   transitions:
     smtp_accepted:
-      from: outgoing
+      # the drain claim pre-writes exception before the SMTP attempt, so a 250 lands from it
+      from: [outgoing, exception]
       to: sent
       message: "SMTP 250 accepted — the mail row transitions to sent"
     smtp_failed:

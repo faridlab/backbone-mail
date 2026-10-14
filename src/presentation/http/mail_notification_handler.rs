@@ -229,13 +229,9 @@ pub async fn dispatch_started_transition(
                 && (have.len() == want.len() || (have.len() < want.len() && have.last() == Some(&"*")))
         });
         let has_specific_perm = granted("mail_notification:transition:dispatch_started");
-        let has_update_perm = granted("mail_notification:update");
         let _ = &allowed_roles;
         if !has_specific_perm {
-            if !has_update_perm {
-                return (StatusCode::FORBIDDEN, Json(ApiResponse::<MailNotificationResponseDto>::error("Insufficient permissions for dispatch_started transition")));
-            }
-            tracing::warn!(target: "backbone::write_guard", entity = "MailNotification", verb = "dispatch_started", code = "transition_by_update_permission", "a transition granted only by mail_notification:update, running in shadow; it needs mail_notification:transition:dispatch_started");
+            return (StatusCode::FORBIDDEN, Json(ApiResponse::<MailNotificationResponseDto>::error("dispatch_started needs mail_notification:transition:dispatch_started")));
         }
     }
 
@@ -292,13 +288,9 @@ pub async fn smtp_accepted_transition(
                 && (have.len() == want.len() || (have.len() < want.len() && have.last() == Some(&"*")))
         });
         let has_specific_perm = granted("mail_notification:transition:smtp_accepted");
-        let has_update_perm = granted("mail_notification:update");
         let _ = &allowed_roles;
         if !has_specific_perm {
-            if !has_update_perm {
-                return (StatusCode::FORBIDDEN, Json(ApiResponse::<MailNotificationResponseDto>::error("Insufficient permissions for smtp_accepted transition")));
-            }
-            tracing::warn!(target: "backbone::write_guard", entity = "MailNotification", verb = "smtp_accepted", code = "transition_by_update_permission", "a transition granted only by mail_notification:update, running in shadow; it needs mail_notification:transition:smtp_accepted");
+            return (StatusCode::FORBIDDEN, Json(ApiResponse::<MailNotificationResponseDto>::error("smtp_accepted needs mail_notification:transition:smtp_accepted")));
         }
     }
 
@@ -355,13 +347,9 @@ pub async fn delivery_confirmed_transition(
                 && (have.len() == want.len() || (have.len() < want.len() && have.last() == Some(&"*")))
         });
         let has_specific_perm = granted("mail_notification:transition:delivery_confirmed");
-        let has_update_perm = granted("mail_notification:update");
         let _ = &allowed_roles;
         if !has_specific_perm {
-            if !has_update_perm {
-                return (StatusCode::FORBIDDEN, Json(ApiResponse::<MailNotificationResponseDto>::error("Insufficient permissions for delivery_confirmed transition")));
-            }
-            tracing::warn!(target: "backbone::write_guard", entity = "MailNotification", verb = "delivery_confirmed", code = "transition_by_update_permission", "a transition granted only by mail_notification:update, running in shadow; it needs mail_notification:transition:delivery_confirmed");
+            return (StatusCode::FORBIDDEN, Json(ApiResponse::<MailNotificationResponseDto>::error("delivery_confirmed needs mail_notification:transition:delivery_confirmed")));
         }
     }
 
@@ -418,13 +406,9 @@ pub async fn instant_delivered_transition(
                 && (have.len() == want.len() || (have.len() < want.len() && have.last() == Some(&"*")))
         });
         let has_specific_perm = granted("mail_notification:transition:instant_delivered");
-        let has_update_perm = granted("mail_notification:update");
         let _ = &allowed_roles;
         if !has_specific_perm {
-            if !has_update_perm {
-                return (StatusCode::FORBIDDEN, Json(ApiResponse::<MailNotificationResponseDto>::error("Insufficient permissions for instant_delivered transition")));
-            }
-            tracing::warn!(target: "backbone::write_guard", entity = "MailNotification", verb = "instant_delivered", code = "transition_by_update_permission", "a transition granted only by mail_notification:update, running in shadow; it needs mail_notification:transition:instant_delivered");
+            return (StatusCode::FORBIDDEN, Json(ApiResponse::<MailNotificationResponseDto>::error("instant_delivered needs mail_notification:transition:instant_delivered")));
         }
     }
 
@@ -481,13 +465,9 @@ pub async fn bounced_transition(
                 && (have.len() == want.len() || (have.len() < want.len() && have.last() == Some(&"*")))
         });
         let has_specific_perm = granted("mail_notification:transition:bounced");
-        let has_update_perm = granted("mail_notification:update");
         let _ = &allowed_roles;
         if !has_specific_perm {
-            if !has_update_perm {
-                return (StatusCode::FORBIDDEN, Json(ApiResponse::<MailNotificationResponseDto>::error("Insufficient permissions for bounced transition")));
-            }
-            tracing::warn!(target: "backbone::write_guard", entity = "MailNotification", verb = "bounced", code = "transition_by_update_permission", "a transition granted only by mail_notification:update, running in shadow; it needs mail_notification:transition:bounced");
+            return (StatusCode::FORBIDDEN, Json(ApiResponse::<MailNotificationResponseDto>::error("bounced needs mail_notification:transition:bounced")));
         }
     }
 
@@ -544,13 +524,9 @@ pub async fn send_failed_transition(
                 && (have.len() == want.len() || (have.len() < want.len() && have.last() == Some(&"*")))
         });
         let has_specific_perm = granted("mail_notification:transition:send_failed");
-        let has_update_perm = granted("mail_notification:update");
         let _ = &allowed_roles;
         if !has_specific_perm {
-            if !has_update_perm {
-                return (StatusCode::FORBIDDEN, Json(ApiResponse::<MailNotificationResponseDto>::error("Insufficient permissions for send_failed transition")));
-            }
-            tracing::warn!(target: "backbone::write_guard", entity = "MailNotification", verb = "send_failed", code = "transition_by_update_permission", "a transition granted only by mail_notification:update, running in shadow; it needs mail_notification:transition:send_failed");
+            return (StatusCode::FORBIDDEN, Json(ApiResponse::<MailNotificationResponseDto>::error("send_failed needs mail_notification:transition:send_failed")));
         }
     }
 
@@ -569,6 +545,183 @@ pub async fn send_failed_transition(
     fields.insert("notification_status".to_string(), serde_json::Value::String("exception".to_string()));
 
     match backbone_core::write_guard::as_transition("send_failed", service.partial_update(&id, fields)).await {
+        Ok(Some(updated)) => {
+            let response: MailNotificationResponseDto = updated.into();
+            (StatusCode::OK, Json(ApiResponse::ok(response)))
+        }
+        Ok(None) => (StatusCode::NOT_FOUND, Json(ApiResponse::<MailNotificationResponseDto>::not_found("MailNotification", &id))),
+        Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, Json(ApiResponse::<MailNotificationResponseDto>::error(e.to_string()))),
+    }
+}
+
+/// Execute accepted_unpicked transition on a MailNotification.
+///
+/// POST /mail_notifications/:id/transitions/accepted_unpicked
+pub async fn accepted_unpicked_transition(
+    axum::extract::State(service): axum::extract::State<Arc<MailNotificationService>>,
+    axum::extract::Path(id): axum::extract::Path<String>,
+    auth: Option<axum::Extension<AuthContext>>,
+) -> impl axum::response::IntoResponse {
+    use axum::{http::StatusCode, Json};
+
+    // Get current entity
+    let entity = match service.get_by_id(&id).await {
+        Ok(Some(e)) => e,
+        Ok(None) => return (StatusCode::NOT_FOUND, Json(ApiResponse::<MailNotificationResponseDto>::not_found("MailNotification", &id))),
+        Err(e) => return (StatusCode::INTERNAL_SERVER_ERROR, Json(ApiResponse::<MailNotificationResponseDto>::error(e.to_string()))),
+    };
+
+    // Check permission
+    let Some(axum::Extension(auth)) = auth else {
+        return (StatusCode::UNAUTHORIZED, Json(ApiResponse::<MailNotificationResponseDto>::error("A transition needs an authenticated caller")));
+    };
+    {
+        let allowed_roles = MailNotificationHooksTransition::AcceptedUnpicked.allowed_roles();
+        let granted = |required: &str| auth.permissions.iter().any(|p| {
+            let (have, want): (Vec<&str>, Vec<&str>) = (p.split(':').collect(), required.split(':').collect());
+            have.iter().enumerate().all(|(i, h)| *h == "*" || want.get(i) == Some(h))
+                && (have.len() == want.len() || (have.len() < want.len() && have.last() == Some(&"*")))
+        });
+        let has_specific_perm = granted("mail_notification:transition:accepted_unpicked");
+        let _ = &allowed_roles;
+        if !has_specific_perm {
+            return (StatusCode::FORBIDDEN, Json(ApiResponse::<MailNotificationResponseDto>::error("accepted_unpicked needs mail_notification:transition:accepted_unpicked")));
+        }
+    }
+
+    // Create state machine from entity's actual status and validate transition
+    let current_state: MailNotificationHooksState = match entity.notification_status.to_string().parse() {
+        Ok(s) => s,
+        Err(_) => return (StatusCode::CONFLICT, Json(ApiResponse::<MailNotificationResponseDto>::error("The stored state is not a state of this machine"))),
+    };
+    let sm = MailNotificationHooksStateMachine::from_state(current_state);
+    if !sm.can_transition(MailNotificationHooksTransition::AcceptedUnpicked) {
+        return (StatusCode::BAD_REQUEST, Json(ApiResponse::<MailNotificationResponseDto>::error("Transition not allowed from current state")));
+    }
+
+    // Apply transition via partial update
+    let mut fields: HashMap<String, serde_json::Value> = HashMap::new();
+    fields.insert("notification_status".to_string(), serde_json::Value::String("pending".to_string()));
+
+    match backbone_core::write_guard::as_transition("accepted_unpicked", service.partial_update(&id, fields)).await {
+        Ok(Some(updated)) => {
+            let response: MailNotificationResponseDto = updated.into();
+            (StatusCode::OK, Json(ApiResponse::ok(response)))
+        }
+        Ok(None) => (StatusCode::NOT_FOUND, Json(ApiResponse::<MailNotificationResponseDto>::not_found("MailNotification", &id))),
+        Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, Json(ApiResponse::<MailNotificationResponseDto>::error(e.to_string()))),
+    }
+}
+
+/// Execute delivered_unpicked transition on a MailNotification.
+///
+/// POST /mail_notifications/:id/transitions/delivered_unpicked
+pub async fn delivered_unpicked_transition(
+    axum::extract::State(service): axum::extract::State<Arc<MailNotificationService>>,
+    axum::extract::Path(id): axum::extract::Path<String>,
+    auth: Option<axum::Extension<AuthContext>>,
+) -> impl axum::response::IntoResponse {
+    use axum::{http::StatusCode, Json};
+
+    // Get current entity
+    let entity = match service.get_by_id(&id).await {
+        Ok(Some(e)) => e,
+        Ok(None) => return (StatusCode::NOT_FOUND, Json(ApiResponse::<MailNotificationResponseDto>::not_found("MailNotification", &id))),
+        Err(e) => return (StatusCode::INTERNAL_SERVER_ERROR, Json(ApiResponse::<MailNotificationResponseDto>::error(e.to_string()))),
+    };
+
+    // Check permission
+    let Some(axum::Extension(auth)) = auth else {
+        return (StatusCode::UNAUTHORIZED, Json(ApiResponse::<MailNotificationResponseDto>::error("A transition needs an authenticated caller")));
+    };
+    {
+        let allowed_roles = MailNotificationHooksTransition::DeliveredUnpicked.allowed_roles();
+        let granted = |required: &str| auth.permissions.iter().any(|p| {
+            let (have, want): (Vec<&str>, Vec<&str>) = (p.split(':').collect(), required.split(':').collect());
+            have.iter().enumerate().all(|(i, h)| *h == "*" || want.get(i) == Some(h))
+                && (have.len() == want.len() || (have.len() < want.len() && have.last() == Some(&"*")))
+        });
+        let has_specific_perm = granted("mail_notification:transition:delivered_unpicked");
+        let _ = &allowed_roles;
+        if !has_specific_perm {
+            return (StatusCode::FORBIDDEN, Json(ApiResponse::<MailNotificationResponseDto>::error("delivered_unpicked needs mail_notification:transition:delivered_unpicked")));
+        }
+    }
+
+    // Create state machine from entity's actual status and validate transition
+    let current_state: MailNotificationHooksState = match entity.notification_status.to_string().parse() {
+        Ok(s) => s,
+        Err(_) => return (StatusCode::CONFLICT, Json(ApiResponse::<MailNotificationResponseDto>::error("The stored state is not a state of this machine"))),
+    };
+    let sm = MailNotificationHooksStateMachine::from_state(current_state);
+    if !sm.can_transition(MailNotificationHooksTransition::DeliveredUnpicked) {
+        return (StatusCode::BAD_REQUEST, Json(ApiResponse::<MailNotificationResponseDto>::error("Transition not allowed from current state")));
+    }
+
+    // Apply transition via partial update
+    let mut fields: HashMap<String, serde_json::Value> = HashMap::new();
+    fields.insert("notification_status".to_string(), serde_json::Value::String("sent".to_string()));
+
+    match backbone_core::write_guard::as_transition("delivered_unpicked", service.partial_update(&id, fields)).await {
+        Ok(Some(updated)) => {
+            let response: MailNotificationResponseDto = updated.into();
+            (StatusCode::OK, Json(ApiResponse::ok(response)))
+        }
+        Ok(None) => (StatusCode::NOT_FOUND, Json(ApiResponse::<MailNotificationResponseDto>::not_found("MailNotification", &id))),
+        Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, Json(ApiResponse::<MailNotificationResponseDto>::error(e.to_string()))),
+    }
+}
+
+/// Execute failed_unpicked transition on a MailNotification.
+///
+/// POST /mail_notifications/:id/transitions/failed_unpicked
+pub async fn failed_unpicked_transition(
+    axum::extract::State(service): axum::extract::State<Arc<MailNotificationService>>,
+    axum::extract::Path(id): axum::extract::Path<String>,
+    auth: Option<axum::Extension<AuthContext>>,
+) -> impl axum::response::IntoResponse {
+    use axum::{http::StatusCode, Json};
+
+    // Get current entity
+    let entity = match service.get_by_id(&id).await {
+        Ok(Some(e)) => e,
+        Ok(None) => return (StatusCode::NOT_FOUND, Json(ApiResponse::<MailNotificationResponseDto>::not_found("MailNotification", &id))),
+        Err(e) => return (StatusCode::INTERNAL_SERVER_ERROR, Json(ApiResponse::<MailNotificationResponseDto>::error(e.to_string()))),
+    };
+
+    // Check permission
+    let Some(axum::Extension(auth)) = auth else {
+        return (StatusCode::UNAUTHORIZED, Json(ApiResponse::<MailNotificationResponseDto>::error("A transition needs an authenticated caller")));
+    };
+    {
+        let allowed_roles = MailNotificationHooksTransition::FailedUnpicked.allowed_roles();
+        let granted = |required: &str| auth.permissions.iter().any(|p| {
+            let (have, want): (Vec<&str>, Vec<&str>) = (p.split(':').collect(), required.split(':').collect());
+            have.iter().enumerate().all(|(i, h)| *h == "*" || want.get(i) == Some(h))
+                && (have.len() == want.len() || (have.len() < want.len() && have.last() == Some(&"*")))
+        });
+        let has_specific_perm = granted("mail_notification:transition:failed_unpicked");
+        let _ = &allowed_roles;
+        if !has_specific_perm {
+            return (StatusCode::FORBIDDEN, Json(ApiResponse::<MailNotificationResponseDto>::error("failed_unpicked needs mail_notification:transition:failed_unpicked")));
+        }
+    }
+
+    // Create state machine from entity's actual status and validate transition
+    let current_state: MailNotificationHooksState = match entity.notification_status.to_string().parse() {
+        Ok(s) => s,
+        Err(_) => return (StatusCode::CONFLICT, Json(ApiResponse::<MailNotificationResponseDto>::error("The stored state is not a state of this machine"))),
+    };
+    let sm = MailNotificationHooksStateMachine::from_state(current_state);
+    if !sm.can_transition(MailNotificationHooksTransition::FailedUnpicked) {
+        return (StatusCode::BAD_REQUEST, Json(ApiResponse::<MailNotificationResponseDto>::error("Transition not allowed from current state")));
+    }
+
+    // Apply transition via partial update
+    let mut fields: HashMap<String, serde_json::Value> = HashMap::new();
+    fields.insert("notification_status".to_string(), serde_json::Value::String("exception".to_string()));
+
+    match backbone_core::write_guard::as_transition("failed_unpicked", service.partial_update(&id, fields)).await {
         Ok(Some(updated)) => {
             let response: MailNotificationResponseDto = updated.into();
             (StatusCode::OK, Json(ApiResponse::ok(response)))
@@ -607,13 +760,9 @@ pub async fn canceled_transition(
                 && (have.len() == want.len() || (have.len() < want.len() && have.last() == Some(&"*")))
         });
         let has_specific_perm = granted("mail_notification:transition:canceled");
-        let has_update_perm = granted("mail_notification:update");
         let _ = &allowed_roles;
         if !has_specific_perm {
-            if !has_update_perm {
-                return (StatusCode::FORBIDDEN, Json(ApiResponse::<MailNotificationResponseDto>::error("Insufficient permissions for canceled transition")));
-            }
-            tracing::warn!(target: "backbone::write_guard", entity = "MailNotification", verb = "canceled", code = "transition_by_update_permission", "a transition granted only by mail_notification:update, running in shadow; it needs mail_notification:transition:canceled");
+            return (StatusCode::FORBIDDEN, Json(ApiResponse::<MailNotificationResponseDto>::error("canceled needs mail_notification:transition:canceled")));
         }
     }
 
@@ -652,6 +801,9 @@ pub fn create_mail_notification_transition_routes(service: Arc<MailNotificationS
         .route("/mail_notifications/:id/transitions/instant_delivered", post(instant_delivered_transition))
         .route("/mail_notifications/:id/transitions/bounced", post(bounced_transition))
         .route("/mail_notifications/:id/transitions/send_failed", post(send_failed_transition))
+        .route("/mail_notifications/:id/transitions/accepted_unpicked", post(accepted_unpicked_transition))
+        .route("/mail_notifications/:id/transitions/delivered_unpicked", post(delivered_unpicked_transition))
+        .route("/mail_notifications/:id/transitions/failed_unpicked", post(failed_unpicked_transition))
         .route("/mail_notifications/:id/transitions/canceled", post(canceled_transition))
         .with_state(service)
 }

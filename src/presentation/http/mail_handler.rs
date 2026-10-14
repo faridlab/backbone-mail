@@ -221,13 +221,9 @@ pub async fn smtp_accepted_transition(
                 && (have.len() == want.len() || (have.len() < want.len() && have.last() == Some(&"*")))
         });
         let has_specific_perm = granted("mail:transition:smtp_accepted");
-        let has_update_perm = granted("mail:update");
         let _ = &allowed_roles;
         if !has_specific_perm {
-            if !has_update_perm {
-                return (StatusCode::FORBIDDEN, Json(ApiResponse::<MailResponseDto>::error("Insufficient permissions for smtp_accepted transition")));
-            }
-            tracing::warn!(target: "backbone::write_guard", entity = "Mail", verb = "smtp_accepted", code = "transition_by_update_permission", "a transition granted only by mail:update, running in shadow; it needs mail:transition:smtp_accepted");
+            return (StatusCode::FORBIDDEN, Json(ApiResponse::<MailResponseDto>::error("smtp_accepted needs mail:transition:smtp_accepted")));
         }
     }
 
@@ -284,13 +280,9 @@ pub async fn smtp_failed_transition(
                 && (have.len() == want.len() || (have.len() < want.len() && have.last() == Some(&"*")))
         });
         let has_specific_perm = granted("mail:transition:smtp_failed");
-        let has_update_perm = granted("mail:update");
         let _ = &allowed_roles;
         if !has_specific_perm {
-            if !has_update_perm {
-                return (StatusCode::FORBIDDEN, Json(ApiResponse::<MailResponseDto>::error("Insufficient permissions for smtp_failed transition")));
-            }
-            tracing::warn!(target: "backbone::write_guard", entity = "Mail", verb = "smtp_failed", code = "transition_by_update_permission", "a transition granted only by mail:update, running in shadow; it needs mail:transition:smtp_failed");
+            return (StatusCode::FORBIDDEN, Json(ApiResponse::<MailResponseDto>::error("smtp_failed needs mail:transition:smtp_failed")));
         }
     }
 
@@ -347,13 +339,9 @@ pub async fn inbound_acknowledged_transition(
                 && (have.len() == want.len() || (have.len() < want.len() && have.last() == Some(&"*")))
         });
         let has_specific_perm = granted("mail:transition:inbound_acknowledged");
-        let has_update_perm = granted("mail:update");
         let _ = &allowed_roles;
         if !has_specific_perm {
-            if !has_update_perm {
-                return (StatusCode::FORBIDDEN, Json(ApiResponse::<MailResponseDto>::error("Insufficient permissions for inbound_acknowledged transition")));
-            }
-            tracing::warn!(target: "backbone::write_guard", entity = "Mail", verb = "inbound_acknowledged", code = "transition_by_update_permission", "a transition granted only by mail:update, running in shadow; it needs mail:transition:inbound_acknowledged");
+            return (StatusCode::FORBIDDEN, Json(ApiResponse::<MailResponseDto>::error("inbound_acknowledged needs mail:transition:inbound_acknowledged")));
         }
     }
 
@@ -410,13 +398,9 @@ pub async fn requeued_transition(
                 && (have.len() == want.len() || (have.len() < want.len() && have.last() == Some(&"*")))
         });
         let has_specific_perm = granted("mail:transition:requeued");
-        let has_update_perm = granted("mail:update");
         let _ = &allowed_roles;
         if !has_specific_perm {
-            if !has_update_perm {
-                return (StatusCode::FORBIDDEN, Json(ApiResponse::<MailResponseDto>::error("Insufficient permissions for requeued transition")));
-            }
-            tracing::warn!(target: "backbone::write_guard", entity = "Mail", verb = "requeued", code = "transition_by_update_permission", "a transition granted only by mail:update, running in shadow; it needs mail:transition:requeued");
+            return (StatusCode::FORBIDDEN, Json(ApiResponse::<MailResponseDto>::error("requeued needs mail:transition:requeued")));
         }
     }
 
@@ -473,13 +457,9 @@ pub async fn cancelled_transition(
                 && (have.len() == want.len() || (have.len() < want.len() && have.last() == Some(&"*")))
         });
         let has_specific_perm = granted("mail:transition:cancelled");
-        let has_update_perm = granted("mail:update");
         let _ = &allowed_roles;
         if !has_specific_perm {
-            if !has_update_perm {
-                return (StatusCode::FORBIDDEN, Json(ApiResponse::<MailResponseDto>::error("Insufficient permissions for cancelled transition")));
-            }
-            tracing::warn!(target: "backbone::write_guard", entity = "Mail", verb = "cancelled", code = "transition_by_update_permission", "a transition granted only by mail:update, running in shadow; it needs mail:transition:cancelled");
+            return (StatusCode::FORBIDDEN, Json(ApiResponse::<MailResponseDto>::error("cancelled needs mail:transition:cancelled")));
         }
     }
 

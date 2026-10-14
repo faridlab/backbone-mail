@@ -87,10 +87,12 @@ pub enum SmsHooksTransition {
     Pickup,
     /// process -> pending
     IapAccepted,
-    /// pending -> sent
+    /// process, pending -> sent
     DeliveryConfirmed,
     /// process, pending -> error
     SendFailed,
+    /// process -> outgoing
+    StuckRequeued,
     /// outgoing, process, pending -> canceled
     Canceled,
 }
@@ -102,6 +104,7 @@ impl std::fmt::Display for SmsHooksTransition {
             Self::IapAccepted => write!(f, "iap_accepted"),
             Self::DeliveryConfirmed => write!(f, "delivery_confirmed"),
             Self::SendFailed => write!(f, "send_failed"),
+            Self::StuckRequeued => write!(f, "stuck_requeued"),
             Self::Canceled => write!(f, "canceled"),
         }
     }
@@ -116,6 +119,7 @@ impl FromStr for SmsHooksTransition {
             "iap_accepted" => Ok(Self::IapAccepted),
             "delivery_confirmed" => Ok(Self::DeliveryConfirmed),
             "send_failed" => Ok(Self::SendFailed),
+            "stuck_requeued" => Ok(Self::StuckRequeued),
             "canceled" => Ok(Self::Canceled),
             _ => Err(StateMachineError::InvalidTransition(s.to_string())),
         }
@@ -130,6 +134,7 @@ impl SmsHooksTransition {
             Self::IapAccepted => SmsHooksState::Pending,
             Self::DeliveryConfirmed => SmsHooksState::Sent,
             Self::SendFailed => SmsHooksState::Error,
+            Self::StuckRequeued => SmsHooksState::Outgoing,
             Self::Canceled => SmsHooksState::Canceled,
         }
     }
@@ -141,6 +146,7 @@ impl SmsHooksTransition {
             Self::IapAccepted,
             Self::DeliveryConfirmed,
             Self::SendFailed,
+            Self::StuckRequeued,
             Self::Canceled,
         ]
     }
@@ -152,6 +158,7 @@ impl SmsHooksTransition {
             Self::IapAccepted => &[],
             Self::DeliveryConfirmed => &[],
             Self::SendFailed => &[],
+            Self::StuckRequeued => &[],
             Self::Canceled => &[],
         }
     }
@@ -192,9 +199,11 @@ impl SmsHooksStateMachine {
         match (self.current_state, transition) {
             (SmsHooksState::Outgoing, SmsHooksTransition::Pickup) => true,
             (SmsHooksState::Process, SmsHooksTransition::IapAccepted) => true,
+            (SmsHooksState::Process, SmsHooksTransition::DeliveryConfirmed) => true,
             (SmsHooksState::Pending, SmsHooksTransition::DeliveryConfirmed) => true,
             (SmsHooksState::Process, SmsHooksTransition::SendFailed) => true,
             (SmsHooksState::Pending, SmsHooksTransition::SendFailed) => true,
+            (SmsHooksState::Process, SmsHooksTransition::StuckRequeued) => true,
             (SmsHooksState::Outgoing, SmsHooksTransition::Canceled) => true,
             (SmsHooksState::Process, SmsHooksTransition::Canceled) => true,
             (SmsHooksState::Pending, SmsHooksTransition::Canceled) => true,

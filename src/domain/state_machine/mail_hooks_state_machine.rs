@@ -80,7 +80,7 @@ impl MailHooksState {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum MailHooksTransition {
-    /// outgoing -> sent
+    /// outgoing, exception -> sent
     SmtpAccepted,
     /// outgoing -> exception
     SmtpFailed,
@@ -188,6 +188,7 @@ impl MailHooksStateMachine {
 
         match (self.current_state, transition) {
             (MailHooksState::Outgoing, MailHooksTransition::SmtpAccepted) => true,
+            (MailHooksState::Exception, MailHooksTransition::SmtpAccepted) => true,
             (MailHooksState::Outgoing, MailHooksTransition::SmtpFailed) => true,
             (MailHooksState::Sent, MailHooksTransition::InboundAcknowledged) => true,
             (MailHooksState::Exception, MailHooksTransition::Requeued) => true,

@@ -221,13 +221,9 @@ pub async fn go_online_transition(
                 && (have.len() == want.len() || (have.len() < want.len() && have.last() == Some(&"*")))
         });
         let has_specific_perm = granted("mail_presence:transition:go_online");
-        let has_update_perm = granted("mail_presence:update");
         let _ = &allowed_roles;
         if !has_specific_perm {
-            if !has_update_perm {
-                return (StatusCode::FORBIDDEN, Json(ApiResponse::<MailPresenceResponseDto>::error("Insufficient permissions for go_online transition")));
-            }
-            tracing::warn!(target: "backbone::write_guard", entity = "MailPresence", verb = "go_online", code = "transition_by_update_permission", "a transition granted only by mail_presence:update, running in shadow; it needs mail_presence:transition:go_online");
+            return (StatusCode::FORBIDDEN, Json(ApiResponse::<MailPresenceResponseDto>::error("go_online needs mail_presence:transition:go_online")));
         }
     }
 
@@ -284,13 +280,9 @@ pub async fn go_away_transition(
                 && (have.len() == want.len() || (have.len() < want.len() && have.last() == Some(&"*")))
         });
         let has_specific_perm = granted("mail_presence:transition:go_away");
-        let has_update_perm = granted("mail_presence:update");
         let _ = &allowed_roles;
         if !has_specific_perm {
-            if !has_update_perm {
-                return (StatusCode::FORBIDDEN, Json(ApiResponse::<MailPresenceResponseDto>::error("Insufficient permissions for go_away transition")));
-            }
-            tracing::warn!(target: "backbone::write_guard", entity = "MailPresence", verb = "go_away", code = "transition_by_update_permission", "a transition granted only by mail_presence:update, running in shadow; it needs mail_presence:transition:go_away");
+            return (StatusCode::FORBIDDEN, Json(ApiResponse::<MailPresenceResponseDto>::error("go_away needs mail_presence:transition:go_away")));
         }
     }
 
@@ -347,13 +339,9 @@ pub async fn go_offline_transition(
                 && (have.len() == want.len() || (have.len() < want.len() && have.last() == Some(&"*")))
         });
         let has_specific_perm = granted("mail_presence:transition:go_offline");
-        let has_update_perm = granted("mail_presence:update");
         let _ = &allowed_roles;
         if !has_specific_perm {
-            if !has_update_perm {
-                return (StatusCode::FORBIDDEN, Json(ApiResponse::<MailPresenceResponseDto>::error("Insufficient permissions for go_offline transition")));
-            }
-            tracing::warn!(target: "backbone::write_guard", entity = "MailPresence", verb = "go_offline", code = "transition_by_update_permission", "a transition granted only by mail_presence:update, running in shadow; it needs mail_presence:transition:go_offline");
+            return (StatusCode::FORBIDDEN, Json(ApiResponse::<MailPresenceResponseDto>::error("go_offline needs mail_presence:transition:go_offline")));
         }
     }
 
