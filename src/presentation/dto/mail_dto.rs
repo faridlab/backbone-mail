@@ -33,7 +33,6 @@ pub struct CreateMailDto {
     #[cfg_attr(feature = "openapi", schema(example = "550e8400-e29b-41d4-a716-446655440000"))]
     #[serde(alias = "mail_message_id")]
     pub mail_message_id: Uuid,
-    pub state: MailState,
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "failure_type")]
     pub failure_type: Option<MailFailureType>,
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "scheduled_date")]
@@ -259,7 +258,7 @@ impl From<CreateMailDto> for Mail {
         Self {
             id: Uuid::new_v4(),
             mail_message_id: dto.mail_message_id,
-            state: dto.state,
+            state: MailState::Outgoing,
             failure_type: dto.failure_type,
             scheduled_date: dto.scheduled_date,
             auto_delete: dto.auto_delete,

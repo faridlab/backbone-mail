@@ -40,8 +40,6 @@ pub struct CreateMailActivityTypeDto {
     pub note: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub category: Option<MailActivityCategory>,
-    #[serde(alias = "chaining_type")]
-    pub chaining_type: MailActivityChainingType,
     #[cfg_attr(feature = "openapi", schema(example = 42))]
     #[serde(alias = "delay_count")]
     pub delay_count: i32,
@@ -300,7 +298,7 @@ impl From<CreateMailActivityTypeDto> for MailActivityType {
             summary: dto.summary,
             note: dto.note,
             category: dto.category,
-            chaining_type: dto.chaining_type,
+            chaining_type: MailActivityChainingType::Suggest,
             delay_count: dto.delay_count,
             delay_unit: dto.delay_unit,
             delay_from: dto.delay_from,

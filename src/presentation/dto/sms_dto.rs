@@ -36,7 +36,6 @@ pub struct CreateSmsDto {
     pub number: String,
     #[cfg_attr(feature = "openapi", schema(example = "example"))]
     pub body: String,
-    pub state: SmsState,
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "failure_type")]
     pub failure_type: Option<SmsFailureType>,
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "error_message")]
@@ -245,7 +244,7 @@ impl From<CreateSmsDto> for Sms {
             uuid: dto.uuid,
             number: dto.number,
             body: dto.body,
-            state: dto.state,
+            state: SmsState::Outgoing,
             failure_type: dto.failure_type,
             error_message: dto.error_message,
             mail_message_id: dto.mail_message_id,

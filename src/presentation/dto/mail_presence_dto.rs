@@ -33,7 +33,6 @@ pub struct CreateMailPresenceDto {
     pub user_id: Option<Uuid>,
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "guest_id")]
     pub guest_id: Option<Uuid>,
-    pub status: MailPresenceStatus,
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "last_poll")]
     pub last_poll: Option<DateTime<Utc>>,
 }
@@ -205,7 +204,7 @@ impl From<CreateMailPresenceDto> for MailPresence {
             id: Uuid::new_v4(),
             user_id: dto.user_id,
             guest_id: dto.guest_id,
-            status: dto.status,
+            status: MailPresenceStatus::Offline,
             last_poll: dto.last_poll,
             metadata: AuditMetadata::default(),
         }

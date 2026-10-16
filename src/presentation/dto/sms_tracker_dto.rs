@@ -37,7 +37,6 @@ pub struct CreateSmsTrackerDto {
     pub message_id: Option<Uuid>,
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "notification_id")]
     pub notification_id: Option<Uuid>,
-    pub state: MailNotificationStatus,
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "failure_type")]
     pub failure_type: Option<NotificationFailureType>,
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "failure_reason")]
@@ -235,7 +234,7 @@ impl From<CreateSmsTrackerDto> for SmsTracker {
             sms_uuid: dto.sms_uuid,
             message_id: dto.message_id,
             notification_id: dto.notification_id,
-            state: dto.state,
+            state: MailNotificationStatus::Process,
             failure_type: dto.failure_type,
             failure_reason: dto.failure_reason,
             recipient: dto.recipient,

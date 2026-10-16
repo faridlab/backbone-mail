@@ -59,8 +59,6 @@ pub struct CreateMailMessageDto {
     pub res_id: Option<Uuid>,
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "record_name")]
     pub record_name: Option<String>,
-    #[serde(default, skip_serializing_if = "Option::is_none", alias = "moderation_status")]
-    pub moderation_status: Option<MailModerationStatus>,
     #[cfg_attr(feature = "openapi", schema(example = true))]
     pub needaction: bool,
     #[cfg_attr(feature = "openapi", schema(example = true))]
@@ -362,7 +360,7 @@ impl From<CreateMailMessageDto> for MailMessage {
             model: dto.model,
             res_id: dto.res_id,
             record_name: dto.record_name,
-            moderation_status: dto.moderation_status,
+            moderation_status: None,
             needaction: dto.needaction,
             has_error: dto.has_error,
             failure_reason: dto.failure_reason,

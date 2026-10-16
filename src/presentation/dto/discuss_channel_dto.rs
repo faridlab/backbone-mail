@@ -31,8 +31,6 @@ use crate::domain::entity::DiscussChannelType;
 pub struct CreateDiscussChannelDto {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
-    #[serde(alias = "channel_type")]
-    pub channel_type: DiscussChannelType,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -268,7 +266,7 @@ impl From<CreateDiscussChannelDto> for DiscussChannel {
         Self {
             id: Uuid::new_v4(),
             name: dto.name,
-            channel_type: dto.channel_type,
+            channel_type: DiscussChannelType::Channel,
             description: dto.description,
             uuid: dto.uuid,
             default_access_mode: dto.default_access_mode,

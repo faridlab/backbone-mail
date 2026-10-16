@@ -33,7 +33,6 @@ pub struct CreateFetchmailServerDto {
     pub name: String,
     #[cfg_attr(feature = "openapi", schema(example = true))]
     pub active: bool,
-    pub state: FetchmailState,
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "default_thread_model")]
     pub default_thread_model: Option<String>,
     #[cfg_attr(feature = "openapi", schema(example = 42))]
@@ -255,7 +254,7 @@ impl From<CreateFetchmailServerDto> for FetchmailServer {
             id: Uuid::new_v4(),
             name: dto.name,
             active: dto.active,
-            state: dto.state,
+            state: FetchmailState::Draft,
             default_thread_model: dto.default_thread_model,
             priority: dto.priority,
             token_hash: dto.token_hash,

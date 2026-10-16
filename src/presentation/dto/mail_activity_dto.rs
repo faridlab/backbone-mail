@@ -51,7 +51,6 @@ pub struct CreateMailActivityDto {
     pub user_id: Uuid,
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "requested_user_id")]
     pub requested_user_id: Option<Uuid>,
-    pub state: MailActivityState,
     #[cfg_attr(feature = "openapi", schema(example = true))]
     pub active: bool,
     #[cfg_attr(feature = "openapi", schema(example = true))]
@@ -314,7 +313,7 @@ impl From<CreateMailActivityDto> for MailActivity {
             date_deadline: dto.date_deadline,
             user_id: dto.user_id,
             requested_user_id: dto.requested_user_id,
-            state: dto.state,
+            state: MailActivityState::Today,
             active: dto.active,
             has_recommended_activities: dto.has_recommended_activities,
             chained_next_activity: dto.chained_next_activity,

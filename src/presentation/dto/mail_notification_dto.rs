@@ -38,8 +38,6 @@ pub struct CreateMailNotificationDto {
     pub res_partner_id: Option<Uuid>,
     #[serde(alias = "notification_type")]
     pub notification_type: MailNotificationType,
-    #[serde(alias = "notification_status")]
-    pub notification_status: MailNotificationStatus,
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "failure_type")]
     pub failure_type: Option<NotificationFailureType>,
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "failure_reason")]
@@ -250,7 +248,7 @@ impl From<CreateMailNotificationDto> for MailNotification {
             mail_message_id: dto.mail_message_id,
             res_partner_id: dto.res_partner_id,
             notification_type: dto.notification_type,
-            notification_status: dto.notification_status,
+            notification_status: MailNotificationStatus::Ready,
             failure_type: dto.failure_type,
             failure_reason: dto.failure_reason,
             mail_mail_id_int: dto.mail_mail_id_int,
