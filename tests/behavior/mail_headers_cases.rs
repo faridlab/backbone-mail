@@ -253,6 +253,25 @@ async fn add_persists_the_opt_out_reason_and_folds_case(pool: PgPool) {
     assert_eq!(listed, ["user@example.com".to_string()].into_iter().collect());
 }
 
+/// A writer that skips the service (mass mailing's bounce sweep, generic CRUD, raw SQL) still
+/// stores the address lower-cased, so a case variant meets the unique index instead of making a
+/// near-duplicate the module's lookups would miss.
+#[sqlx::test(migrations = "./migrations")]
+async fn a_raw_mixed_case_write_folds_onto_the_one_row(pool: PgPool) {
+    sqlx::query("INSERT INTO messaging.mail_blacklists (email, active) VALUES ('Bounce@Example.COM', TRUE)")
+        .execute(&pool)
+        .await
+        .expect("raw insert");
+    assert!(blacklist_row(&pool, "bounce@example.com").await.is_some(), "stored lower-cased");
+
+    let again = sqlx::query("INSERT INTO messaging.mail_blacklists (email, active) VALUES ('BOUNCE@example.com', TRUE) ON CONFLICT (email) DO NOTHING")
+        .execute(&pool)
+        .await
+        .expect("raw re-insert");
+    assert_eq!(again.rows_affected(), 0, "the case variant meets the existing row");
+    assert!(verbs(&pool).is_listed("bounce@example.com").await.unwrap());
+}
+
 #[sqlx::test(migrations = "./migrations")]
 async fn an_unreasoned_re_add_never_erases_a_recorded_reason(pool: PgPool) {
     let reason = Uuid::new_v4();

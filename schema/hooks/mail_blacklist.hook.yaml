@@ -3,12 +3,9 @@
 # G-MAIL-2: unique(email). Enforced by @unique on MailBlacklist.email
 # (declared on the model; fires on raw SQL in v19).
 #
-# PORT CAVEAT (kept from the docs): the unique is on the AS-STORED value —
-# case-folding is APP-LAYER in Odoo (create/write lowercase first); a raw
-# mixed-case insert bypasses the fold and can create a near-duplicate. The
-# write service MUST lowercase before insert (or the port should move to a
-# DB-lowered expression index — left as a service-layer responsibility
-# here).
+# Case: the unique is on the stored value, and the trigger
+# mail_blacklists_fold_email lower-cases every write before it is stored, so
+# the unique holds one row per address regardless of case, for any writer.
 # =============================================================================
 
 name: MailBlacklistHooks
@@ -22,4 +19,5 @@ rules:
     code: mail_blacklist_duplicate_email
     severity: error
     enforcement: both
-    justification: "PARTLY: the email unique holds on the stored value, but only MailBlacklistWriteService lowercases, and nothing calls it; the live writer, mass mailing's auto-blacklist sweep, inserts the address as received, so a case variant slips past the module's exact-match lookups."
+    enforced_by: "migrations/20261017150000_mail_blacklist_fold_email.up.sql::mail_blacklists_fold_email"
+    justification: "The trigger mail_blacklists_fold_email lower-cases the address on every insert and every update of email, from any writer (mass mailing's bounce sweep, generic CRUD, raw SQL), so the unique index on email holds one row per address regardless of case; its migration merged the case duplicates written before it (tests/behavior/mail_headers_cases.rs a_raw_mixed_case_write_folds_onto_the_one_row)."
