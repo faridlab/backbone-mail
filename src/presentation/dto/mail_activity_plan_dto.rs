@@ -35,7 +35,12 @@ pub struct CreateMailActivityPlanDto {
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "res_model_id")]
     pub res_model_id: Option<Uuid>,
     #[cfg_attr(feature = "openapi", schema(example = true))]
+    #[serde(default = "default_create_mail_activity_plan_active")]
     pub active: bool,
+}
+
+fn default_create_mail_activity_plan_active() -> bool {
+    true
 }
 
 // =============================================================================
@@ -75,10 +80,10 @@ pub struct PatchMailActivityPlanDto {
     #[cfg_attr(feature = "openapi", schema(example = "example"))]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "res_model")]
-    pub res_model: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "res_model_id")]
-    pub res_model_id: Option<Uuid>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "res_model")]
+    pub res_model: Option<Option<String>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "res_model_id")]
+    pub res_model_id: Option<Option<Uuid>>,
     #[cfg_attr(feature = "openapi", schema(example = true))]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub active: Option<bool>,
@@ -245,12 +250,4 @@ impl backbone_core::ApplyUpdateDto<UpdateMailActivityPlanDto> for MailActivityPl
         Ok(self)
     }
 }
-
-// =============================================================================
-// Custom DTOs
-// =============================================================================
-
-// Add custom DTOs specific to MailActivityPlan here.
-// This section will be preserved during regeneration.
-// >>> END CUSTOM DTOs
 

@@ -52,14 +52,19 @@ pub struct CreateMailActivityDto {
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "requested_user_id")]
     pub requested_user_id: Option<Uuid>,
     #[cfg_attr(feature = "openapi", schema(example = true))]
+    #[serde(default = "default_create_mail_activity_active")]
     pub active: bool,
     #[cfg_attr(feature = "openapi", schema(example = true))]
-    #[serde(alias = "has_recommended_activities")]
+    #[serde(default, alias = "has_recommended_activities")]
     pub has_recommended_activities: bool,
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "chained_next_activity")]
     pub chained_next_activity: Option<serde_json::Value>,
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "calendar_event_id")]
     pub calendar_event_id: Option<Uuid>,
+}
+
+fn default_create_mail_activity_active() -> bool {
+    true
 }
 
 // =============================================================================
@@ -126,22 +131,22 @@ pub struct PatchMailActivityDto {
     #[cfg_attr(feature = "openapi", schema(example = "550e8400-e29b-41d4-a716-446655440000"))]
     #[serde(skip_serializing_if = "Option::is_none", alias = "res_id")]
     pub res_id: Option<Uuid>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "res_model_id")]
-    pub res_model_id: Option<Uuid>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "activity_type_id")]
-    pub activity_type_id: Option<Uuid>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub summary: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub note: Option<String>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "res_model_id")]
+    pub res_model_id: Option<Option<Uuid>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "activity_type_id")]
+    pub activity_type_id: Option<Option<Uuid>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option")]
+    pub summary: Option<Option<String>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option")]
+    pub note: Option<Option<String>>,
     #[cfg_attr(feature = "openapi", schema(example = "2024-01-01"))]
     #[serde(skip_serializing_if = "Option::is_none", alias = "date_deadline")]
     pub date_deadline: Option<NaiveDate>,
     #[cfg_attr(feature = "openapi", schema(example = "550e8400-e29b-41d4-a716-446655440000"))]
     #[serde(skip_serializing_if = "Option::is_none", alias = "user_id")]
     pub user_id: Option<Uuid>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "requested_user_id")]
-    pub requested_user_id: Option<Uuid>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "requested_user_id")]
+    pub requested_user_id: Option<Option<Uuid>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub state: Option<MailActivityState>,
     #[cfg_attr(feature = "openapi", schema(example = true))]
@@ -150,10 +155,10 @@ pub struct PatchMailActivityDto {
     #[cfg_attr(feature = "openapi", schema(example = true))]
     #[serde(skip_serializing_if = "Option::is_none", alias = "has_recommended_activities")]
     pub has_recommended_activities: Option<bool>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "chained_next_activity")]
-    pub chained_next_activity: Option<serde_json::Value>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "calendar_event_id")]
-    pub calendar_event_id: Option<Uuid>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "chained_next_activity")]
+    pub chained_next_activity: Option<Option<serde_json::Value>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "calendar_event_id")]
+    pub calendar_event_id: Option<Option<Uuid>>,
 }
 
 impl PatchMailActivityDto {
@@ -371,12 +376,4 @@ impl backbone_core::ApplyUpdateDto<UpdateMailActivityDto> for MailActivity {
         Ok(self)
     }
 }
-
-// =============================================================================
-// Custom DTOs
-// =============================================================================
-
-// Add custom DTOs specific to MailActivity here.
-// This section will be preserved during regeneration.
-// >>> END CUSTOM DTOs
 

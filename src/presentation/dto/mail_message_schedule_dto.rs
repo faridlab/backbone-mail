@@ -75,8 +75,8 @@ pub struct PatchMailMessageScheduleDto {
     #[cfg_attr(feature = "openapi", schema(example = "550e8400-e29b-41d4-a716-446655440000"))]
     #[serde(skip_serializing_if = "Option::is_none", alias = "mail_message_id")]
     pub mail_message_id: Option<Uuid>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "notification_parameters")]
-    pub notification_parameters: Option<String>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "notification_parameters")]
+    pub notification_parameters: Option<Option<String>>,
     #[cfg_attr(feature = "openapi", schema(example = "2024-01-01T00:00:00Z"))]
     #[serde(skip_serializing_if = "Option::is_none", alias = "scheduled_datetime")]
     pub scheduled_datetime: Option<DateTime<Utc>>,
@@ -238,12 +238,4 @@ impl backbone_core::ApplyUpdateDto<UpdateMailMessageScheduleDto> for MailMessage
         Ok(self)
     }
 }
-
-// =============================================================================
-// Custom DTOs
-// =============================================================================
-
-// Add custom DTOs specific to MailMessageSchedule here.
-// This section will be preserved during regeneration.
-// >>> END CUSTOM DTOs
 

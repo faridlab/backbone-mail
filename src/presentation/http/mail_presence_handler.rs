@@ -81,6 +81,13 @@ impl axum::response::IntoResponse for MailPresenceError {
 // Route Configuration
 // =============================================================================
 
+/// The permissions this entity's generic routes require: `mail_presence:<action>` for `read`, `create`,
+/// `update`, `delete`, `restore` and `purge`, with any rename the schema's `requires:` declares.
+pub fn mail_presence_permissions() -> backbone_core::http::CrudPermissions {
+    backbone_core::http::CrudPermissions::new("mail_presence")
+        .in_module("messaging")
+}
+
 /// Create Axum router with all 16 Backbone endpoints for MailPresence.
 ///
 /// # Routes
@@ -110,21 +117,23 @@ impl axum::response::IntoResponse for MailPresenceError {
 /// let router = create_mail_presence_routes(service);
 /// ```
 pub fn create_mail_presence_routes(service: Arc<MailPresenceService>) -> Router {
-    BackboneCrudHandler::<MailPresenceService, MailPresence, CreateMailPresenceDto, UpdateMailPresenceDto, MailPresenceResponseDto>::routes(
+    BackboneCrudHandler::<MailPresenceService, MailPresence, CreateMailPresenceDto, UpdateMailPresenceDto, MailPresenceResponseDto>::routes_guarded(
         service,
         "/mail_presences",
+        mail_presence_permissions(),
     )
 }
 
 /// Create Axum router with only the read (GET) endpoints for MailPresence.
 ///
-/// Safe for public, unauthenticated exposure (e.g., reference data).
+/// Each route requires the entity's `read` permission, so it needs an authenticated caller.
 /// Mutations must be served separately via `create_mail_presence_write_routes`,
 /// typically wrapped in an auth middleware layer.
 pub fn create_mail_presence_read_routes(service: Arc<MailPresenceService>) -> Router {
-    BackboneCrudHandler::<MailPresenceService, MailPresence, CreateMailPresenceDto, UpdateMailPresenceDto, MailPresenceResponseDto>::read_routes(
+    BackboneCrudHandler::<MailPresenceService, MailPresence, CreateMailPresenceDto, UpdateMailPresenceDto, MailPresenceResponseDto>::read_routes_guarded(
         service,
         "/mail_presences",
+        mail_presence_permissions(),
     )
 }
 
@@ -140,9 +149,10 @@ pub fn create_mail_presence_read_routes(service: Arc<MailPresenceService>) -> Ro
 /// service (e.g. a command router over its domain engine), serve THAT instead
 /// for any mutation that must respect domain rules.
 pub fn create_mail_presence_write_routes(service: Arc<MailPresenceService>) -> Router {
-    BackboneCrudHandler::<MailPresenceService, MailPresence, CreateMailPresenceDto, UpdateMailPresenceDto, MailPresenceResponseDto>::write_routes(
+    BackboneCrudHandler::<MailPresenceService, MailPresence, CreateMailPresenceDto, UpdateMailPresenceDto, MailPresenceResponseDto>::write_routes_guarded(
         service,
         "/mail_presences",
+        mail_presence_permissions(),
     )
 }
 
@@ -199,33 +209,26 @@ pub async fn go_online_transition(
     axum::extract::State(service): axum::extract::State<Arc<MailPresenceService>>,
     axum::extract::Path(id): axum::extract::Path<String>,
     auth: Option<axum::Extension<AuthContext>>,
+    waiver: Option<axum::Extension<backbone_auth::PermissionWaiver>>,
 ) -> impl axum::response::IntoResponse {
     use axum::{http::StatusCode, Json};
+
+    // Check permission
+    let Some(axum::Extension(auth)) = auth else {
+        return backbone_core::http::unauthenticated_refusal::<MailPresenceResponseDto>();
+    };
+    if waiver.is_none() {
+        if let Err(refused) = auth.require_with("mail_presence:go_online", &["messaging:go_online"]) {
+            return backbone_core::http::permission_refusal::<MailPresenceResponseDto>(&refused);
+        }
+    }
 
     // Get current entity
     let entity = match service.get_by_id(&id).await {
         Ok(Some(e)) => e,
         Ok(None) => return (StatusCode::NOT_FOUND, Json(ApiResponse::<MailPresenceResponseDto>::not_found("MailPresence", &id))),
-        Err(e) => return (StatusCode::INTERNAL_SERVER_ERROR, Json(ApiResponse::<MailPresenceResponseDto>::error(e.to_string()))),
+        Err(e) => return backbone_core::http::service_error_response::<MailPresenceResponseDto>(&e),
     };
-
-    // Check permission
-    let Some(axum::Extension(auth)) = auth else {
-        return (StatusCode::UNAUTHORIZED, Json(ApiResponse::<MailPresenceResponseDto>::error("A transition needs an authenticated caller")));
-    };
-    {
-        let allowed_roles = MailPresenceHooksTransition::GoOnline.allowed_roles();
-        let granted = |required: &str| auth.permissions.iter().any(|p| {
-            let (have, want): (Vec<&str>, Vec<&str>) = (p.split(':').collect(), required.split(':').collect());
-            have.iter().enumerate().all(|(i, h)| *h == "*" || want.get(i) == Some(h))
-                && (have.len() == want.len() || (have.len() < want.len() && have.last() == Some(&"*")))
-        });
-        let has_specific_perm = granted("mail_presence:transition:go_online");
-        let _ = &allowed_roles;
-        if !has_specific_perm {
-            return (StatusCode::FORBIDDEN, Json(ApiResponse::<MailPresenceResponseDto>::error("go_online needs mail_presence:transition:go_online")));
-        }
-    }
 
     // Create state machine from entity's actual status and validate transition
     let current_state: MailPresenceHooksState = match entity.status.to_string().parse() {
@@ -234,7 +237,11 @@ pub async fn go_online_transition(
     };
     let sm = MailPresenceHooksStateMachine::from_state(current_state);
     if !sm.can_transition(MailPresenceHooksTransition::GoOnline) {
-        return (StatusCode::BAD_REQUEST, Json(ApiResponse::<MailPresenceResponseDto>::error("Transition not allowed from current state")));
+        let refusal = backbone_core::service::ServiceError::Violations(vec![backbone_core::Violation::new("status", "transition_not_allowed", "go_online is not allowed from the current state")
+            .with_param("transition", "go_online")
+            .with_param("from", serde_json::to_value(&entity.status).unwrap_or_default())
+            .with_param("to", "online")]);
+        return backbone_core::http::service_error_response::<MailPresenceResponseDto>(&refusal);
     }
 
     // Apply transition via partial update
@@ -247,7 +254,7 @@ pub async fn go_online_transition(
             (StatusCode::OK, Json(ApiResponse::ok(response)))
         }
         Ok(None) => (StatusCode::NOT_FOUND, Json(ApiResponse::<MailPresenceResponseDto>::not_found("MailPresence", &id))),
-        Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, Json(ApiResponse::<MailPresenceResponseDto>::error(e.to_string()))),
+        Err(e) => backbone_core::http::service_error_response::<MailPresenceResponseDto>(&e),
     }
 }
 
@@ -258,33 +265,26 @@ pub async fn go_away_transition(
     axum::extract::State(service): axum::extract::State<Arc<MailPresenceService>>,
     axum::extract::Path(id): axum::extract::Path<String>,
     auth: Option<axum::Extension<AuthContext>>,
+    waiver: Option<axum::Extension<backbone_auth::PermissionWaiver>>,
 ) -> impl axum::response::IntoResponse {
     use axum::{http::StatusCode, Json};
+
+    // Check permission
+    let Some(axum::Extension(auth)) = auth else {
+        return backbone_core::http::unauthenticated_refusal::<MailPresenceResponseDto>();
+    };
+    if waiver.is_none() {
+        if let Err(refused) = auth.require_with("mail_presence:go_away", &["messaging:go_away"]) {
+            return backbone_core::http::permission_refusal::<MailPresenceResponseDto>(&refused);
+        }
+    }
 
     // Get current entity
     let entity = match service.get_by_id(&id).await {
         Ok(Some(e)) => e,
         Ok(None) => return (StatusCode::NOT_FOUND, Json(ApiResponse::<MailPresenceResponseDto>::not_found("MailPresence", &id))),
-        Err(e) => return (StatusCode::INTERNAL_SERVER_ERROR, Json(ApiResponse::<MailPresenceResponseDto>::error(e.to_string()))),
+        Err(e) => return backbone_core::http::service_error_response::<MailPresenceResponseDto>(&e),
     };
-
-    // Check permission
-    let Some(axum::Extension(auth)) = auth else {
-        return (StatusCode::UNAUTHORIZED, Json(ApiResponse::<MailPresenceResponseDto>::error("A transition needs an authenticated caller")));
-    };
-    {
-        let allowed_roles = MailPresenceHooksTransition::GoAway.allowed_roles();
-        let granted = |required: &str| auth.permissions.iter().any(|p| {
-            let (have, want): (Vec<&str>, Vec<&str>) = (p.split(':').collect(), required.split(':').collect());
-            have.iter().enumerate().all(|(i, h)| *h == "*" || want.get(i) == Some(h))
-                && (have.len() == want.len() || (have.len() < want.len() && have.last() == Some(&"*")))
-        });
-        let has_specific_perm = granted("mail_presence:transition:go_away");
-        let _ = &allowed_roles;
-        if !has_specific_perm {
-            return (StatusCode::FORBIDDEN, Json(ApiResponse::<MailPresenceResponseDto>::error("go_away needs mail_presence:transition:go_away")));
-        }
-    }
 
     // Create state machine from entity's actual status and validate transition
     let current_state: MailPresenceHooksState = match entity.status.to_string().parse() {
@@ -293,7 +293,11 @@ pub async fn go_away_transition(
     };
     let sm = MailPresenceHooksStateMachine::from_state(current_state);
     if !sm.can_transition(MailPresenceHooksTransition::GoAway) {
-        return (StatusCode::BAD_REQUEST, Json(ApiResponse::<MailPresenceResponseDto>::error("Transition not allowed from current state")));
+        let refusal = backbone_core::service::ServiceError::Violations(vec![backbone_core::Violation::new("status", "transition_not_allowed", "go_away is not allowed from the current state")
+            .with_param("transition", "go_away")
+            .with_param("from", serde_json::to_value(&entity.status).unwrap_or_default())
+            .with_param("to", "away")]);
+        return backbone_core::http::service_error_response::<MailPresenceResponseDto>(&refusal);
     }
 
     // Apply transition via partial update
@@ -306,7 +310,7 @@ pub async fn go_away_transition(
             (StatusCode::OK, Json(ApiResponse::ok(response)))
         }
         Ok(None) => (StatusCode::NOT_FOUND, Json(ApiResponse::<MailPresenceResponseDto>::not_found("MailPresence", &id))),
-        Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, Json(ApiResponse::<MailPresenceResponseDto>::error(e.to_string()))),
+        Err(e) => backbone_core::http::service_error_response::<MailPresenceResponseDto>(&e),
     }
 }
 
@@ -317,33 +321,26 @@ pub async fn go_offline_transition(
     axum::extract::State(service): axum::extract::State<Arc<MailPresenceService>>,
     axum::extract::Path(id): axum::extract::Path<String>,
     auth: Option<axum::Extension<AuthContext>>,
+    waiver: Option<axum::Extension<backbone_auth::PermissionWaiver>>,
 ) -> impl axum::response::IntoResponse {
     use axum::{http::StatusCode, Json};
+
+    // Check permission
+    let Some(axum::Extension(auth)) = auth else {
+        return backbone_core::http::unauthenticated_refusal::<MailPresenceResponseDto>();
+    };
+    if waiver.is_none() {
+        if let Err(refused) = auth.require_with("mail_presence:go_offline", &["messaging:go_offline"]) {
+            return backbone_core::http::permission_refusal::<MailPresenceResponseDto>(&refused);
+        }
+    }
 
     // Get current entity
     let entity = match service.get_by_id(&id).await {
         Ok(Some(e)) => e,
         Ok(None) => return (StatusCode::NOT_FOUND, Json(ApiResponse::<MailPresenceResponseDto>::not_found("MailPresence", &id))),
-        Err(e) => return (StatusCode::INTERNAL_SERVER_ERROR, Json(ApiResponse::<MailPresenceResponseDto>::error(e.to_string()))),
+        Err(e) => return backbone_core::http::service_error_response::<MailPresenceResponseDto>(&e),
     };
-
-    // Check permission
-    let Some(axum::Extension(auth)) = auth else {
-        return (StatusCode::UNAUTHORIZED, Json(ApiResponse::<MailPresenceResponseDto>::error("A transition needs an authenticated caller")));
-    };
-    {
-        let allowed_roles = MailPresenceHooksTransition::GoOffline.allowed_roles();
-        let granted = |required: &str| auth.permissions.iter().any(|p| {
-            let (have, want): (Vec<&str>, Vec<&str>) = (p.split(':').collect(), required.split(':').collect());
-            have.iter().enumerate().all(|(i, h)| *h == "*" || want.get(i) == Some(h))
-                && (have.len() == want.len() || (have.len() < want.len() && have.last() == Some(&"*")))
-        });
-        let has_specific_perm = granted("mail_presence:transition:go_offline");
-        let _ = &allowed_roles;
-        if !has_specific_perm {
-            return (StatusCode::FORBIDDEN, Json(ApiResponse::<MailPresenceResponseDto>::error("go_offline needs mail_presence:transition:go_offline")));
-        }
-    }
 
     // Create state machine from entity's actual status and validate transition
     let current_state: MailPresenceHooksState = match entity.status.to_string().parse() {
@@ -352,7 +349,11 @@ pub async fn go_offline_transition(
     };
     let sm = MailPresenceHooksStateMachine::from_state(current_state);
     if !sm.can_transition(MailPresenceHooksTransition::GoOffline) {
-        return (StatusCode::BAD_REQUEST, Json(ApiResponse::<MailPresenceResponseDto>::error("Transition not allowed from current state")));
+        let refusal = backbone_core::service::ServiceError::Violations(vec![backbone_core::Violation::new("status", "transition_not_allowed", "go_offline is not allowed from the current state")
+            .with_param("transition", "go_offline")
+            .with_param("from", serde_json::to_value(&entity.status).unwrap_or_default())
+            .with_param("to", "offline")]);
+        return backbone_core::http::service_error_response::<MailPresenceResponseDto>(&refusal);
     }
 
     // Apply transition via partial update
@@ -365,7 +366,7 @@ pub async fn go_offline_transition(
             (StatusCode::OK, Json(ApiResponse::ok(response)))
         }
         Ok(None) => (StatusCode::NOT_FOUND, Json(ApiResponse::<MailPresenceResponseDto>::not_found("MailPresence", &id))),
-        Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, Json(ApiResponse::<MailPresenceResponseDto>::error(e.to_string()))),
+        Err(e) => backbone_core::http::service_error_response::<MailPresenceResponseDto>(&e),
     }
 }
 
@@ -378,5 +379,6 @@ pub fn create_mail_presence_transition_routes(service: Arc<MailPresenceService>)
         .route("/mail_presences/:id/transitions/go_away", post(go_away_transition))
         .route("/mail_presences/:id/transitions/go_offline", post(go_offline_transition))
         .with_state(service)
+        .layer(axum::middleware::from_fn(backbone_core::http::correlation_middleware))
 }
 

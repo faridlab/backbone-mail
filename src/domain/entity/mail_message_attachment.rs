@@ -156,6 +156,13 @@ impl super::Entity for MailMessageAttachment {
 }
 
 impl backbone_core::PersistentEntity for MailMessageAttachment {
+    fn references() -> &'static [backbone_core::Reference] {
+        const REFERENCES: &[backbone_core::Reference] = &[
+            backbone_core::Reference::new("message_id", "messaging.mail_messages", "id"),
+            backbone_core::Reference::new("attachment_id", "messaging.mail_attachments", "id"),
+        ];
+        REFERENCES
+    }
     fn entity_id(&self) -> String {
         self.id.to_string()
     }

@@ -95,16 +95,16 @@ pub struct PatchMailActivityPlanTemplateDto {
     #[cfg_attr(feature = "openapi", schema(example = "550e8400-e29b-41d4-a716-446655440000"))]
     #[serde(skip_serializing_if = "Option::is_none", alias = "activity_type_id")]
     pub activity_type_id: Option<Uuid>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub summary: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub note: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "delay_count")]
-    pub delay_count: Option<i32>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "delay_unit")]
-    pub delay_unit: Option<MailActivityDelayUnit>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "user_id")]
-    pub user_id: Option<Uuid>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option")]
+    pub summary: Option<Option<String>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option")]
+    pub note: Option<Option<String>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "delay_count")]
+    pub delay_count: Option<Option<i32>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "delay_unit")]
+    pub delay_unit: Option<Option<MailActivityDelayUnit>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "user_id")]
+    pub user_id: Option<Option<Uuid>>,
 }
 
 impl PatchMailActivityPlanTemplateDto {
@@ -283,12 +283,4 @@ impl backbone_core::ApplyUpdateDto<UpdateMailActivityPlanTemplateDto> for MailAc
         Ok(self)
     }
 }
-
-// =============================================================================
-// Custom DTOs
-// =============================================================================
-
-// Add custom DTOs specific to MailActivityPlanTemplate here.
-// This section will be preserved during regeneration.
-// >>> END CUSTOM DTOs
 

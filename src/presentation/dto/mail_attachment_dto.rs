@@ -89,18 +89,18 @@ pub struct PatchMailAttachmentDto {
     #[cfg_attr(feature = "openapi", schema(example = "example"))]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub mimetype: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub size: Option<i32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub datas: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub checksum: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "owner_party_id")]
-    pub owner_party_id: Option<Uuid>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "owner_guest_id")]
-    pub owner_guest_id: Option<Uuid>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option")]
+    pub mimetype: Option<Option<String>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option")]
+    pub size: Option<Option<i32>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option")]
+    pub datas: Option<Option<String>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option")]
+    pub checksum: Option<Option<String>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "owner_party_id")]
+    pub owner_party_id: Option<Option<Uuid>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "owner_guest_id")]
+    pub owner_guest_id: Option<Option<Uuid>>,
 }
 
 impl PatchMailAttachmentDto {
@@ -282,12 +282,4 @@ impl backbone_core::ApplyUpdateDto<UpdateMailAttachmentDto> for MailAttachment {
         Ok(self)
     }
 }
-
-// =============================================================================
-// Custom DTOs
-// =============================================================================
-
-// Add custom DTOs specific to MailAttachment here.
-// This section will be preserved during regeneration.
-// >>> END CUSTOM DTOs
 

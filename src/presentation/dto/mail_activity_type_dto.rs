@@ -41,11 +41,11 @@ pub struct CreateMailActivityTypeDto {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub category: Option<MailActivityCategory>,
     #[cfg_attr(feature = "openapi", schema(example = 42))]
-    #[serde(alias = "delay_count")]
+    #[serde(default, alias = "delay_count")]
     pub delay_count: i32,
-    #[serde(alias = "delay_unit")]
+    #[serde(default = "default_create_mail_activity_type_delay_unit", alias = "delay_unit")]
     pub delay_unit: MailActivityDelayUnit,
-    #[serde(alias = "delay_from")]
+    #[serde(default = "default_create_mail_activity_type_delay_from", alias = "delay_from")]
     pub delay_from: MailActivityDelayFrom,
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "default_user_id")]
     pub default_user_id: Option<Uuid>,
@@ -58,7 +58,20 @@ pub struct CreateMailActivityTypeDto {
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "res_model_id")]
     pub res_model_id: Option<Uuid>,
     #[cfg_attr(feature = "openapi", schema(example = true))]
+    #[serde(default = "default_create_mail_activity_type_active")]
     pub active: bool,
+}
+
+fn default_create_mail_activity_type_delay_unit() -> MailActivityDelayUnit {
+    MailActivityDelayUnit::Days
+}
+
+fn default_create_mail_activity_type_delay_from() -> MailActivityDelayFrom {
+    MailActivityDelayFrom::PreviousActivity
+}
+
+fn default_create_mail_activity_type_active() -> bool {
+    true
 }
 
 // =============================================================================
@@ -119,12 +132,12 @@ pub struct PatchMailActivityTypeDto {
     #[cfg_attr(feature = "openapi", schema(example = "example"))]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub summary: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub note: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub category: Option<MailActivityCategory>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option")]
+    pub summary: Option<Option<String>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option")]
+    pub note: Option<Option<String>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option")]
+    pub category: Option<Option<MailActivityCategory>>,
     #[serde(skip_serializing_if = "Option::is_none", alias = "chaining_type")]
     pub chaining_type: Option<MailActivityChainingType>,
     #[cfg_attr(feature = "openapi", schema(example = 42))]
@@ -134,16 +147,16 @@ pub struct PatchMailActivityTypeDto {
     pub delay_unit: Option<MailActivityDelayUnit>,
     #[serde(skip_serializing_if = "Option::is_none", alias = "delay_from")]
     pub delay_from: Option<MailActivityDelayFrom>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "default_user_id")]
-    pub default_user_id: Option<Uuid>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "default_note")]
-    pub default_note: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub icon: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "res_model")]
-    pub res_model: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "res_model_id")]
-    pub res_model_id: Option<Uuid>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "default_user_id")]
+    pub default_user_id: Option<Option<Uuid>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "default_note")]
+    pub default_note: Option<Option<String>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option")]
+    pub icon: Option<Option<String>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "res_model")]
+    pub res_model: Option<Option<String>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "res_model_id")]
+    pub res_model_id: Option<Option<Uuid>>,
     #[cfg_attr(feature = "openapi", schema(example = true))]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub active: Option<bool>,
@@ -361,12 +374,4 @@ impl backbone_core::ApplyUpdateDto<UpdateMailActivityTypeDto> for MailActivityTy
         Ok(self)
     }
 }
-
-// =============================================================================
-// Custom DTOs
-// =============================================================================
-
-// Add custom DTOs specific to MailActivityType here.
-// This section will be preserved during regeneration.
-// >>> END CUSTOM DTOs
 

@@ -38,7 +38,7 @@ pub struct CreateMailDto {
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "scheduled_date")]
     pub scheduled_date: Option<DateTime<Utc>>,
     #[cfg_attr(feature = "openapi", schema(example = true))]
-    #[serde(alias = "auto_delete")]
+    #[serde(default, alias = "auto_delete")]
     pub auto_delete: bool,
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "failure_reason")]
     pub failure_reason: Option<String>,
@@ -48,7 +48,12 @@ pub struct CreateMailDto {
     pub email_cc: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "reply_to")]
     pub reply_to: Option<String>,
+    #[serde(default = "default_create_mail_headers")]
     pub headers: serde_json::Value,
+}
+
+fn default_create_mail_headers() -> serde_json::Value {
+    serde_json::json!({})
 }
 
 // =============================================================================
@@ -102,21 +107,21 @@ pub struct PatchMailDto {
     pub mail_message_id: Option<Uuid>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub state: Option<MailState>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "failure_type")]
-    pub failure_type: Option<MailFailureType>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "scheduled_date")]
-    pub scheduled_date: Option<DateTime<Utc>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "failure_type")]
+    pub failure_type: Option<Option<MailFailureType>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "scheduled_date")]
+    pub scheduled_date: Option<Option<DateTime<Utc>>>,
     #[cfg_attr(feature = "openapi", schema(example = true))]
     #[serde(skip_serializing_if = "Option::is_none", alias = "auto_delete")]
     pub auto_delete: Option<bool>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "failure_reason")]
-    pub failure_reason: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "email_to")]
-    pub email_to: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "email_cc")]
-    pub email_cc: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "reply_to")]
-    pub reply_to: Option<String>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "failure_reason")]
+    pub failure_reason: Option<Option<String>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "email_to")]
+    pub email_to: Option<Option<String>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "email_cc")]
+    pub email_cc: Option<Option<String>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "reply_to")]
+    pub reply_to: Option<Option<String>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub headers: Option<serde_json::Value>,
 }
@@ -312,12 +317,4 @@ impl backbone_core::ApplyUpdateDto<UpdateMailDto> for Mail {
         Ok(self)
     }
 }
-
-// =============================================================================
-// Custom DTOs
-// =============================================================================
-
-// Add custom DTOs specific to Mail here.
-// This section will be preserved during regeneration.
-// >>> END CUSTOM DTOs
 

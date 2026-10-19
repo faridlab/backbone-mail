@@ -340,6 +340,14 @@ impl backbone_core::PersistentEntity for MailMessage {
     fn write_protected_fields() -> &'static [&'static str] {
         &["moderation_status"]
     }
+    fn references() -> &'static [backbone_core::Reference] {
+        const REFERENCES: &[backbone_core::Reference] = &[
+            backbone_core::Reference::new("subtype_id", "messaging.mail_message_subtypes", "id"),
+            backbone_core::Reference::new("author_id", "parties", "id"),
+            backbone_core::Reference::new("author_guest_id", "messaging.mail_guests", "id"),
+        ];
+        REFERENCES
+    }
     fn entity_id(&self) -> String {
         self.id.to_string()
     }

@@ -33,7 +33,12 @@ pub struct CreateMailBlacklistDto {
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "opt_out_reason_id")]
     pub opt_out_reason_id: Option<Uuid>,
     #[cfg_attr(feature = "openapi", schema(example = true))]
+    #[serde(default = "default_create_mail_blacklist_active")]
     pub active: bool,
+}
+
+fn default_create_mail_blacklist_active() -> bool {
+    true
 }
 
 // =============================================================================
@@ -71,8 +76,8 @@ pub struct PatchMailBlacklistDto {
     #[cfg_attr(feature = "openapi", schema(example = "example"))]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub email: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "opt_out_reason_id")]
-    pub opt_out_reason_id: Option<Uuid>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "opt_out_reason_id")]
+    pub opt_out_reason_id: Option<Option<Uuid>>,
     #[cfg_attr(feature = "openapi", schema(example = true))]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub active: Option<bool>,
@@ -234,12 +239,4 @@ impl backbone_core::ApplyUpdateDto<UpdateMailBlacklistDto> for MailBlacklist {
         Ok(self)
     }
 }
-
-// =============================================================================
-// Custom DTOs
-// =============================================================================
-
-// Add custom DTOs specific to MailBlacklist here.
-// This section will be preserved during regeneration.
-// >>> END CUSTOM DTOs
 

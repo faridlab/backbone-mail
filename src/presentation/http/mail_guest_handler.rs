@@ -81,6 +81,13 @@ impl axum::response::IntoResponse for MailGuestError {
 // Route Configuration
 // =============================================================================
 
+/// The permissions this entity's generic routes require: `mail_guest:<action>` for `read`, `create`,
+/// `update`, `delete`, `restore` and `purge`, with any rename the schema's `requires:` declares.
+pub fn mail_guest_permissions() -> backbone_core::http::CrudPermissions {
+    backbone_core::http::CrudPermissions::new("mail_guest")
+        .in_module("messaging")
+}
+
 /// Create Axum router with all 16 Backbone endpoints for MailGuest.
 ///
 /// # Routes
@@ -110,21 +117,23 @@ impl axum::response::IntoResponse for MailGuestError {
 /// let router = create_mail_guest_routes(service);
 /// ```
 pub fn create_mail_guest_routes(service: Arc<MailGuestService>) -> Router {
-    BackboneCrudHandler::<MailGuestService, MailGuest, CreateMailGuestDto, UpdateMailGuestDto, MailGuestResponseDto>::routes(
+    BackboneCrudHandler::<MailGuestService, MailGuest, CreateMailGuestDto, UpdateMailGuestDto, MailGuestResponseDto>::routes_guarded(
         service,
         "/mail_guests",
+        mail_guest_permissions(),
     )
 }
 
 /// Create Axum router with only the read (GET) endpoints for MailGuest.
 ///
-/// Safe for public, unauthenticated exposure (e.g., reference data).
+/// Each route requires the entity's `read` permission, so it needs an authenticated caller.
 /// Mutations must be served separately via `create_mail_guest_write_routes`,
 /// typically wrapped in an auth middleware layer.
 pub fn create_mail_guest_read_routes(service: Arc<MailGuestService>) -> Router {
-    BackboneCrudHandler::<MailGuestService, MailGuest, CreateMailGuestDto, UpdateMailGuestDto, MailGuestResponseDto>::read_routes(
+    BackboneCrudHandler::<MailGuestService, MailGuest, CreateMailGuestDto, UpdateMailGuestDto, MailGuestResponseDto>::read_routes_guarded(
         service,
         "/mail_guests",
+        mail_guest_permissions(),
     )
 }
 
@@ -140,9 +149,10 @@ pub fn create_mail_guest_read_routes(service: Arc<MailGuestService>) -> Router {
 /// service (e.g. a command router over its domain engine), serve THAT instead
 /// for any mutation that must respect domain rules.
 pub fn create_mail_guest_write_routes(service: Arc<MailGuestService>) -> Router {
-    BackboneCrudHandler::<MailGuestService, MailGuest, CreateMailGuestDto, UpdateMailGuestDto, MailGuestResponseDto>::write_routes(
+    BackboneCrudHandler::<MailGuestService, MailGuest, CreateMailGuestDto, UpdateMailGuestDto, MailGuestResponseDto>::write_routes_guarded(
         service,
         "/mail_guests",
+        mail_guest_permissions(),
     )
 }
 

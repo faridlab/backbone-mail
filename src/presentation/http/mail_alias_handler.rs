@@ -80,6 +80,13 @@ impl axum::response::IntoResponse for MailAliasError {
 // Route Configuration
 // =============================================================================
 
+/// The permissions this entity's generic routes require: `mail_alias:<action>` for `read`, `create`,
+/// `update`, `delete`, `restore` and `purge`, with any rename the schema's `requires:` declares.
+pub fn mail_alias_permissions() -> backbone_core::http::CrudPermissions {
+    backbone_core::http::CrudPermissions::new("mail_alias")
+        .in_module("messaging")
+}
+
 /// Create Axum router with all 16 Backbone endpoints for MailAlias.
 ///
 /// # Routes
@@ -109,21 +116,23 @@ impl axum::response::IntoResponse for MailAliasError {
 /// let router = create_mail_alias_routes(service);
 /// ```
 pub fn create_mail_alias_routes(service: Arc<MailAliasService>) -> Router {
-    BackboneCrudHandler::<MailAliasService, MailAlias, CreateMailAliasDto, UpdateMailAliasDto, MailAliasResponseDto>::routes(
+    BackboneCrudHandler::<MailAliasService, MailAlias, CreateMailAliasDto, UpdateMailAliasDto, MailAliasResponseDto>::routes_guarded(
         service,
         "/mail_aliases",
+        mail_alias_permissions(),
     )
 }
 
 /// Create Axum router with only the read (GET) endpoints for MailAlias.
 ///
-/// Safe for public, unauthenticated exposure (e.g., reference data).
+/// Each route requires the entity's `read` permission, so it needs an authenticated caller.
 /// Mutations must be served separately via `create_mail_alias_write_routes`,
 /// typically wrapped in an auth middleware layer.
 pub fn create_mail_alias_read_routes(service: Arc<MailAliasService>) -> Router {
-    BackboneCrudHandler::<MailAliasService, MailAlias, CreateMailAliasDto, UpdateMailAliasDto, MailAliasResponseDto>::read_routes(
+    BackboneCrudHandler::<MailAliasService, MailAlias, CreateMailAliasDto, UpdateMailAliasDto, MailAliasResponseDto>::read_routes_guarded(
         service,
         "/mail_aliases",
+        mail_alias_permissions(),
     )
 }
 
@@ -139,9 +148,10 @@ pub fn create_mail_alias_read_routes(service: Arc<MailAliasService>) -> Router {
 /// service (e.g. a command router over its domain engine), serve THAT instead
 /// for any mutation that must respect domain rules.
 pub fn create_mail_alias_write_routes(service: Arc<MailAliasService>) -> Router {
-    BackboneCrudHandler::<MailAliasService, MailAlias, CreateMailAliasDto, UpdateMailAliasDto, MailAliasResponseDto>::write_routes(
+    BackboneCrudHandler::<MailAliasService, MailAlias, CreateMailAliasDto, UpdateMailAliasDto, MailAliasResponseDto>::write_routes_guarded(
         service,
         "/mail_aliases",
+        mail_alias_permissions(),
     )
 }
 

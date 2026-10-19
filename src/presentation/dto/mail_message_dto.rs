@@ -33,15 +33,16 @@ pub struct CreateMailMessageDto {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub subject: Option<String>,
     #[cfg_attr(feature = "openapi", schema(example = "2024-01-01T00:00:00Z"))]
+    #[serde(default = "default_create_mail_message_date")]
     pub date: DateTime<Utc>,
     #[cfg_attr(feature = "openapi", schema(example = "example"))]
     pub body: String,
-    #[serde(alias = "message_type")]
+    #[serde(default = "default_create_mail_message_message_type", alias = "message_type")]
     pub message_type: MailMessageType,
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "subtype_id")]
     pub subtype_id: Option<Uuid>,
     #[cfg_attr(feature = "openapi", schema(example = true))]
-    #[serde(alias = "is_internal")]
+    #[serde(default, alias = "is_internal")]
     pub is_internal: bool,
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "author_id")]
     pub author_id: Option<Uuid>,
@@ -60,9 +61,10 @@ pub struct CreateMailMessageDto {
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "record_name")]
     pub record_name: Option<String>,
     #[cfg_attr(feature = "openapi", schema(example = true))]
+    #[serde(default)]
     pub needaction: bool,
     #[cfg_attr(feature = "openapi", schema(example = true))]
-    #[serde(alias = "has_error")]
+    #[serde(default, alias = "has_error")]
     pub has_error: bool,
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "failure_reason")]
     pub failure_reason: Option<String>,
@@ -70,6 +72,14 @@ pub struct CreateMailMessageDto {
     pub rating_value: Option<f64>,
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "pinned_at")]
     pub pinned_at: Option<DateTime<Utc>>,
+}
+
+fn default_create_mail_message_date() -> DateTime<Utc> {
+    Utc::now()
+}
+
+fn default_create_mail_message_message_type() -> MailMessageType {
+    MailMessageType::Comment
 }
 
 // =============================================================================
@@ -140,8 +150,8 @@ pub struct UpdateMailMessageDto {
 #[cfg_attr(feature = "openapi", derive(ToSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct PatchMailMessageDto {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub subject: Option<String>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option")]
+    pub subject: Option<Option<String>>,
     #[cfg_attr(feature = "openapi", schema(example = "2024-01-01T00:00:00Z"))]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub date: Option<DateTime<Utc>>,
@@ -150,41 +160,41 @@ pub struct PatchMailMessageDto {
     pub body: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none", alias = "message_type")]
     pub message_type: Option<MailMessageType>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "subtype_id")]
-    pub subtype_id: Option<Uuid>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "subtype_id")]
+    pub subtype_id: Option<Option<Uuid>>,
     #[cfg_attr(feature = "openapi", schema(example = true))]
     #[serde(skip_serializing_if = "Option::is_none", alias = "is_internal")]
     pub is_internal: Option<bool>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "author_id")]
-    pub author_id: Option<Uuid>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "author_guest_id")]
-    pub author_guest_id: Option<Uuid>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "email_from")]
-    pub email_from: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "message_id")]
-    pub message_id: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "reply_to")]
-    pub reply_to: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub model: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "res_id")]
-    pub res_id: Option<Uuid>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "record_name")]
-    pub record_name: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "moderation_status")]
-    pub moderation_status: Option<MailModerationStatus>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "author_id")]
+    pub author_id: Option<Option<Uuid>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "author_guest_id")]
+    pub author_guest_id: Option<Option<Uuid>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "email_from")]
+    pub email_from: Option<Option<String>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "message_id")]
+    pub message_id: Option<Option<String>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "reply_to")]
+    pub reply_to: Option<Option<String>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option")]
+    pub model: Option<Option<String>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "res_id")]
+    pub res_id: Option<Option<Uuid>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "record_name")]
+    pub record_name: Option<Option<String>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "moderation_status")]
+    pub moderation_status: Option<Option<MailModerationStatus>>,
     #[cfg_attr(feature = "openapi", schema(example = true))]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub needaction: Option<bool>,
     #[cfg_attr(feature = "openapi", schema(example = true))]
     #[serde(skip_serializing_if = "Option::is_none", alias = "has_error")]
     pub has_error: Option<bool>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "failure_reason")]
-    pub failure_reason: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "rating_value")]
-    pub rating_value: Option<f64>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "pinned_at")]
-    pub pinned_at: Option<DateTime<Utc>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "failure_reason")]
+    pub failure_reason: Option<Option<String>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "rating_value")]
+    pub rating_value: Option<Option<f64>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "pinned_at")]
+    pub pinned_at: Option<Option<DateTime<Utc>>>,
 }
 
 impl PatchMailMessageDto {
@@ -431,12 +441,4 @@ impl backbone_core::ApplyUpdateDto<UpdateMailMessageDto> for MailMessage {
         Ok(self)
     }
 }
-
-// =============================================================================
-// Custom DTOs
-// =============================================================================
-
-// Add custom DTOs specific to MailMessage here.
-// This section will be preserved during regeneration.
-// >>> END CUSTOM DTOs
 

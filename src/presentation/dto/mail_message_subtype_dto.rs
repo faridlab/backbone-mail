@@ -33,6 +33,7 @@ pub struct CreateMailMessageSubtypeDto {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
     #[cfg_attr(feature = "openapi", schema(example = true))]
+    #[serde(default)]
     pub internal: bool,
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "parent_id")]
     pub parent_id: Option<Uuid>,
@@ -41,10 +42,13 @@ pub struct CreateMailMessageSubtypeDto {
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "res_model")]
     pub res_model: Option<String>,
     #[cfg_attr(feature = "openapi", schema(example = true))]
+    #[serde(default)]
     pub default: bool,
     #[cfg_attr(feature = "openapi", schema(example = true))]
+    #[serde(default)]
     pub hidden: bool,
     #[cfg_attr(feature = "openapi", schema(example = true))]
+    #[serde(default)]
     pub tracked: bool,
 }
 
@@ -95,17 +99,17 @@ pub struct PatchMailMessageSubtypeDto {
     #[cfg_attr(feature = "openapi", schema(example = "example"))]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub description: Option<String>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option")]
+    pub description: Option<Option<String>>,
     #[cfg_attr(feature = "openapi", schema(example = true))]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub internal: Option<bool>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "parent_id")]
-    pub parent_id: Option<Uuid>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "relation_field")]
-    pub relation_field: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "res_model")]
-    pub res_model: Option<String>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "parent_id")]
+    pub parent_id: Option<Option<Uuid>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "relation_field")]
+    pub relation_field: Option<Option<String>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "res_model")]
+    pub res_model: Option<Option<String>>,
     #[cfg_attr(feature = "openapi", schema(example = true))]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub default: Option<bool>,
@@ -306,12 +310,4 @@ impl backbone_core::ApplyUpdateDto<UpdateMailMessageSubtypeDto> for MailMessageS
         Ok(self)
     }
 }
-
-// =============================================================================
-// Custom DTOs
-// =============================================================================
-
-// Add custom DTOs specific to MailMessageSubtype here.
-// This section will be preserved during regeneration.
-// >>> END CUSTOM DTOs
 

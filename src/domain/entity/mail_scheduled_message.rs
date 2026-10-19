@@ -235,6 +235,12 @@ impl super::Entity for MailScheduledMessage {
 }
 
 impl backbone_core::PersistentEntity for MailScheduledMessage {
+    fn references() -> &'static [backbone_core::Reference] {
+        const REFERENCES: &[backbone_core::Reference] = &[
+            backbone_core::Reference::new("author_party_id", "parties", "id"),
+        ];
+        REFERENCES
+    }
     fn entity_id(&self) -> String {
         self.id.to_string()
     }

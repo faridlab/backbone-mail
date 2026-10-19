@@ -80,10 +80,10 @@ pub struct PatchMailMessageReactionDto {
     #[cfg_attr(feature = "openapi", schema(example = "example"))]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub content: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "partner_id")]
-    pub partner_id: Option<Uuid>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "guest_id")]
-    pub guest_id: Option<Uuid>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "partner_id")]
+    pub partner_id: Option<Option<Uuid>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "guest_id")]
+    pub guest_id: Option<Option<Uuid>>,
 }
 
 impl PatchMailMessageReactionDto {
@@ -247,12 +247,4 @@ impl backbone_core::ApplyUpdateDto<UpdateMailMessageReactionDto> for MailMessage
         Ok(self)
     }
 }
-
-// =============================================================================
-// Custom DTOs
-// =============================================================================
-
-// Add custom DTOs specific to MailMessageReaction here.
-// This section will be preserved during regeneration.
-// >>> END CUSTOM DTOs
 

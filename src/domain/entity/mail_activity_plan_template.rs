@@ -217,6 +217,14 @@ impl super::Entity for MailActivityPlanTemplate {
 }
 
 impl backbone_core::PersistentEntity for MailActivityPlanTemplate {
+    fn references() -> &'static [backbone_core::Reference] {
+        const REFERENCES: &[backbone_core::Reference] = &[
+            backbone_core::Reference::new("plan_id", "messaging.mail_activity_plans", "id"),
+            backbone_core::Reference::new("activity_type_id", "messaging.mail_activity_types", "id"),
+            backbone_core::Reference::new("user_id", "users", "id"),
+        ];
+        REFERENCES
+    }
     fn entity_id(&self) -> String {
         self.id.to_string()
     }

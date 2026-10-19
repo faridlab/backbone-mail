@@ -40,9 +40,10 @@ pub struct CreateDiscussChannelDto {
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "avatar_128")]
     pub avatar_128: Option<String>,
     #[cfg_attr(feature = "openapi", schema(example = true))]
-    #[serde(alias = "email_send")]
+    #[serde(default, alias = "email_send")]
     pub email_send: bool,
     #[cfg_attr(feature = "openapi", schema(example = true))]
+    #[serde(default)]
     pub moderation: bool,
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "group_public_id")]
     pub group_public_id: Option<Uuid>,
@@ -101,30 +102,30 @@ pub struct UpdateDiscussChannelDto {
 #[cfg_attr(feature = "openapi", derive(ToSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct PatchDiscussChannelDto {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub name: Option<String>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option")]
+    pub name: Option<Option<String>>,
     #[serde(skip_serializing_if = "Option::is_none", alias = "channel_type")]
     pub channel_type: Option<DiscussChannelType>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub description: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub uuid: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "default_access_mode")]
-    pub default_access_mode: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "avatar_128")]
-    pub avatar_128: Option<String>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option")]
+    pub description: Option<Option<String>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option")]
+    pub uuid: Option<Option<String>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "default_access_mode")]
+    pub default_access_mode: Option<Option<String>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "avatar_128")]
+    pub avatar_128: Option<Option<String>>,
     #[cfg_attr(feature = "openapi", schema(example = true))]
     #[serde(skip_serializing_if = "Option::is_none", alias = "email_send")]
     pub email_send: Option<bool>,
     #[cfg_attr(feature = "openapi", schema(example = true))]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub moderation: Option<bool>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "group_public_id")]
-    pub group_public_id: Option<Uuid>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "alias_id")]
-    pub alias_id: Option<Uuid>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "last_message_id")]
-    pub last_message_id: Option<Uuid>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "group_public_id")]
+    pub group_public_id: Option<Option<Uuid>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "alias_id")]
+    pub alias_id: Option<Option<Uuid>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "last_message_id")]
+    pub last_message_id: Option<Option<Uuid>>,
 }
 
 impl PatchDiscussChannelDto {
@@ -323,12 +324,4 @@ impl backbone_core::ApplyUpdateDto<UpdateDiscussChannelDto> for DiscussChannel {
         Ok(self)
     }
 }
-
-// =============================================================================
-// Custom DTOs
-// =============================================================================
-
-// Add custom DTOs specific to DiscussChannel here.
-// This section will be preserved during regeneration.
-// >>> END CUSTOM DTOs
 

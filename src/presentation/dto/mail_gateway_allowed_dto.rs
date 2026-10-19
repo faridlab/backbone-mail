@@ -33,7 +33,12 @@ pub struct CreateMailGatewayAllowedDto {
     #[cfg_attr(feature = "openapi", schema(example = "example"))]
     pub pattern: String,
     #[cfg_attr(feature = "openapi", schema(example = true))]
+    #[serde(default = "default_create_mail_gateway_allowed_active")]
     pub active: bool,
+}
+
+fn default_create_mail_gateway_allowed_active() -> bool {
+    true
 }
 
 // =============================================================================
@@ -68,8 +73,8 @@ pub struct UpdateMailGatewayAllowedDto {
 #[cfg_attr(feature = "openapi", derive(ToSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct PatchMailGatewayAllowedDto {
-    #[serde(skip_serializing_if = "Option::is_none", alias = "fetchmail_server_id")]
-    pub fetchmail_server_id: Option<Uuid>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "fetchmail_server_id")]
+    pub fetchmail_server_id: Option<Option<Uuid>>,
     #[cfg_attr(feature = "openapi", schema(example = "example"))]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub pattern: Option<String>,
@@ -234,12 +239,4 @@ impl backbone_core::ApplyUpdateDto<UpdateMailGatewayAllowedDto> for MailGatewayA
         Ok(self)
     }
 }
-
-// =============================================================================
-// Custom DTOs
-// =============================================================================
-
-// Add custom DTOs specific to MailGatewayAllowed here.
-// This section will be preserved during regeneration.
-// >>> END CUSTOM DTOs
 

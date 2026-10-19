@@ -80,6 +80,13 @@ impl axum::response::IntoResponse for MailMessageAttachmentError {
 // Route Configuration
 // =============================================================================
 
+/// The permissions this entity's generic routes require: `mail_message_attachment:<action>` for `read`, `create`,
+/// `update`, `delete`, `restore` and `purge`, with any rename the schema's `requires:` declares.
+pub fn mail_message_attachment_permissions() -> backbone_core::http::CrudPermissions {
+    backbone_core::http::CrudPermissions::new("mail_message_attachment")
+        .in_module("messaging")
+}
+
 /// Create Axum router with all 16 Backbone endpoints for MailMessageAttachment.
 ///
 /// # Routes
@@ -109,21 +116,23 @@ impl axum::response::IntoResponse for MailMessageAttachmentError {
 /// let router = create_mail_message_attachment_routes(service);
 /// ```
 pub fn create_mail_message_attachment_routes(service: Arc<MailMessageAttachmentService>) -> Router {
-    BackboneCrudHandler::<MailMessageAttachmentService, MailMessageAttachment, CreateMailMessageAttachmentDto, UpdateMailMessageAttachmentDto, MailMessageAttachmentResponseDto>::routes(
+    BackboneCrudHandler::<MailMessageAttachmentService, MailMessageAttachment, CreateMailMessageAttachmentDto, UpdateMailMessageAttachmentDto, MailMessageAttachmentResponseDto>::routes_guarded(
         service,
         "/mail_message_attachments",
+        mail_message_attachment_permissions(),
     )
 }
 
 /// Create Axum router with only the read (GET) endpoints for MailMessageAttachment.
 ///
-/// Safe for public, unauthenticated exposure (e.g., reference data).
+/// Each route requires the entity's `read` permission, so it needs an authenticated caller.
 /// Mutations must be served separately via `create_mail_message_attachment_write_routes`,
 /// typically wrapped in an auth middleware layer.
 pub fn create_mail_message_attachment_read_routes(service: Arc<MailMessageAttachmentService>) -> Router {
-    BackboneCrudHandler::<MailMessageAttachmentService, MailMessageAttachment, CreateMailMessageAttachmentDto, UpdateMailMessageAttachmentDto, MailMessageAttachmentResponseDto>::read_routes(
+    BackboneCrudHandler::<MailMessageAttachmentService, MailMessageAttachment, CreateMailMessageAttachmentDto, UpdateMailMessageAttachmentDto, MailMessageAttachmentResponseDto>::read_routes_guarded(
         service,
         "/mail_message_attachments",
+        mail_message_attachment_permissions(),
     )
 }
 
@@ -139,9 +148,10 @@ pub fn create_mail_message_attachment_read_routes(service: Arc<MailMessageAttach
 /// service (e.g. a command router over its domain engine), serve THAT instead
 /// for any mutation that must respect domain rules.
 pub fn create_mail_message_attachment_write_routes(service: Arc<MailMessageAttachmentService>) -> Router {
-    BackboneCrudHandler::<MailMessageAttachmentService, MailMessageAttachment, CreateMailMessageAttachmentDto, UpdateMailMessageAttachmentDto, MailMessageAttachmentResponseDto>::write_routes(
+    BackboneCrudHandler::<MailMessageAttachmentService, MailMessageAttachment, CreateMailMessageAttachmentDto, UpdateMailMessageAttachmentDto, MailMessageAttachmentResponseDto>::write_routes_guarded(
         service,
         "/mail_message_attachments",
+        mail_message_attachment_permissions(),
     )
 }
 

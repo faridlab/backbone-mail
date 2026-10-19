@@ -182,6 +182,14 @@ impl super::Entity for MailMessageReaction {
 }
 
 impl backbone_core::PersistentEntity for MailMessageReaction {
+    fn references() -> &'static [backbone_core::Reference] {
+        const REFERENCES: &[backbone_core::Reference] = &[
+            backbone_core::Reference::new("message_id", "messaging.mail_messages", "id"),
+            backbone_core::Reference::new("partner_id", "parties", "id"),
+            backbone_core::Reference::new("guest_id", "messaging.mail_guests", "id"),
+        ];
+        REFERENCES
+    }
     fn entity_id(&self) -> String {
         self.id.to_string()
     }

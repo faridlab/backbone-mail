@@ -80,6 +80,13 @@ impl axum::response::IntoResponse for MailActivityPlanError {
 // Route Configuration
 // =============================================================================
 
+/// The permissions this entity's generic routes require: `mail_activity_plan:<action>` for `read`, `create`,
+/// `update`, `delete`, `restore` and `purge`, with any rename the schema's `requires:` declares.
+pub fn mail_activity_plan_permissions() -> backbone_core::http::CrudPermissions {
+    backbone_core::http::CrudPermissions::new("mail_activity_plan")
+        .in_module("messaging")
+}
+
 /// Create Axum router with all 16 Backbone endpoints for MailActivityPlan.
 ///
 /// # Routes
@@ -109,21 +116,23 @@ impl axum::response::IntoResponse for MailActivityPlanError {
 /// let router = create_mail_activity_plan_routes(service);
 /// ```
 pub fn create_mail_activity_plan_routes(service: Arc<MailActivityPlanService>) -> Router {
-    BackboneCrudHandler::<MailActivityPlanService, MailActivityPlan, CreateMailActivityPlanDto, UpdateMailActivityPlanDto, MailActivityPlanResponseDto>::routes(
+    BackboneCrudHandler::<MailActivityPlanService, MailActivityPlan, CreateMailActivityPlanDto, UpdateMailActivityPlanDto, MailActivityPlanResponseDto>::routes_guarded(
         service,
         "/mail_activity_plans",
+        mail_activity_plan_permissions(),
     )
 }
 
 /// Create Axum router with only the read (GET) endpoints for MailActivityPlan.
 ///
-/// Safe for public, unauthenticated exposure (e.g., reference data).
+/// Each route requires the entity's `read` permission, so it needs an authenticated caller.
 /// Mutations must be served separately via `create_mail_activity_plan_write_routes`,
 /// typically wrapped in an auth middleware layer.
 pub fn create_mail_activity_plan_read_routes(service: Arc<MailActivityPlanService>) -> Router {
-    BackboneCrudHandler::<MailActivityPlanService, MailActivityPlan, CreateMailActivityPlanDto, UpdateMailActivityPlanDto, MailActivityPlanResponseDto>::read_routes(
+    BackboneCrudHandler::<MailActivityPlanService, MailActivityPlan, CreateMailActivityPlanDto, UpdateMailActivityPlanDto, MailActivityPlanResponseDto>::read_routes_guarded(
         service,
         "/mail_activity_plans",
+        mail_activity_plan_permissions(),
     )
 }
 
@@ -139,9 +148,10 @@ pub fn create_mail_activity_plan_read_routes(service: Arc<MailActivityPlanServic
 /// service (e.g. a command router over its domain engine), serve THAT instead
 /// for any mutation that must respect domain rules.
 pub fn create_mail_activity_plan_write_routes(service: Arc<MailActivityPlanService>) -> Router {
-    BackboneCrudHandler::<MailActivityPlanService, MailActivityPlan, CreateMailActivityPlanDto, UpdateMailActivityPlanDto, MailActivityPlanResponseDto>::write_routes(
+    BackboneCrudHandler::<MailActivityPlanService, MailActivityPlan, CreateMailActivityPlanDto, UpdateMailActivityPlanDto, MailActivityPlanResponseDto>::write_routes_guarded(
         service,
         "/mail_activity_plans",
+        mail_activity_plan_permissions(),
     )
 }
 

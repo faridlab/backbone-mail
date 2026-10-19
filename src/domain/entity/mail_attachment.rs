@@ -235,6 +235,13 @@ impl backbone_core::PersistentEntity for MailAttachment {
     fn write_protected_fields() -> &'static [&'static str] {
         &["access_token"]
     }
+    fn references() -> &'static [backbone_core::Reference] {
+        const REFERENCES: &[backbone_core::Reference] = &[
+            backbone_core::Reference::new("owner_party_id", "parties", "id"),
+            backbone_core::Reference::new("owner_guest_id", "messaging.mail_guests", "id"),
+        ];
+        REFERENCES
+    }
     fn entity_id(&self) -> String {
         self.id.to_string()
     }

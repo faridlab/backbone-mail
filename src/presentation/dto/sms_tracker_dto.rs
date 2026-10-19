@@ -88,18 +88,18 @@ pub struct PatchSmsTrackerDto {
     #[cfg_attr(feature = "openapi", schema(example = "example"))]
     #[serde(skip_serializing_if = "Option::is_none", alias = "sms_uuid")]
     pub sms_uuid: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "message_id")]
-    pub message_id: Option<Uuid>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "notification_id")]
-    pub notification_id: Option<Uuid>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "message_id")]
+    pub message_id: Option<Option<Uuid>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "notification_id")]
+    pub notification_id: Option<Option<Uuid>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub state: Option<MailNotificationStatus>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "failure_type")]
-    pub failure_type: Option<NotificationFailureType>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "failure_reason")]
-    pub failure_reason: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub recipient: Option<String>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "failure_type")]
+    pub failure_type: Option<Option<NotificationFailureType>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "failure_reason")]
+    pub failure_reason: Option<Option<String>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option")]
+    pub recipient: Option<Option<String>>,
 }
 
 impl PatchSmsTrackerDto {
@@ -277,12 +277,4 @@ impl backbone_core::ApplyUpdateDto<UpdateSmsTrackerDto> for SmsTracker {
         Ok(self)
     }
 }
-
-// =============================================================================
-// Custom DTOs
-// =============================================================================
-
-// Add custom DTOs specific to SmsTracker here.
-// This section will be preserved during regeneration.
-// >>> END CUSTOM DTOs
 

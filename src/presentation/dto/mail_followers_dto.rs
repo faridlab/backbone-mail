@@ -86,12 +86,12 @@ pub struct PatchMailFollowersDto {
     #[cfg_attr(feature = "openapi", schema(example = "550e8400-e29b-41d4-a716-446655440000"))]
     #[serde(skip_serializing_if = "Option::is_none", alias = "res_id")]
     pub res_id: Option<Uuid>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "partner_id")]
-    pub partner_id: Option<Uuid>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "channel_id")]
-    pub channel_id: Option<Uuid>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "subtype_ids")]
-    pub subtype_ids: Option<serde_json::Value>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "partner_id")]
+    pub partner_id: Option<Option<Uuid>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "channel_id")]
+    pub channel_id: Option<Option<Uuid>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "subtype_ids")]
+    pub subtype_ids: Option<Option<serde_json::Value>>,
 }
 
 impl PatchMailFollowersDto {
@@ -260,12 +260,4 @@ impl backbone_core::ApplyUpdateDto<UpdateMailFollowersDto> for MailFollowers {
         Ok(self)
     }
 }
-
-// =============================================================================
-// Custom DTOs
-// =============================================================================
-
-// Add custom DTOs specific to MailFollowers here.
-// This section will be preserved during regeneration.
-// >>> END CUSTOM DTOs
 

@@ -256,6 +256,13 @@ impl super::Entity for MailAlias {
 }
 
 impl backbone_core::PersistentEntity for MailAlias {
+    fn references() -> &'static [backbone_core::Reference] {
+        const REFERENCES: &[backbone_core::Reference] = &[
+            backbone_core::Reference::new("alias_domain_id", "messaging.mail_alias_domains", "id"),
+            backbone_core::Reference::new("alias_user_id", "users", "id"),
+        ];
+        REFERENCES
+    }
     fn entity_id(&self) -> String {
         self.id.to_string()
     }

@@ -33,7 +33,7 @@ pub struct CreateMailAliasDto {
     pub alias_name: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "alias_domain_id")]
     pub alias_domain_id: Option<Uuid>,
-    #[serde(alias = "alias_contact")]
+    #[serde(default = "default_create_mail_alias_alias_contact", alias = "alias_contact")]
     pub alias_contact: MailAliasContact,
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "alias_model_id")]
     pub alias_model_id: Option<Uuid>,
@@ -49,6 +49,10 @@ pub struct CreateMailAliasDto {
     pub alias_force_thread_id: Option<Uuid>,
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "alias_reply_to_address")]
     pub alias_reply_to_address: Option<String>,
+}
+
+fn default_create_mail_alias_alias_contact() -> MailAliasContact {
+    MailAliasContact::Followers
 }
 
 // =============================================================================
@@ -97,26 +101,26 @@ pub struct UpdateMailAliasDto {
 #[cfg_attr(feature = "openapi", derive(ToSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct PatchMailAliasDto {
-    #[serde(skip_serializing_if = "Option::is_none", alias = "alias_name")]
-    pub alias_name: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "alias_domain_id")]
-    pub alias_domain_id: Option<Uuid>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "alias_name")]
+    pub alias_name: Option<Option<String>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "alias_domain_id")]
+    pub alias_domain_id: Option<Option<Uuid>>,
     #[serde(skip_serializing_if = "Option::is_none", alias = "alias_contact")]
     pub alias_contact: Option<MailAliasContact>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "alias_model_id")]
-    pub alias_model_id: Option<Uuid>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "alias_parent_model_id")]
-    pub alias_parent_model_id: Option<Uuid>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "alias_parent_thread_id")]
-    pub alias_parent_thread_id: Option<Uuid>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "alias_user_id")]
-    pub alias_user_id: Option<Uuid>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "alias_defaults")]
-    pub alias_defaults: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "alias_force_thread_id")]
-    pub alias_force_thread_id: Option<Uuid>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "alias_reply_to_address")]
-    pub alias_reply_to_address: Option<String>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "alias_model_id")]
+    pub alias_model_id: Option<Option<Uuid>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "alias_parent_model_id")]
+    pub alias_parent_model_id: Option<Option<Uuid>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "alias_parent_thread_id")]
+    pub alias_parent_thread_id: Option<Option<Uuid>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "alias_user_id")]
+    pub alias_user_id: Option<Option<Uuid>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "alias_defaults")]
+    pub alias_defaults: Option<Option<String>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "alias_force_thread_id")]
+    pub alias_force_thread_id: Option<Option<Uuid>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "alias_reply_to_address")]
+    pub alias_reply_to_address: Option<Option<String>>,
 }
 
 impl PatchMailAliasDto {
@@ -308,12 +312,4 @@ impl backbone_core::ApplyUpdateDto<UpdateMailAliasDto> for MailAlias {
         Ok(self)
     }
 }
-
-// =============================================================================
-// Custom DTOs
-// =============================================================================
-
-// Add custom DTOs specific to MailAlias here.
-// This section will be preserved during regeneration.
-// >>> END CUSTOM DTOs
 

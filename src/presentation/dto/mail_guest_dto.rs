@@ -35,7 +35,12 @@ pub struct CreateMailGuestDto {
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "last_connection_dt")]
     pub last_connection_dt: Option<DateTime<Utc>>,
     #[cfg_attr(feature = "openapi", schema(example = true))]
+    #[serde(default = "default_create_mail_guest_active")]
     pub active: bool,
+}
+
+fn default_create_mail_guest_active() -> bool {
+    true
 }
 
 // =============================================================================
@@ -75,10 +80,10 @@ pub struct PatchMailGuestDto {
     #[cfg_attr(feature = "openapi", schema(example = "example"))]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "country_id")]
-    pub country_id: Option<Uuid>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "last_connection_dt")]
-    pub last_connection_dt: Option<DateTime<Utc>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "country_id")]
+    pub country_id: Option<Option<Uuid>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "last_connection_dt")]
+    pub last_connection_dt: Option<Option<DateTime<Utc>>>,
     #[cfg_attr(feature = "openapi", schema(example = true))]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub active: Option<bool>,
@@ -245,12 +250,4 @@ impl backbone_core::ApplyUpdateDto<UpdateMailGuestDto> for MailGuest {
         Ok(self)
     }
 }
-
-// =============================================================================
-// Custom DTOs
-// =============================================================================
-
-// Add custom DTOs specific to MailGuest here.
-// This section will be preserved during regeneration.
-// >>> END CUSTOM DTOs
 

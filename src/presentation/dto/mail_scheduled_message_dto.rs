@@ -48,7 +48,7 @@ pub struct CreateMailScheduledMessageDto {
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "recipient_party_ids")]
     pub recipient_party_ids: Option<serde_json::Value>,
     #[cfg_attr(feature = "openapi", schema(example = true))]
-    #[serde(alias = "is_note")]
+    #[serde(default, alias = "is_note")]
     pub is_note: bool,
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "notification_parameters")]
     pub notification_parameters: Option<String>,
@@ -108,16 +108,16 @@ pub struct UpdateMailScheduledMessageDto {
 #[cfg_attr(feature = "openapi", derive(ToSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct PatchMailScheduledMessageDto {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub subject: Option<String>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option")]
+    pub subject: Option<Option<String>>,
     #[cfg_attr(feature = "openapi", schema(example = "example"))]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub body: Option<String>,
     #[cfg_attr(feature = "openapi", schema(example = "2024-01-01T00:00:00Z"))]
     #[serde(skip_serializing_if = "Option::is_none", alias = "scheduled_date")]
     pub scheduled_date: Option<DateTime<Utc>>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "composition_comment_option")]
-    pub composition_comment_option: Option<String>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "composition_comment_option")]
+    pub composition_comment_option: Option<Option<String>>,
     #[cfg_attr(feature = "openapi", schema(example = "example"))]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub model: Option<String>,
@@ -127,15 +127,15 @@ pub struct PatchMailScheduledMessageDto {
     #[cfg_attr(feature = "openapi", schema(example = "550e8400-e29b-41d4-a716-446655440000"))]
     #[serde(skip_serializing_if = "Option::is_none", alias = "author_party_id")]
     pub author_party_id: Option<Uuid>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "recipient_party_ids")]
-    pub recipient_party_ids: Option<serde_json::Value>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "recipient_party_ids")]
+    pub recipient_party_ids: Option<Option<serde_json::Value>>,
     #[cfg_attr(feature = "openapi", schema(example = true))]
     #[serde(skip_serializing_if = "Option::is_none", alias = "is_note")]
     pub is_note: Option<bool>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "notification_parameters")]
-    pub notification_parameters: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "send_context")]
-    pub send_context: Option<serde_json::Value>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "notification_parameters")]
+    pub notification_parameters: Option<Option<String>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "send_context")]
+    pub send_context: Option<Option<serde_json::Value>>,
 }
 
 impl PatchMailScheduledMessageDto {
@@ -338,12 +338,4 @@ impl backbone_core::ApplyUpdateDto<UpdateMailScheduledMessageDto> for MailSchedu
         Ok(self)
     }
 }
-
-// =============================================================================
-// Custom DTOs
-// =============================================================================
-
-// Add custom DTOs specific to MailScheduledMessage here.
-// This section will be preserved during regeneration.
-// >>> END CUSTOM DTOs
 

@@ -38,23 +38,45 @@ pub struct CreateMailServerDto {
     #[serde(alias = "smtp_host")]
     pub smtp_host: String,
     #[cfg_attr(feature = "openapi", schema(example = 42))]
-    #[serde(alias = "smtp_port")]
+    #[serde(default = "default_create_mail_server_smtp_port", alias = "smtp_port")]
     pub smtp_port: i32,
-    #[serde(alias = "smtp_authentication")]
+    #[serde(default = "default_create_mail_server_smtp_authentication", alias = "smtp_authentication")]
     pub smtp_authentication: SmtpAuthentication,
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "smtp_user")]
     pub smtp_user: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "smtp_pass_ref")]
     pub smtp_pass_ref: Option<String>,
-    #[serde(alias = "smtp_encryption")]
+    #[serde(default = "default_create_mail_server_smtp_encryption", alias = "smtp_encryption")]
     pub smtp_encryption: SmtpEncryption,
     #[cfg_attr(feature = "openapi", schema(example = true))]
-    #[serde(alias = "smtp_debug")]
+    #[serde(default, alias = "smtp_debug")]
     pub smtp_debug: bool,
     #[cfg_attr(feature = "openapi", schema(example = 42))]
+    #[serde(default = "default_create_mail_server_sequence")]
     pub sequence: i32,
     #[cfg_attr(feature = "openapi", schema(example = true))]
+    #[serde(default = "default_create_mail_server_active")]
     pub active: bool,
+}
+
+fn default_create_mail_server_smtp_port() -> i32 {
+    25
+}
+
+fn default_create_mail_server_smtp_authentication() -> SmtpAuthentication {
+    SmtpAuthentication::Login
+}
+
+fn default_create_mail_server_smtp_encryption() -> SmtpEncryption {
+    SmtpEncryption::None
+}
+
+fn default_create_mail_server_sequence() -> i32 {
+    10
+}
+
+fn default_create_mail_server_active() -> bool {
+    true
 }
 
 // =============================================================================
@@ -111,8 +133,8 @@ pub struct PatchMailServerDto {
     #[cfg_attr(feature = "openapi", schema(example = "example"))]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "from_filter")]
-    pub from_filter: Option<String>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "from_filter")]
+    pub from_filter: Option<Option<String>>,
     #[cfg_attr(feature = "openapi", schema(example = "example"))]
     #[serde(skip_serializing_if = "Option::is_none", alias = "smtp_host")]
     pub smtp_host: Option<String>,
@@ -121,10 +143,10 @@ pub struct PatchMailServerDto {
     pub smtp_port: Option<i32>,
     #[serde(skip_serializing_if = "Option::is_none", alias = "smtp_authentication")]
     pub smtp_authentication: Option<SmtpAuthentication>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "smtp_user")]
-    pub smtp_user: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "smtp_pass_ref")]
-    pub smtp_pass_ref: Option<String>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "smtp_user")]
+    pub smtp_user: Option<Option<String>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "smtp_pass_ref")]
+    pub smtp_pass_ref: Option<Option<String>>,
     #[serde(skip_serializing_if = "Option::is_none", alias = "smtp_encryption")]
     pub smtp_encryption: Option<SmtpEncryption>,
     #[cfg_attr(feature = "openapi", schema(example = true))]
@@ -338,12 +360,4 @@ impl backbone_core::ApplyUpdateDto<UpdateMailServerDto> for MailServer {
         Ok(self)
     }
 }
-
-// =============================================================================
-// Custom DTOs
-// =============================================================================
-
-// Add custom DTOs specific to MailServer here.
-// This section will be preserved during regeneration.
-// >>> END CUSTOM DTOs
 

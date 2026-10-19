@@ -171,6 +171,12 @@ impl super::Entity for MailGatewayAllowed {
 }
 
 impl backbone_core::PersistentEntity for MailGatewayAllowed {
+    fn references() -> &'static [backbone_core::Reference] {
+        const REFERENCES: &[backbone_core::Reference] = &[
+            backbone_core::Reference::new("fetchmail_server_id", "messaging.fetchmail_servers", "id"),
+        ];
+        REFERENCES
+    }
     fn entity_id(&self) -> String {
         self.id.to_string()
     }

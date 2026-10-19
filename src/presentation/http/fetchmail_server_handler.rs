@@ -81,6 +81,13 @@ impl axum::response::IntoResponse for FetchmailServerError {
 // Route Configuration
 // =============================================================================
 
+/// The permissions this entity's generic routes require: `fetchmail_server:<action>` for `read`, `create`,
+/// `update`, `delete`, `restore` and `purge`, with any rename the schema's `requires:` declares.
+pub fn fetchmail_server_permissions() -> backbone_core::http::CrudPermissions {
+    backbone_core::http::CrudPermissions::new("fetchmail_server")
+        .in_module("messaging")
+}
+
 /// Create Axum router with all 16 Backbone endpoints for FetchmailServer.
 ///
 /// # Routes
@@ -110,21 +117,23 @@ impl axum::response::IntoResponse for FetchmailServerError {
 /// let router = create_fetchmail_server_routes(service);
 /// ```
 pub fn create_fetchmail_server_routes(service: Arc<FetchmailServerService>) -> Router {
-    BackboneCrudHandler::<FetchmailServerService, FetchmailServer, CreateFetchmailServerDto, UpdateFetchmailServerDto, FetchmailServerResponseDto>::routes(
+    BackboneCrudHandler::<FetchmailServerService, FetchmailServer, CreateFetchmailServerDto, UpdateFetchmailServerDto, FetchmailServerResponseDto>::routes_guarded(
         service,
         "/fetchmail_servers",
+        fetchmail_server_permissions(),
     )
 }
 
 /// Create Axum router with only the read (GET) endpoints for FetchmailServer.
 ///
-/// Safe for public, unauthenticated exposure (e.g., reference data).
+/// Each route requires the entity's `read` permission, so it needs an authenticated caller.
 /// Mutations must be served separately via `create_fetchmail_server_write_routes`,
 /// typically wrapped in an auth middleware layer.
 pub fn create_fetchmail_server_read_routes(service: Arc<FetchmailServerService>) -> Router {
-    BackboneCrudHandler::<FetchmailServerService, FetchmailServer, CreateFetchmailServerDto, UpdateFetchmailServerDto, FetchmailServerResponseDto>::read_routes(
+    BackboneCrudHandler::<FetchmailServerService, FetchmailServer, CreateFetchmailServerDto, UpdateFetchmailServerDto, FetchmailServerResponseDto>::read_routes_guarded(
         service,
         "/fetchmail_servers",
+        fetchmail_server_permissions(),
     )
 }
 
@@ -140,9 +149,10 @@ pub fn create_fetchmail_server_read_routes(service: Arc<FetchmailServerService>)
 /// service (e.g. a command router over its domain engine), serve THAT instead
 /// for any mutation that must respect domain rules.
 pub fn create_fetchmail_server_write_routes(service: Arc<FetchmailServerService>) -> Router {
-    BackboneCrudHandler::<FetchmailServerService, FetchmailServer, CreateFetchmailServerDto, UpdateFetchmailServerDto, FetchmailServerResponseDto>::write_routes(
+    BackboneCrudHandler::<FetchmailServerService, FetchmailServer, CreateFetchmailServerDto, UpdateFetchmailServerDto, FetchmailServerResponseDto>::write_routes_guarded(
         service,
         "/fetchmail_servers",
+        fetchmail_server_permissions(),
     )
 }
 

@@ -36,7 +36,7 @@ pub struct CreateMailNotificationDto {
     pub mail_message_id: Uuid,
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "res_partner_id")]
     pub res_partner_id: Option<Uuid>,
-    #[serde(alias = "notification_type")]
+    #[serde(default = "default_create_mail_notification_notification_type", alias = "notification_type")]
     pub notification_type: MailNotificationType,
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "failure_type")]
     pub failure_type: Option<NotificationFailureType>,
@@ -45,8 +45,12 @@ pub struct CreateMailNotificationDto {
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "mail_mail_id_int")]
     pub mail_mail_id_int: Option<Uuid>,
     #[cfg_attr(feature = "openapi", schema(example = true))]
-    #[serde(alias = "is_read")]
+    #[serde(default, alias = "is_read")]
     pub is_read: bool,
+}
+
+fn default_create_mail_notification_notification_type() -> MailNotificationType {
+    MailNotificationType::Email
 }
 
 // =============================================================================
@@ -96,18 +100,18 @@ pub struct PatchMailNotificationDto {
     #[cfg_attr(feature = "openapi", schema(example = "550e8400-e29b-41d4-a716-446655440000"))]
     #[serde(skip_serializing_if = "Option::is_none", alias = "mail_message_id")]
     pub mail_message_id: Option<Uuid>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "res_partner_id")]
-    pub res_partner_id: Option<Uuid>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "res_partner_id")]
+    pub res_partner_id: Option<Option<Uuid>>,
     #[serde(skip_serializing_if = "Option::is_none", alias = "notification_type")]
     pub notification_type: Option<MailNotificationType>,
     #[serde(skip_serializing_if = "Option::is_none", alias = "notification_status")]
     pub notification_status: Option<MailNotificationStatus>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "failure_type")]
-    pub failure_type: Option<NotificationFailureType>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "failure_reason")]
-    pub failure_reason: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "mail_mail_id_int")]
-    pub mail_mail_id_int: Option<Uuid>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "failure_type")]
+    pub failure_type: Option<Option<NotificationFailureType>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "failure_reason")]
+    pub failure_reason: Option<Option<String>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "mail_mail_id_int")]
+    pub mail_mail_id_int: Option<Option<Uuid>>,
     #[cfg_attr(feature = "openapi", schema(example = true))]
     #[serde(skip_serializing_if = "Option::is_none", alias = "is_read")]
     pub is_read: Option<bool>,
@@ -294,12 +298,4 @@ impl backbone_core::ApplyUpdateDto<UpdateMailNotificationDto> for MailNotificati
         Ok(self)
     }
 }
-
-// =============================================================================
-// Custom DTOs
-// =============================================================================
-
-// Add custom DTOs specific to MailNotification here.
-// This section will be preserved during regeneration.
-// >>> END CUSTOM DTOs
 

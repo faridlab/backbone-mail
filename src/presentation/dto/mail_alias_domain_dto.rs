@@ -39,7 +39,7 @@ pub struct CreateMailAliasDomainDto {
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "catchall_alias_email")]
     pub catchall_alias_email: Option<String>,
     #[cfg_attr(feature = "openapi", schema(example = true))]
-    #[serde(alias = "use_mx")]
+    #[serde(default, alias = "use_mx")]
     pub use_mx: bool,
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "mail_server_id")]
     pub mail_server_id: Option<Uuid>,
@@ -93,21 +93,21 @@ pub struct PatchMailAliasDomainDto {
     #[cfg_attr(feature = "openapi", schema(example = "example"))]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "catchall_alias")]
-    pub catchall_alias: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "bounce_alias")]
-    pub bounce_alias: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "bounce_alias_email")]
-    pub bounce_alias_email: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "catchall_alias_email")]
-    pub catchall_alias_email: Option<String>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "catchall_alias")]
+    pub catchall_alias: Option<Option<String>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "bounce_alias")]
+    pub bounce_alias: Option<Option<String>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "bounce_alias_email")]
+    pub bounce_alias_email: Option<Option<String>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "catchall_alias_email")]
+    pub catchall_alias_email: Option<Option<String>>,
     #[cfg_attr(feature = "openapi", schema(example = true))]
     #[serde(skip_serializing_if = "Option::is_none", alias = "use_mx")]
     pub use_mx: Option<bool>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "mail_server_id")]
-    pub mail_server_id: Option<Uuid>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "from_filter")]
-    pub from_filter: Option<String>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "mail_server_id")]
+    pub mail_server_id: Option<Option<Uuid>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "from_filter")]
+    pub from_filter: Option<Option<String>>,
 }
 
 impl PatchMailAliasDomainDto {
@@ -291,12 +291,4 @@ impl backbone_core::ApplyUpdateDto<UpdateMailAliasDomainDto> for MailAliasDomain
         Ok(self)
     }
 }
-
-// =============================================================================
-// Custom DTOs
-// =============================================================================
-
-// Add custom DTOs specific to MailAliasDomain here.
-// This section will be preserved during regeneration.
-// >>> END CUSTOM DTOs
 

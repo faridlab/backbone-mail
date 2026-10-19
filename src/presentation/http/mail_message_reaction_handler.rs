@@ -80,6 +80,13 @@ impl axum::response::IntoResponse for MailMessageReactionError {
 // Route Configuration
 // =============================================================================
 
+/// The permissions this entity's generic routes require: `mail_message_reaction:<action>` for `read`, `create`,
+/// `update`, `delete`, `restore` and `purge`, with any rename the schema's `requires:` declares.
+pub fn mail_message_reaction_permissions() -> backbone_core::http::CrudPermissions {
+    backbone_core::http::CrudPermissions::new("mail_message_reaction")
+        .in_module("messaging")
+}
+
 /// Create Axum router with all 16 Backbone endpoints for MailMessageReaction.
 ///
 /// # Routes
@@ -109,21 +116,23 @@ impl axum::response::IntoResponse for MailMessageReactionError {
 /// let router = create_mail_message_reaction_routes(service);
 /// ```
 pub fn create_mail_message_reaction_routes(service: Arc<MailMessageReactionService>) -> Router {
-    BackboneCrudHandler::<MailMessageReactionService, MailMessageReaction, CreateMailMessageReactionDto, UpdateMailMessageReactionDto, MailMessageReactionResponseDto>::routes(
+    BackboneCrudHandler::<MailMessageReactionService, MailMessageReaction, CreateMailMessageReactionDto, UpdateMailMessageReactionDto, MailMessageReactionResponseDto>::routes_guarded(
         service,
         "/mail_message_reactions",
+        mail_message_reaction_permissions(),
     )
 }
 
 /// Create Axum router with only the read (GET) endpoints for MailMessageReaction.
 ///
-/// Safe for public, unauthenticated exposure (e.g., reference data).
+/// Each route requires the entity's `read` permission, so it needs an authenticated caller.
 /// Mutations must be served separately via `create_mail_message_reaction_write_routes`,
 /// typically wrapped in an auth middleware layer.
 pub fn create_mail_message_reaction_read_routes(service: Arc<MailMessageReactionService>) -> Router {
-    BackboneCrudHandler::<MailMessageReactionService, MailMessageReaction, CreateMailMessageReactionDto, UpdateMailMessageReactionDto, MailMessageReactionResponseDto>::read_routes(
+    BackboneCrudHandler::<MailMessageReactionService, MailMessageReaction, CreateMailMessageReactionDto, UpdateMailMessageReactionDto, MailMessageReactionResponseDto>::read_routes_guarded(
         service,
         "/mail_message_reactions",
+        mail_message_reaction_permissions(),
     )
 }
 
@@ -139,9 +148,10 @@ pub fn create_mail_message_reaction_read_routes(service: Arc<MailMessageReaction
 /// service (e.g. a command router over its domain engine), serve THAT instead
 /// for any mutation that must respect domain rules.
 pub fn create_mail_message_reaction_write_routes(service: Arc<MailMessageReactionService>) -> Router {
-    BackboneCrudHandler::<MailMessageReactionService, MailMessageReaction, CreateMailMessageReactionDto, UpdateMailMessageReactionDto, MailMessageReactionResponseDto>::write_routes(
+    BackboneCrudHandler::<MailMessageReactionService, MailMessageReaction, CreateMailMessageReactionDto, UpdateMailMessageReactionDto, MailMessageReactionResponseDto>::write_routes_guarded(
         service,
         "/mail_message_reactions",
+        mail_message_reaction_permissions(),
     )
 }
 

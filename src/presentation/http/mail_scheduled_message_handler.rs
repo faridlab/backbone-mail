@@ -81,6 +81,13 @@ impl axum::response::IntoResponse for MailScheduledMessageError {
 // Route Configuration
 // =============================================================================
 
+/// The permissions this entity's generic routes require: `mail_scheduled_message:<action>` for `read`, `create`,
+/// `update`, `delete`, `restore` and `purge`, with any rename the schema's `requires:` declares.
+pub fn mail_scheduled_message_permissions() -> backbone_core::http::CrudPermissions {
+    backbone_core::http::CrudPermissions::new("mail_scheduled_message")
+        .in_module("messaging")
+}
+
 /// Create Axum router with all 16 Backbone endpoints for MailScheduledMessage.
 ///
 /// # Routes
@@ -110,21 +117,23 @@ impl axum::response::IntoResponse for MailScheduledMessageError {
 /// let router = create_mail_scheduled_message_routes(service);
 /// ```
 pub fn create_mail_scheduled_message_routes(service: Arc<MailScheduledMessageService>) -> Router {
-    BackboneCrudHandler::<MailScheduledMessageService, MailScheduledMessage, CreateMailScheduledMessageDto, UpdateMailScheduledMessageDto, MailScheduledMessageResponseDto>::routes(
+    BackboneCrudHandler::<MailScheduledMessageService, MailScheduledMessage, CreateMailScheduledMessageDto, UpdateMailScheduledMessageDto, MailScheduledMessageResponseDto>::routes_guarded(
         service,
         "/mail_scheduled_messages",
+        mail_scheduled_message_permissions(),
     )
 }
 
 /// Create Axum router with only the read (GET) endpoints for MailScheduledMessage.
 ///
-/// Safe for public, unauthenticated exposure (e.g., reference data).
+/// Each route requires the entity's `read` permission, so it needs an authenticated caller.
 /// Mutations must be served separately via `create_mail_scheduled_message_write_routes`,
 /// typically wrapped in an auth middleware layer.
 pub fn create_mail_scheduled_message_read_routes(service: Arc<MailScheduledMessageService>) -> Router {
-    BackboneCrudHandler::<MailScheduledMessageService, MailScheduledMessage, CreateMailScheduledMessageDto, UpdateMailScheduledMessageDto, MailScheduledMessageResponseDto>::read_routes(
+    BackboneCrudHandler::<MailScheduledMessageService, MailScheduledMessage, CreateMailScheduledMessageDto, UpdateMailScheduledMessageDto, MailScheduledMessageResponseDto>::read_routes_guarded(
         service,
         "/mail_scheduled_messages",
+        mail_scheduled_message_permissions(),
     )
 }
 
@@ -140,9 +149,10 @@ pub fn create_mail_scheduled_message_read_routes(service: Arc<MailScheduledMessa
 /// service (e.g. a command router over its domain engine), serve THAT instead
 /// for any mutation that must respect domain rules.
 pub fn create_mail_scheduled_message_write_routes(service: Arc<MailScheduledMessageService>) -> Router {
-    BackboneCrudHandler::<MailScheduledMessageService, MailScheduledMessage, CreateMailScheduledMessageDto, UpdateMailScheduledMessageDto, MailScheduledMessageResponseDto>::write_routes(
+    BackboneCrudHandler::<MailScheduledMessageService, MailScheduledMessage, CreateMailScheduledMessageDto, UpdateMailScheduledMessageDto, MailScheduledMessageResponseDto>::write_routes_guarded(
         service,
         "/mail_scheduled_messages",
+        mail_scheduled_message_permissions(),
     )
 }
 

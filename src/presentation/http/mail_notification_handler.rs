@@ -89,6 +89,13 @@ pub mod mail_notification_errors {
 // Route Configuration
 // =============================================================================
 
+/// The permissions this entity's generic routes require: `mail_notification:<action>` for `read`, `create`,
+/// `update`, `delete`, `restore` and `purge`, with any rename the schema's `requires:` declares.
+pub fn mail_notification_permissions() -> backbone_core::http::CrudPermissions {
+    backbone_core::http::CrudPermissions::new("mail_notification")
+        .in_module("messaging")
+}
+
 /// Create Axum router with all 16 Backbone endpoints for MailNotification.
 ///
 /// # Routes
@@ -118,21 +125,23 @@ pub mod mail_notification_errors {
 /// let router = create_mail_notification_routes(service);
 /// ```
 pub fn create_mail_notification_routes(service: Arc<MailNotificationService>) -> Router {
-    BackboneCrudHandler::<MailNotificationService, MailNotification, CreateMailNotificationDto, UpdateMailNotificationDto, MailNotificationResponseDto>::routes(
+    BackboneCrudHandler::<MailNotificationService, MailNotification, CreateMailNotificationDto, UpdateMailNotificationDto, MailNotificationResponseDto>::routes_guarded(
         service,
         "/mail_notifications",
+        mail_notification_permissions(),
     )
 }
 
 /// Create Axum router with only the read (GET) endpoints for MailNotification.
 ///
-/// Safe for public, unauthenticated exposure (e.g., reference data).
+/// Each route requires the entity's `read` permission, so it needs an authenticated caller.
 /// Mutations must be served separately via `create_mail_notification_write_routes`,
 /// typically wrapped in an auth middleware layer.
 pub fn create_mail_notification_read_routes(service: Arc<MailNotificationService>) -> Router {
-    BackboneCrudHandler::<MailNotificationService, MailNotification, CreateMailNotificationDto, UpdateMailNotificationDto, MailNotificationResponseDto>::read_routes(
+    BackboneCrudHandler::<MailNotificationService, MailNotification, CreateMailNotificationDto, UpdateMailNotificationDto, MailNotificationResponseDto>::read_routes_guarded(
         service,
         "/mail_notifications",
+        mail_notification_permissions(),
     )
 }
 
@@ -148,9 +157,10 @@ pub fn create_mail_notification_read_routes(service: Arc<MailNotificationService
 /// service (e.g. a command router over its domain engine), serve THAT instead
 /// for any mutation that must respect domain rules.
 pub fn create_mail_notification_write_routes(service: Arc<MailNotificationService>) -> Router {
-    BackboneCrudHandler::<MailNotificationService, MailNotification, CreateMailNotificationDto, UpdateMailNotificationDto, MailNotificationResponseDto>::write_routes(
+    BackboneCrudHandler::<MailNotificationService, MailNotification, CreateMailNotificationDto, UpdateMailNotificationDto, MailNotificationResponseDto>::write_routes_guarded(
         service,
         "/mail_notifications",
+        mail_notification_permissions(),
     )
 }
 
@@ -207,33 +217,26 @@ pub async fn dispatch_started_transition(
     axum::extract::State(service): axum::extract::State<Arc<MailNotificationService>>,
     axum::extract::Path(id): axum::extract::Path<String>,
     auth: Option<axum::Extension<AuthContext>>,
+    waiver: Option<axum::Extension<backbone_auth::PermissionWaiver>>,
 ) -> impl axum::response::IntoResponse {
     use axum::{http::StatusCode, Json};
+
+    // Check permission
+    let Some(axum::Extension(auth)) = auth else {
+        return backbone_core::http::unauthenticated_refusal::<MailNotificationResponseDto>();
+    };
+    if waiver.is_none() {
+        if let Err(refused) = auth.require_with("mail_notification:dispatch_started", &["messaging:dispatch_started"]) {
+            return backbone_core::http::permission_refusal::<MailNotificationResponseDto>(&refused);
+        }
+    }
 
     // Get current entity
     let entity = match service.get_by_id(&id).await {
         Ok(Some(e)) => e,
         Ok(None) => return (StatusCode::NOT_FOUND, Json(ApiResponse::<MailNotificationResponseDto>::not_found("MailNotification", &id))),
-        Err(e) => return (StatusCode::INTERNAL_SERVER_ERROR, Json(ApiResponse::<MailNotificationResponseDto>::error(e.to_string()))),
+        Err(e) => return backbone_core::http::service_error_response::<MailNotificationResponseDto>(&e),
     };
-
-    // Check permission
-    let Some(axum::Extension(auth)) = auth else {
-        return (StatusCode::UNAUTHORIZED, Json(ApiResponse::<MailNotificationResponseDto>::error("A transition needs an authenticated caller")));
-    };
-    {
-        let allowed_roles = MailNotificationHooksTransition::DispatchStarted.allowed_roles();
-        let granted = |required: &str| auth.permissions.iter().any(|p| {
-            let (have, want): (Vec<&str>, Vec<&str>) = (p.split(':').collect(), required.split(':').collect());
-            have.iter().enumerate().all(|(i, h)| *h == "*" || want.get(i) == Some(h))
-                && (have.len() == want.len() || (have.len() < want.len() && have.last() == Some(&"*")))
-        });
-        let has_specific_perm = granted("mail_notification:transition:dispatch_started");
-        let _ = &allowed_roles;
-        if !has_specific_perm {
-            return (StatusCode::FORBIDDEN, Json(ApiResponse::<MailNotificationResponseDto>::error("dispatch_started needs mail_notification:transition:dispatch_started")));
-        }
-    }
 
     // Create state machine from entity's actual status and validate transition
     let current_state: MailNotificationHooksState = match entity.notification_status.to_string().parse() {
@@ -242,7 +245,11 @@ pub async fn dispatch_started_transition(
     };
     let sm = MailNotificationHooksStateMachine::from_state(current_state);
     if !sm.can_transition(MailNotificationHooksTransition::DispatchStarted) {
-        return (StatusCode::BAD_REQUEST, Json(ApiResponse::<MailNotificationResponseDto>::error("Transition not allowed from current state")));
+        let refusal = backbone_core::service::ServiceError::Violations(vec![backbone_core::Violation::new("notification_status", "transition_not_allowed", "dispatch_started is not allowed from the current state")
+            .with_param("transition", "dispatch_started")
+            .with_param("from", serde_json::to_value(&entity.notification_status).unwrap_or_default())
+            .with_param("to", "process")]);
+        return backbone_core::http::service_error_response::<MailNotificationResponseDto>(&refusal);
     }
 
     // Apply transition via partial update
@@ -255,7 +262,7 @@ pub async fn dispatch_started_transition(
             (StatusCode::OK, Json(ApiResponse::ok(response)))
         }
         Ok(None) => (StatusCode::NOT_FOUND, Json(ApiResponse::<MailNotificationResponseDto>::not_found("MailNotification", &id))),
-        Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, Json(ApiResponse::<MailNotificationResponseDto>::error(e.to_string()))),
+        Err(e) => backbone_core::http::service_error_response::<MailNotificationResponseDto>(&e),
     }
 }
 
@@ -266,33 +273,26 @@ pub async fn smtp_accepted_transition(
     axum::extract::State(service): axum::extract::State<Arc<MailNotificationService>>,
     axum::extract::Path(id): axum::extract::Path<String>,
     auth: Option<axum::Extension<AuthContext>>,
+    waiver: Option<axum::Extension<backbone_auth::PermissionWaiver>>,
 ) -> impl axum::response::IntoResponse {
     use axum::{http::StatusCode, Json};
+
+    // Check permission
+    let Some(axum::Extension(auth)) = auth else {
+        return backbone_core::http::unauthenticated_refusal::<MailNotificationResponseDto>();
+    };
+    if waiver.is_none() {
+        if let Err(refused) = auth.require_with("mail_notification:smtp_accepted", &["messaging:smtp_accepted"]) {
+            return backbone_core::http::permission_refusal::<MailNotificationResponseDto>(&refused);
+        }
+    }
 
     // Get current entity
     let entity = match service.get_by_id(&id).await {
         Ok(Some(e)) => e,
         Ok(None) => return (StatusCode::NOT_FOUND, Json(ApiResponse::<MailNotificationResponseDto>::not_found("MailNotification", &id))),
-        Err(e) => return (StatusCode::INTERNAL_SERVER_ERROR, Json(ApiResponse::<MailNotificationResponseDto>::error(e.to_string()))),
+        Err(e) => return backbone_core::http::service_error_response::<MailNotificationResponseDto>(&e),
     };
-
-    // Check permission
-    let Some(axum::Extension(auth)) = auth else {
-        return (StatusCode::UNAUTHORIZED, Json(ApiResponse::<MailNotificationResponseDto>::error("A transition needs an authenticated caller")));
-    };
-    {
-        let allowed_roles = MailNotificationHooksTransition::SmtpAccepted.allowed_roles();
-        let granted = |required: &str| auth.permissions.iter().any(|p| {
-            let (have, want): (Vec<&str>, Vec<&str>) = (p.split(':').collect(), required.split(':').collect());
-            have.iter().enumerate().all(|(i, h)| *h == "*" || want.get(i) == Some(h))
-                && (have.len() == want.len() || (have.len() < want.len() && have.last() == Some(&"*")))
-        });
-        let has_specific_perm = granted("mail_notification:transition:smtp_accepted");
-        let _ = &allowed_roles;
-        if !has_specific_perm {
-            return (StatusCode::FORBIDDEN, Json(ApiResponse::<MailNotificationResponseDto>::error("smtp_accepted needs mail_notification:transition:smtp_accepted")));
-        }
-    }
 
     // Create state machine from entity's actual status and validate transition
     let current_state: MailNotificationHooksState = match entity.notification_status.to_string().parse() {
@@ -301,7 +301,11 @@ pub async fn smtp_accepted_transition(
     };
     let sm = MailNotificationHooksStateMachine::from_state(current_state);
     if !sm.can_transition(MailNotificationHooksTransition::SmtpAccepted) {
-        return (StatusCode::BAD_REQUEST, Json(ApiResponse::<MailNotificationResponseDto>::error("Transition not allowed from current state")));
+        let refusal = backbone_core::service::ServiceError::Violations(vec![backbone_core::Violation::new("notification_status", "transition_not_allowed", "smtp_accepted is not allowed from the current state")
+            .with_param("transition", "smtp_accepted")
+            .with_param("from", serde_json::to_value(&entity.notification_status).unwrap_or_default())
+            .with_param("to", "pending")]);
+        return backbone_core::http::service_error_response::<MailNotificationResponseDto>(&refusal);
     }
 
     // Apply transition via partial update
@@ -314,7 +318,7 @@ pub async fn smtp_accepted_transition(
             (StatusCode::OK, Json(ApiResponse::ok(response)))
         }
         Ok(None) => (StatusCode::NOT_FOUND, Json(ApiResponse::<MailNotificationResponseDto>::not_found("MailNotification", &id))),
-        Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, Json(ApiResponse::<MailNotificationResponseDto>::error(e.to_string()))),
+        Err(e) => backbone_core::http::service_error_response::<MailNotificationResponseDto>(&e),
     }
 }
 
@@ -325,33 +329,26 @@ pub async fn delivery_confirmed_transition(
     axum::extract::State(service): axum::extract::State<Arc<MailNotificationService>>,
     axum::extract::Path(id): axum::extract::Path<String>,
     auth: Option<axum::Extension<AuthContext>>,
+    waiver: Option<axum::Extension<backbone_auth::PermissionWaiver>>,
 ) -> impl axum::response::IntoResponse {
     use axum::{http::StatusCode, Json};
+
+    // Check permission
+    let Some(axum::Extension(auth)) = auth else {
+        return backbone_core::http::unauthenticated_refusal::<MailNotificationResponseDto>();
+    };
+    if waiver.is_none() {
+        if let Err(refused) = auth.require_with("mail_notification:delivery_confirmed", &["messaging:delivery_confirmed"]) {
+            return backbone_core::http::permission_refusal::<MailNotificationResponseDto>(&refused);
+        }
+    }
 
     // Get current entity
     let entity = match service.get_by_id(&id).await {
         Ok(Some(e)) => e,
         Ok(None) => return (StatusCode::NOT_FOUND, Json(ApiResponse::<MailNotificationResponseDto>::not_found("MailNotification", &id))),
-        Err(e) => return (StatusCode::INTERNAL_SERVER_ERROR, Json(ApiResponse::<MailNotificationResponseDto>::error(e.to_string()))),
+        Err(e) => return backbone_core::http::service_error_response::<MailNotificationResponseDto>(&e),
     };
-
-    // Check permission
-    let Some(axum::Extension(auth)) = auth else {
-        return (StatusCode::UNAUTHORIZED, Json(ApiResponse::<MailNotificationResponseDto>::error("A transition needs an authenticated caller")));
-    };
-    {
-        let allowed_roles = MailNotificationHooksTransition::DeliveryConfirmed.allowed_roles();
-        let granted = |required: &str| auth.permissions.iter().any(|p| {
-            let (have, want): (Vec<&str>, Vec<&str>) = (p.split(':').collect(), required.split(':').collect());
-            have.iter().enumerate().all(|(i, h)| *h == "*" || want.get(i) == Some(h))
-                && (have.len() == want.len() || (have.len() < want.len() && have.last() == Some(&"*")))
-        });
-        let has_specific_perm = granted("mail_notification:transition:delivery_confirmed");
-        let _ = &allowed_roles;
-        if !has_specific_perm {
-            return (StatusCode::FORBIDDEN, Json(ApiResponse::<MailNotificationResponseDto>::error("delivery_confirmed needs mail_notification:transition:delivery_confirmed")));
-        }
-    }
 
     // Create state machine from entity's actual status and validate transition
     let current_state: MailNotificationHooksState = match entity.notification_status.to_string().parse() {
@@ -360,7 +357,11 @@ pub async fn delivery_confirmed_transition(
     };
     let sm = MailNotificationHooksStateMachine::from_state(current_state);
     if !sm.can_transition(MailNotificationHooksTransition::DeliveryConfirmed) {
-        return (StatusCode::BAD_REQUEST, Json(ApiResponse::<MailNotificationResponseDto>::error("Transition not allowed from current state")));
+        let refusal = backbone_core::service::ServiceError::Violations(vec![backbone_core::Violation::new("notification_status", "transition_not_allowed", "delivery_confirmed is not allowed from the current state")
+            .with_param("transition", "delivery_confirmed")
+            .with_param("from", serde_json::to_value(&entity.notification_status).unwrap_or_default())
+            .with_param("to", "sent")]);
+        return backbone_core::http::service_error_response::<MailNotificationResponseDto>(&refusal);
     }
 
     // Apply transition via partial update
@@ -373,7 +374,7 @@ pub async fn delivery_confirmed_transition(
             (StatusCode::OK, Json(ApiResponse::ok(response)))
         }
         Ok(None) => (StatusCode::NOT_FOUND, Json(ApiResponse::<MailNotificationResponseDto>::not_found("MailNotification", &id))),
-        Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, Json(ApiResponse::<MailNotificationResponseDto>::error(e.to_string()))),
+        Err(e) => backbone_core::http::service_error_response::<MailNotificationResponseDto>(&e),
     }
 }
 
@@ -384,33 +385,26 @@ pub async fn instant_delivered_transition(
     axum::extract::State(service): axum::extract::State<Arc<MailNotificationService>>,
     axum::extract::Path(id): axum::extract::Path<String>,
     auth: Option<axum::Extension<AuthContext>>,
+    waiver: Option<axum::Extension<backbone_auth::PermissionWaiver>>,
 ) -> impl axum::response::IntoResponse {
     use axum::{http::StatusCode, Json};
+
+    // Check permission
+    let Some(axum::Extension(auth)) = auth else {
+        return backbone_core::http::unauthenticated_refusal::<MailNotificationResponseDto>();
+    };
+    if waiver.is_none() {
+        if let Err(refused) = auth.require_with("mail_notification:instant_delivered", &["messaging:instant_delivered"]) {
+            return backbone_core::http::permission_refusal::<MailNotificationResponseDto>(&refused);
+        }
+    }
 
     // Get current entity
     let entity = match service.get_by_id(&id).await {
         Ok(Some(e)) => e,
         Ok(None) => return (StatusCode::NOT_FOUND, Json(ApiResponse::<MailNotificationResponseDto>::not_found("MailNotification", &id))),
-        Err(e) => return (StatusCode::INTERNAL_SERVER_ERROR, Json(ApiResponse::<MailNotificationResponseDto>::error(e.to_string()))),
+        Err(e) => return backbone_core::http::service_error_response::<MailNotificationResponseDto>(&e),
     };
-
-    // Check permission
-    let Some(axum::Extension(auth)) = auth else {
-        return (StatusCode::UNAUTHORIZED, Json(ApiResponse::<MailNotificationResponseDto>::error("A transition needs an authenticated caller")));
-    };
-    {
-        let allowed_roles = MailNotificationHooksTransition::InstantDelivered.allowed_roles();
-        let granted = |required: &str| auth.permissions.iter().any(|p| {
-            let (have, want): (Vec<&str>, Vec<&str>) = (p.split(':').collect(), required.split(':').collect());
-            have.iter().enumerate().all(|(i, h)| *h == "*" || want.get(i) == Some(h))
-                && (have.len() == want.len() || (have.len() < want.len() && have.last() == Some(&"*")))
-        });
-        let has_specific_perm = granted("mail_notification:transition:instant_delivered");
-        let _ = &allowed_roles;
-        if !has_specific_perm {
-            return (StatusCode::FORBIDDEN, Json(ApiResponse::<MailNotificationResponseDto>::error("instant_delivered needs mail_notification:transition:instant_delivered")));
-        }
-    }
 
     // Create state machine from entity's actual status and validate transition
     let current_state: MailNotificationHooksState = match entity.notification_status.to_string().parse() {
@@ -419,7 +413,11 @@ pub async fn instant_delivered_transition(
     };
     let sm = MailNotificationHooksStateMachine::from_state(current_state);
     if !sm.can_transition(MailNotificationHooksTransition::InstantDelivered) {
-        return (StatusCode::BAD_REQUEST, Json(ApiResponse::<MailNotificationResponseDto>::error("Transition not allowed from current state")));
+        let refusal = backbone_core::service::ServiceError::Violations(vec![backbone_core::Violation::new("notification_status", "transition_not_allowed", "instant_delivered is not allowed from the current state")
+            .with_param("transition", "instant_delivered")
+            .with_param("from", serde_json::to_value(&entity.notification_status).unwrap_or_default())
+            .with_param("to", "sent")]);
+        return backbone_core::http::service_error_response::<MailNotificationResponseDto>(&refusal);
     }
 
     // Apply transition via partial update
@@ -432,7 +430,7 @@ pub async fn instant_delivered_transition(
             (StatusCode::OK, Json(ApiResponse::ok(response)))
         }
         Ok(None) => (StatusCode::NOT_FOUND, Json(ApiResponse::<MailNotificationResponseDto>::not_found("MailNotification", &id))),
-        Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, Json(ApiResponse::<MailNotificationResponseDto>::error(e.to_string()))),
+        Err(e) => backbone_core::http::service_error_response::<MailNotificationResponseDto>(&e),
     }
 }
 
@@ -443,33 +441,26 @@ pub async fn bounced_transition(
     axum::extract::State(service): axum::extract::State<Arc<MailNotificationService>>,
     axum::extract::Path(id): axum::extract::Path<String>,
     auth: Option<axum::Extension<AuthContext>>,
+    waiver: Option<axum::Extension<backbone_auth::PermissionWaiver>>,
 ) -> impl axum::response::IntoResponse {
     use axum::{http::StatusCode, Json};
+
+    // Check permission
+    let Some(axum::Extension(auth)) = auth else {
+        return backbone_core::http::unauthenticated_refusal::<MailNotificationResponseDto>();
+    };
+    if waiver.is_none() {
+        if let Err(refused) = auth.require_with("mail_notification:bounced", &["messaging:bounced"]) {
+            return backbone_core::http::permission_refusal::<MailNotificationResponseDto>(&refused);
+        }
+    }
 
     // Get current entity
     let entity = match service.get_by_id(&id).await {
         Ok(Some(e)) => e,
         Ok(None) => return (StatusCode::NOT_FOUND, Json(ApiResponse::<MailNotificationResponseDto>::not_found("MailNotification", &id))),
-        Err(e) => return (StatusCode::INTERNAL_SERVER_ERROR, Json(ApiResponse::<MailNotificationResponseDto>::error(e.to_string()))),
+        Err(e) => return backbone_core::http::service_error_response::<MailNotificationResponseDto>(&e),
     };
-
-    // Check permission
-    let Some(axum::Extension(auth)) = auth else {
-        return (StatusCode::UNAUTHORIZED, Json(ApiResponse::<MailNotificationResponseDto>::error("A transition needs an authenticated caller")));
-    };
-    {
-        let allowed_roles = MailNotificationHooksTransition::Bounced.allowed_roles();
-        let granted = |required: &str| auth.permissions.iter().any(|p| {
-            let (have, want): (Vec<&str>, Vec<&str>) = (p.split(':').collect(), required.split(':').collect());
-            have.iter().enumerate().all(|(i, h)| *h == "*" || want.get(i) == Some(h))
-                && (have.len() == want.len() || (have.len() < want.len() && have.last() == Some(&"*")))
-        });
-        let has_specific_perm = granted("mail_notification:transition:bounced");
-        let _ = &allowed_roles;
-        if !has_specific_perm {
-            return (StatusCode::FORBIDDEN, Json(ApiResponse::<MailNotificationResponseDto>::error("bounced needs mail_notification:transition:bounced")));
-        }
-    }
 
     // Create state machine from entity's actual status and validate transition
     let current_state: MailNotificationHooksState = match entity.notification_status.to_string().parse() {
@@ -478,7 +469,11 @@ pub async fn bounced_transition(
     };
     let sm = MailNotificationHooksStateMachine::from_state(current_state);
     if !sm.can_transition(MailNotificationHooksTransition::Bounced) {
-        return (StatusCode::BAD_REQUEST, Json(ApiResponse::<MailNotificationResponseDto>::error("Transition not allowed from current state")));
+        let refusal = backbone_core::service::ServiceError::Violations(vec![backbone_core::Violation::new("notification_status", "transition_not_allowed", "bounced is not allowed from the current state")
+            .with_param("transition", "bounced")
+            .with_param("from", serde_json::to_value(&entity.notification_status).unwrap_or_default())
+            .with_param("to", "bounce")]);
+        return backbone_core::http::service_error_response::<MailNotificationResponseDto>(&refusal);
     }
 
     // Apply transition via partial update
@@ -491,7 +486,7 @@ pub async fn bounced_transition(
             (StatusCode::OK, Json(ApiResponse::ok(response)))
         }
         Ok(None) => (StatusCode::NOT_FOUND, Json(ApiResponse::<MailNotificationResponseDto>::not_found("MailNotification", &id))),
-        Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, Json(ApiResponse::<MailNotificationResponseDto>::error(e.to_string()))),
+        Err(e) => backbone_core::http::service_error_response::<MailNotificationResponseDto>(&e),
     }
 }
 
@@ -502,33 +497,26 @@ pub async fn send_failed_transition(
     axum::extract::State(service): axum::extract::State<Arc<MailNotificationService>>,
     axum::extract::Path(id): axum::extract::Path<String>,
     auth: Option<axum::Extension<AuthContext>>,
+    waiver: Option<axum::Extension<backbone_auth::PermissionWaiver>>,
 ) -> impl axum::response::IntoResponse {
     use axum::{http::StatusCode, Json};
+
+    // Check permission
+    let Some(axum::Extension(auth)) = auth else {
+        return backbone_core::http::unauthenticated_refusal::<MailNotificationResponseDto>();
+    };
+    if waiver.is_none() {
+        if let Err(refused) = auth.require_with("mail_notification:send_failed", &["messaging:send_failed"]) {
+            return backbone_core::http::permission_refusal::<MailNotificationResponseDto>(&refused);
+        }
+    }
 
     // Get current entity
     let entity = match service.get_by_id(&id).await {
         Ok(Some(e)) => e,
         Ok(None) => return (StatusCode::NOT_FOUND, Json(ApiResponse::<MailNotificationResponseDto>::not_found("MailNotification", &id))),
-        Err(e) => return (StatusCode::INTERNAL_SERVER_ERROR, Json(ApiResponse::<MailNotificationResponseDto>::error(e.to_string()))),
+        Err(e) => return backbone_core::http::service_error_response::<MailNotificationResponseDto>(&e),
     };
-
-    // Check permission
-    let Some(axum::Extension(auth)) = auth else {
-        return (StatusCode::UNAUTHORIZED, Json(ApiResponse::<MailNotificationResponseDto>::error("A transition needs an authenticated caller")));
-    };
-    {
-        let allowed_roles = MailNotificationHooksTransition::SendFailed.allowed_roles();
-        let granted = |required: &str| auth.permissions.iter().any(|p| {
-            let (have, want): (Vec<&str>, Vec<&str>) = (p.split(':').collect(), required.split(':').collect());
-            have.iter().enumerate().all(|(i, h)| *h == "*" || want.get(i) == Some(h))
-                && (have.len() == want.len() || (have.len() < want.len() && have.last() == Some(&"*")))
-        });
-        let has_specific_perm = granted("mail_notification:transition:send_failed");
-        let _ = &allowed_roles;
-        if !has_specific_perm {
-            return (StatusCode::FORBIDDEN, Json(ApiResponse::<MailNotificationResponseDto>::error("send_failed needs mail_notification:transition:send_failed")));
-        }
-    }
 
     // Create state machine from entity's actual status and validate transition
     let current_state: MailNotificationHooksState = match entity.notification_status.to_string().parse() {
@@ -537,7 +525,11 @@ pub async fn send_failed_transition(
     };
     let sm = MailNotificationHooksStateMachine::from_state(current_state);
     if !sm.can_transition(MailNotificationHooksTransition::SendFailed) {
-        return (StatusCode::BAD_REQUEST, Json(ApiResponse::<MailNotificationResponseDto>::error("Transition not allowed from current state")));
+        let refusal = backbone_core::service::ServiceError::Violations(vec![backbone_core::Violation::new("notification_status", "transition_not_allowed", "send_failed is not allowed from the current state")
+            .with_param("transition", "send_failed")
+            .with_param("from", serde_json::to_value(&entity.notification_status).unwrap_or_default())
+            .with_param("to", "exception")]);
+        return backbone_core::http::service_error_response::<MailNotificationResponseDto>(&refusal);
     }
 
     // Apply transition via partial update
@@ -550,7 +542,7 @@ pub async fn send_failed_transition(
             (StatusCode::OK, Json(ApiResponse::ok(response)))
         }
         Ok(None) => (StatusCode::NOT_FOUND, Json(ApiResponse::<MailNotificationResponseDto>::not_found("MailNotification", &id))),
-        Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, Json(ApiResponse::<MailNotificationResponseDto>::error(e.to_string()))),
+        Err(e) => backbone_core::http::service_error_response::<MailNotificationResponseDto>(&e),
     }
 }
 
@@ -561,33 +553,26 @@ pub async fn accepted_unpicked_transition(
     axum::extract::State(service): axum::extract::State<Arc<MailNotificationService>>,
     axum::extract::Path(id): axum::extract::Path<String>,
     auth: Option<axum::Extension<AuthContext>>,
+    waiver: Option<axum::Extension<backbone_auth::PermissionWaiver>>,
 ) -> impl axum::response::IntoResponse {
     use axum::{http::StatusCode, Json};
+
+    // Check permission
+    let Some(axum::Extension(auth)) = auth else {
+        return backbone_core::http::unauthenticated_refusal::<MailNotificationResponseDto>();
+    };
+    if waiver.is_none() {
+        if let Err(refused) = auth.require_with("mail_notification:accepted_unpicked", &["messaging:accepted_unpicked"]) {
+            return backbone_core::http::permission_refusal::<MailNotificationResponseDto>(&refused);
+        }
+    }
 
     // Get current entity
     let entity = match service.get_by_id(&id).await {
         Ok(Some(e)) => e,
         Ok(None) => return (StatusCode::NOT_FOUND, Json(ApiResponse::<MailNotificationResponseDto>::not_found("MailNotification", &id))),
-        Err(e) => return (StatusCode::INTERNAL_SERVER_ERROR, Json(ApiResponse::<MailNotificationResponseDto>::error(e.to_string()))),
+        Err(e) => return backbone_core::http::service_error_response::<MailNotificationResponseDto>(&e),
     };
-
-    // Check permission
-    let Some(axum::Extension(auth)) = auth else {
-        return (StatusCode::UNAUTHORIZED, Json(ApiResponse::<MailNotificationResponseDto>::error("A transition needs an authenticated caller")));
-    };
-    {
-        let allowed_roles = MailNotificationHooksTransition::AcceptedUnpicked.allowed_roles();
-        let granted = |required: &str| auth.permissions.iter().any(|p| {
-            let (have, want): (Vec<&str>, Vec<&str>) = (p.split(':').collect(), required.split(':').collect());
-            have.iter().enumerate().all(|(i, h)| *h == "*" || want.get(i) == Some(h))
-                && (have.len() == want.len() || (have.len() < want.len() && have.last() == Some(&"*")))
-        });
-        let has_specific_perm = granted("mail_notification:transition:accepted_unpicked");
-        let _ = &allowed_roles;
-        if !has_specific_perm {
-            return (StatusCode::FORBIDDEN, Json(ApiResponse::<MailNotificationResponseDto>::error("accepted_unpicked needs mail_notification:transition:accepted_unpicked")));
-        }
-    }
 
     // Create state machine from entity's actual status and validate transition
     let current_state: MailNotificationHooksState = match entity.notification_status.to_string().parse() {
@@ -596,7 +581,11 @@ pub async fn accepted_unpicked_transition(
     };
     let sm = MailNotificationHooksStateMachine::from_state(current_state);
     if !sm.can_transition(MailNotificationHooksTransition::AcceptedUnpicked) {
-        return (StatusCode::BAD_REQUEST, Json(ApiResponse::<MailNotificationResponseDto>::error("Transition not allowed from current state")));
+        let refusal = backbone_core::service::ServiceError::Violations(vec![backbone_core::Violation::new("notification_status", "transition_not_allowed", "accepted_unpicked is not allowed from the current state")
+            .with_param("transition", "accepted_unpicked")
+            .with_param("from", serde_json::to_value(&entity.notification_status).unwrap_or_default())
+            .with_param("to", "pending")]);
+        return backbone_core::http::service_error_response::<MailNotificationResponseDto>(&refusal);
     }
 
     // Apply transition via partial update
@@ -609,7 +598,7 @@ pub async fn accepted_unpicked_transition(
             (StatusCode::OK, Json(ApiResponse::ok(response)))
         }
         Ok(None) => (StatusCode::NOT_FOUND, Json(ApiResponse::<MailNotificationResponseDto>::not_found("MailNotification", &id))),
-        Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, Json(ApiResponse::<MailNotificationResponseDto>::error(e.to_string()))),
+        Err(e) => backbone_core::http::service_error_response::<MailNotificationResponseDto>(&e),
     }
 }
 
@@ -620,33 +609,26 @@ pub async fn delivered_unpicked_transition(
     axum::extract::State(service): axum::extract::State<Arc<MailNotificationService>>,
     axum::extract::Path(id): axum::extract::Path<String>,
     auth: Option<axum::Extension<AuthContext>>,
+    waiver: Option<axum::Extension<backbone_auth::PermissionWaiver>>,
 ) -> impl axum::response::IntoResponse {
     use axum::{http::StatusCode, Json};
+
+    // Check permission
+    let Some(axum::Extension(auth)) = auth else {
+        return backbone_core::http::unauthenticated_refusal::<MailNotificationResponseDto>();
+    };
+    if waiver.is_none() {
+        if let Err(refused) = auth.require_with("mail_notification:delivered_unpicked", &["messaging:delivered_unpicked"]) {
+            return backbone_core::http::permission_refusal::<MailNotificationResponseDto>(&refused);
+        }
+    }
 
     // Get current entity
     let entity = match service.get_by_id(&id).await {
         Ok(Some(e)) => e,
         Ok(None) => return (StatusCode::NOT_FOUND, Json(ApiResponse::<MailNotificationResponseDto>::not_found("MailNotification", &id))),
-        Err(e) => return (StatusCode::INTERNAL_SERVER_ERROR, Json(ApiResponse::<MailNotificationResponseDto>::error(e.to_string()))),
+        Err(e) => return backbone_core::http::service_error_response::<MailNotificationResponseDto>(&e),
     };
-
-    // Check permission
-    let Some(axum::Extension(auth)) = auth else {
-        return (StatusCode::UNAUTHORIZED, Json(ApiResponse::<MailNotificationResponseDto>::error("A transition needs an authenticated caller")));
-    };
-    {
-        let allowed_roles = MailNotificationHooksTransition::DeliveredUnpicked.allowed_roles();
-        let granted = |required: &str| auth.permissions.iter().any(|p| {
-            let (have, want): (Vec<&str>, Vec<&str>) = (p.split(':').collect(), required.split(':').collect());
-            have.iter().enumerate().all(|(i, h)| *h == "*" || want.get(i) == Some(h))
-                && (have.len() == want.len() || (have.len() < want.len() && have.last() == Some(&"*")))
-        });
-        let has_specific_perm = granted("mail_notification:transition:delivered_unpicked");
-        let _ = &allowed_roles;
-        if !has_specific_perm {
-            return (StatusCode::FORBIDDEN, Json(ApiResponse::<MailNotificationResponseDto>::error("delivered_unpicked needs mail_notification:transition:delivered_unpicked")));
-        }
-    }
 
     // Create state machine from entity's actual status and validate transition
     let current_state: MailNotificationHooksState = match entity.notification_status.to_string().parse() {
@@ -655,7 +637,11 @@ pub async fn delivered_unpicked_transition(
     };
     let sm = MailNotificationHooksStateMachine::from_state(current_state);
     if !sm.can_transition(MailNotificationHooksTransition::DeliveredUnpicked) {
-        return (StatusCode::BAD_REQUEST, Json(ApiResponse::<MailNotificationResponseDto>::error("Transition not allowed from current state")));
+        let refusal = backbone_core::service::ServiceError::Violations(vec![backbone_core::Violation::new("notification_status", "transition_not_allowed", "delivered_unpicked is not allowed from the current state")
+            .with_param("transition", "delivered_unpicked")
+            .with_param("from", serde_json::to_value(&entity.notification_status).unwrap_or_default())
+            .with_param("to", "sent")]);
+        return backbone_core::http::service_error_response::<MailNotificationResponseDto>(&refusal);
     }
 
     // Apply transition via partial update
@@ -668,7 +654,7 @@ pub async fn delivered_unpicked_transition(
             (StatusCode::OK, Json(ApiResponse::ok(response)))
         }
         Ok(None) => (StatusCode::NOT_FOUND, Json(ApiResponse::<MailNotificationResponseDto>::not_found("MailNotification", &id))),
-        Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, Json(ApiResponse::<MailNotificationResponseDto>::error(e.to_string()))),
+        Err(e) => backbone_core::http::service_error_response::<MailNotificationResponseDto>(&e),
     }
 }
 
@@ -679,33 +665,26 @@ pub async fn failed_unpicked_transition(
     axum::extract::State(service): axum::extract::State<Arc<MailNotificationService>>,
     axum::extract::Path(id): axum::extract::Path<String>,
     auth: Option<axum::Extension<AuthContext>>,
+    waiver: Option<axum::Extension<backbone_auth::PermissionWaiver>>,
 ) -> impl axum::response::IntoResponse {
     use axum::{http::StatusCode, Json};
+
+    // Check permission
+    let Some(axum::Extension(auth)) = auth else {
+        return backbone_core::http::unauthenticated_refusal::<MailNotificationResponseDto>();
+    };
+    if waiver.is_none() {
+        if let Err(refused) = auth.require_with("mail_notification:failed_unpicked", &["messaging:failed_unpicked"]) {
+            return backbone_core::http::permission_refusal::<MailNotificationResponseDto>(&refused);
+        }
+    }
 
     // Get current entity
     let entity = match service.get_by_id(&id).await {
         Ok(Some(e)) => e,
         Ok(None) => return (StatusCode::NOT_FOUND, Json(ApiResponse::<MailNotificationResponseDto>::not_found("MailNotification", &id))),
-        Err(e) => return (StatusCode::INTERNAL_SERVER_ERROR, Json(ApiResponse::<MailNotificationResponseDto>::error(e.to_string()))),
+        Err(e) => return backbone_core::http::service_error_response::<MailNotificationResponseDto>(&e),
     };
-
-    // Check permission
-    let Some(axum::Extension(auth)) = auth else {
-        return (StatusCode::UNAUTHORIZED, Json(ApiResponse::<MailNotificationResponseDto>::error("A transition needs an authenticated caller")));
-    };
-    {
-        let allowed_roles = MailNotificationHooksTransition::FailedUnpicked.allowed_roles();
-        let granted = |required: &str| auth.permissions.iter().any(|p| {
-            let (have, want): (Vec<&str>, Vec<&str>) = (p.split(':').collect(), required.split(':').collect());
-            have.iter().enumerate().all(|(i, h)| *h == "*" || want.get(i) == Some(h))
-                && (have.len() == want.len() || (have.len() < want.len() && have.last() == Some(&"*")))
-        });
-        let has_specific_perm = granted("mail_notification:transition:failed_unpicked");
-        let _ = &allowed_roles;
-        if !has_specific_perm {
-            return (StatusCode::FORBIDDEN, Json(ApiResponse::<MailNotificationResponseDto>::error("failed_unpicked needs mail_notification:transition:failed_unpicked")));
-        }
-    }
 
     // Create state machine from entity's actual status and validate transition
     let current_state: MailNotificationHooksState = match entity.notification_status.to_string().parse() {
@@ -714,7 +693,11 @@ pub async fn failed_unpicked_transition(
     };
     let sm = MailNotificationHooksStateMachine::from_state(current_state);
     if !sm.can_transition(MailNotificationHooksTransition::FailedUnpicked) {
-        return (StatusCode::BAD_REQUEST, Json(ApiResponse::<MailNotificationResponseDto>::error("Transition not allowed from current state")));
+        let refusal = backbone_core::service::ServiceError::Violations(vec![backbone_core::Violation::new("notification_status", "transition_not_allowed", "failed_unpicked is not allowed from the current state")
+            .with_param("transition", "failed_unpicked")
+            .with_param("from", serde_json::to_value(&entity.notification_status).unwrap_or_default())
+            .with_param("to", "exception")]);
+        return backbone_core::http::service_error_response::<MailNotificationResponseDto>(&refusal);
     }
 
     // Apply transition via partial update
@@ -727,7 +710,7 @@ pub async fn failed_unpicked_transition(
             (StatusCode::OK, Json(ApiResponse::ok(response)))
         }
         Ok(None) => (StatusCode::NOT_FOUND, Json(ApiResponse::<MailNotificationResponseDto>::not_found("MailNotification", &id))),
-        Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, Json(ApiResponse::<MailNotificationResponseDto>::error(e.to_string()))),
+        Err(e) => backbone_core::http::service_error_response::<MailNotificationResponseDto>(&e),
     }
 }
 
@@ -738,33 +721,26 @@ pub async fn canceled_transition(
     axum::extract::State(service): axum::extract::State<Arc<MailNotificationService>>,
     axum::extract::Path(id): axum::extract::Path<String>,
     auth: Option<axum::Extension<AuthContext>>,
+    waiver: Option<axum::Extension<backbone_auth::PermissionWaiver>>,
 ) -> impl axum::response::IntoResponse {
     use axum::{http::StatusCode, Json};
+
+    // Check permission
+    let Some(axum::Extension(auth)) = auth else {
+        return backbone_core::http::unauthenticated_refusal::<MailNotificationResponseDto>();
+    };
+    if waiver.is_none() {
+        if let Err(refused) = auth.require_with("mail_notification:canceled", &["messaging:canceled"]) {
+            return backbone_core::http::permission_refusal::<MailNotificationResponseDto>(&refused);
+        }
+    }
 
     // Get current entity
     let entity = match service.get_by_id(&id).await {
         Ok(Some(e)) => e,
         Ok(None) => return (StatusCode::NOT_FOUND, Json(ApiResponse::<MailNotificationResponseDto>::not_found("MailNotification", &id))),
-        Err(e) => return (StatusCode::INTERNAL_SERVER_ERROR, Json(ApiResponse::<MailNotificationResponseDto>::error(e.to_string()))),
+        Err(e) => return backbone_core::http::service_error_response::<MailNotificationResponseDto>(&e),
     };
-
-    // Check permission
-    let Some(axum::Extension(auth)) = auth else {
-        return (StatusCode::UNAUTHORIZED, Json(ApiResponse::<MailNotificationResponseDto>::error("A transition needs an authenticated caller")));
-    };
-    {
-        let allowed_roles = MailNotificationHooksTransition::Canceled.allowed_roles();
-        let granted = |required: &str| auth.permissions.iter().any(|p| {
-            let (have, want): (Vec<&str>, Vec<&str>) = (p.split(':').collect(), required.split(':').collect());
-            have.iter().enumerate().all(|(i, h)| *h == "*" || want.get(i) == Some(h))
-                && (have.len() == want.len() || (have.len() < want.len() && have.last() == Some(&"*")))
-        });
-        let has_specific_perm = granted("mail_notification:transition:canceled");
-        let _ = &allowed_roles;
-        if !has_specific_perm {
-            return (StatusCode::FORBIDDEN, Json(ApiResponse::<MailNotificationResponseDto>::error("canceled needs mail_notification:transition:canceled")));
-        }
-    }
 
     // Create state machine from entity's actual status and validate transition
     let current_state: MailNotificationHooksState = match entity.notification_status.to_string().parse() {
@@ -773,7 +749,11 @@ pub async fn canceled_transition(
     };
     let sm = MailNotificationHooksStateMachine::from_state(current_state);
     if !sm.can_transition(MailNotificationHooksTransition::Canceled) {
-        return (StatusCode::BAD_REQUEST, Json(ApiResponse::<MailNotificationResponseDto>::error("Transition not allowed from current state")));
+        let refusal = backbone_core::service::ServiceError::Violations(vec![backbone_core::Violation::new("notification_status", "transition_not_allowed", "canceled is not allowed from the current state")
+            .with_param("transition", "canceled")
+            .with_param("from", serde_json::to_value(&entity.notification_status).unwrap_or_default())
+            .with_param("to", "canceled")]);
+        return backbone_core::http::service_error_response::<MailNotificationResponseDto>(&refusal);
     }
 
     // Apply transition via partial update
@@ -786,7 +766,7 @@ pub async fn canceled_transition(
             (StatusCode::OK, Json(ApiResponse::ok(response)))
         }
         Ok(None) => (StatusCode::NOT_FOUND, Json(ApiResponse::<MailNotificationResponseDto>::not_found("MailNotification", &id))),
-        Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, Json(ApiResponse::<MailNotificationResponseDto>::error(e.to_string()))),
+        Err(e) => backbone_core::http::service_error_response::<MailNotificationResponseDto>(&e),
     }
 }
 
@@ -806,5 +786,6 @@ pub fn create_mail_notification_transition_routes(service: Arc<MailNotificationS
         .route("/mail_notifications/:id/transitions/failed_unpicked", post(failed_unpicked_transition))
         .route("/mail_notifications/:id/transitions/canceled", post(canceled_transition))
         .with_state(service)
+        .layer(axum::middleware::from_fn(backbone_core::http::correlation_middleware))
 }
 

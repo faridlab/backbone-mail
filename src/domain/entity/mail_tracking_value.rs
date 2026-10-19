@@ -281,6 +281,12 @@ impl super::Entity for MailTrackingValue {
 }
 
 impl backbone_core::PersistentEntity for MailTrackingValue {
+    fn references() -> &'static [backbone_core::Reference] {
+        const REFERENCES: &[backbone_core::Reference] = &[
+            backbone_core::Reference::new("mail_message_id", "messaging.mail_messages", "id"),
+        ];
+        REFERENCES
+    }
     fn entity_id(&self) -> String {
         self.id.to_string()
     }

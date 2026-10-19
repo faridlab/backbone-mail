@@ -258,6 +258,13 @@ impl backbone_core::PersistentEntity for DiscussChannel {
     fn write_protected_fields() -> &'static [&'static str] {
         &["channel_type"]
     }
+    fn references() -> &'static [backbone_core::Reference] {
+        const REFERENCES: &[backbone_core::Reference] = &[
+            backbone_core::Reference::new("alias_id", "messaging.mail_aliases", "id"),
+            backbone_core::Reference::new("last_message_id", "messaging.mail_messages", "id"),
+        ];
+        REFERENCES
+    }
     fn entity_id(&self) -> String {
         self.id.to_string()
     }

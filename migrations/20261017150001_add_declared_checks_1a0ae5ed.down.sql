@@ -1,0 +1,88 @@
+-- Down: drop the declared rule constraints for messaging module
+ALTER TABLE IF EXISTS messaging.sms_trackers DROP CONSTRAINT IF EXISTS ck_sms_trackers_sms_uuid_required__required;
+DO $$
+BEGIN
+    IF to_regclass('messaging.uq_sms_trackers_sms_uuid__unique') IS NOT NULL AND to_regclass('messaging.idx_sms_trackers_sms_uuid') IS NULL THEN
+        ALTER INDEX messaging.uq_sms_trackers_sms_uuid__unique RENAME TO idx_sms_trackers_sms_uuid;
+    END IF;
+END $$;
+
+ALTER TABLE IF EXISTS messaging.sms_templates DROP CONSTRAINT IF EXISTS ck_sms_templates_body_required__required;
+ALTER TABLE IF EXISTS messaging.sms_templates DROP CONSTRAINT IF EXISTS ck_sms_templates_name_required__required;
+ALTER TABLE IF EXISTS messaging.sms DROP CONSTRAINT IF EXISTS ck_sms_body_required__required;
+ALTER TABLE IF EXISTS messaging.sms DROP CONSTRAINT IF EXISTS ck_sms_number_required__required;
+ALTER TABLE IF EXISTS messaging.sms DROP CONSTRAINT IF EXISTS ck_sms_uuid_required__required;
+DO $$
+BEGIN
+    IF to_regclass('messaging.uq_sms_uuid__unique') IS NOT NULL AND to_regclass('messaging.idx_sms_uuid') IS NULL THEN
+        ALTER INDEX messaging.uq_sms_uuid__unique RENAME TO idx_sms_uuid;
+    END IF;
+END $$;
+
+ALTER TABLE IF EXISTS messaging.mail_scheduled_messages DROP CONSTRAINT IF EXISTS ck_mail_scheduled_messages_author_party_id_required__required;
+ALTER TABLE IF EXISTS messaging.mail_scheduled_messages DROP CONSTRAINT IF EXISTS ck_mail_scheduled_messages_res_id_required__required;
+ALTER TABLE IF EXISTS messaging.mail_scheduled_messages DROP CONSTRAINT IF EXISTS ck_mail_scheduled_messages_model_required__required;
+ALTER TABLE IF EXISTS messaging.mail_scheduled_messages DROP CONSTRAINT IF EXISTS ck_mail_scheduled_messages_body_required__required;
+ALTER TABLE IF EXISTS messaging.mail_message_schedules DROP CONSTRAINT IF EXISTS ck_mail_message_schedules_mail_message_id_required__required;
+ALTER TABLE IF EXISTS messaging.phone_blacklists DROP CONSTRAINT IF EXISTS ck_phone_blacklists_number_required__required;
+DO $$
+BEGIN
+    IF to_regclass('messaging.uq_phone_blacklists_number__unique') IS NOT NULL AND to_regclass('messaging.idx_phone_blacklists_number') IS NULL THEN
+        ALTER INDEX messaging.uq_phone_blacklists_number__unique RENAME TO idx_phone_blacklists_number;
+    END IF;
+END $$;
+
+ALTER TABLE IF EXISTS messaging.mail_gateway_allowed DROP CONSTRAINT IF EXISTS ck_mail_gateway_allowed_pattern_required__required;
+ALTER TABLE IF EXISTS messaging.fetchmail_servers DROP CONSTRAINT IF EXISTS ck_fetchmail_servers_token_hash_required__required;
+ALTER TABLE IF EXISTS messaging.fetchmail_servers DROP CONSTRAINT IF EXISTS ck_fetchmail_servers_name_required__required;
+ALTER TABLE IF EXISTS messaging.mail_servers DROP CONSTRAINT IF EXISTS ck_mail_servers_smtp_host_required__required;
+ALTER TABLE IF EXISTS messaging.mail_servers DROP CONSTRAINT IF EXISTS ck_mail_servers_name_required__required;
+ALTER TABLE IF EXISTS messaging.mail_guests DROP CONSTRAINT IF EXISTS ck_mail_guests_name_required__required;
+ALTER TABLE IF EXISTS messaging.discuss_channel_members DROP CONSTRAINT IF EXISTS ck_discuss_cha_d8454fe6__discuss_channel_member_persona_missing;
+ALTER TABLE IF EXISTS messaging.discuss_channel_members DROP CONSTRAINT IF EXISTS ck_discuss_channel_members_channel_id_required__required;
+DO $$
+BEGIN
+    IF to_regclass('messaging.uq_discuss_channels_uuid__unique') IS NOT NULL AND to_regclass('messaging.idx_discuss_channels_uuid') IS NULL THEN
+        ALTER INDEX messaging.uq_discuss_channels_uuid__unique RENAME TO idx_discuss_channels_uuid;
+    END IF;
+END $$;
+
+ALTER TABLE IF EXISTS messaging.mail_tracking_values DROP CONSTRAINT IF EXISTS ck_mail_tracking_values_field_required__required;
+ALTER TABLE IF EXISTS messaging.mail_tracking_values DROP CONSTRAINT IF EXISTS ck_mail_tracking_values_mail_message_id_required__required;
+ALTER TABLE IF EXISTS messaging.mail_blacklists DROP CONSTRAINT IF EXISTS ck_mail_blacklists_email_required__required;
+DO $$
+BEGIN
+    IF to_regclass('messaging.uq_mail_blacklists_email__unique') IS NOT NULL AND to_regclass('messaging.idx_mail_blacklists_email') IS NULL THEN
+        ALTER INDEX messaging.uq_mail_blacklists_email__unique RENAME TO idx_mail_blacklists_email;
+    END IF;
+END $$;
+
+ALTER TABLE IF EXISTS messaging.mail_followers DROP CONSTRAINT IF EXISTS ck_mail_followers_res_id_required__required;
+ALTER TABLE IF EXISTS messaging.mail_followers DROP CONSTRAINT IF EXISTS ck_mail_followers_res_model_required__required;
+ALTER TABLE IF EXISTS messaging.mail_message_reactions DROP CONSTRAINT IF EXISTS ck_mail_message_reactions_content_required__required;
+ALTER TABLE IF EXISTS messaging.mail_message_reactions DROP CONSTRAINT IF EXISTS ck_mail_message_reactions_message_id_required__required;
+ALTER TABLE IF EXISTS messaging.mail_message_subtypes DROP CONSTRAINT IF EXISTS ck_mail_message_subtypes_name_required__required;
+ALTER TABLE IF EXISTS messaging.mail_notifications DROP CONSTRAINT IF EXISTS ck_mail_notifications_mail_message_id_required__required;
+ALTER TABLE IF EXISTS messaging.mails DROP CONSTRAINT IF EXISTS ck_mails_mail_message_id_required__required;
+ALTER TABLE IF EXISTS messaging.mail_message_stars DROP CONSTRAINT IF EXISTS ck_mail_message_stars_message_id_required__required;
+ALTER TABLE IF EXISTS messaging.mail_message_stars DROP CONSTRAINT IF EXISTS ck_mail_message_stars_partner_id_required__required;
+ALTER TABLE IF EXISTS messaging.mail_message_attachments DROP CONSTRAINT IF EXISTS ck_mail_message_attachments_attachment_id_required__required;
+ALTER TABLE IF EXISTS messaging.mail_message_attachments DROP CONSTRAINT IF EXISTS ck_mail_message_attachments_message_id_required__required;
+ALTER TABLE IF EXISTS messaging.mail_attachments DROP CONSTRAINT IF EXISTS ck_mail_attachments_name_required__required;
+DO $$
+BEGIN
+    IF to_regclass('messaging.uq_mail_attachments_access_token__unique') IS NOT NULL AND to_regclass('messaging.idx_mail_attachments_access_token') IS NULL THEN
+        ALTER INDEX messaging.uq_mail_attachments_access_token__unique RENAME TO idx_mail_attachments_access_token;
+    END IF;
+END $$;
+
+ALTER TABLE IF EXISTS messaging.mail_alias_domains DROP CONSTRAINT IF EXISTS ck_mail_alias_domains_name_required__required;
+ALTER TABLE IF EXISTS messaging.mail_activity_plan_templates DROP CONSTRAINT IF EXISTS ck_mail_activity_plan_templates_activity_typ_5183c313__required;
+ALTER TABLE IF EXISTS messaging.mail_activity_plan_templates DROP CONSTRAINT IF EXISTS ck_mail_activity_plan_templates_plan_id_required__required;
+ALTER TABLE IF EXISTS messaging.mail_activity_plans DROP CONSTRAINT IF EXISTS ck_mail_activity_plans_name_required__required;
+ALTER TABLE IF EXISTS messaging.mail_activity_types DROP CONSTRAINT IF EXISTS ck_mail_activity_types_name_required__required;
+ALTER TABLE IF EXISTS messaging.mail_activities DROP CONSTRAINT IF EXISTS ck_mail_activities_res_model__mail_activity_user_id_required;
+ALTER TABLE IF EXISTS messaging.mail_activities DROP CONSTRAINT IF EXISTS ck_mail_activities_res_model__mail_activity_res_id_required;
+ALTER TABLE IF EXISTS messaging.mail_activities DROP CONSTRAINT IF EXISTS ck_mail_activities_user_id_required__required;
+ALTER TABLE IF EXISTS messaging.mail_activities DROP CONSTRAINT IF EXISTS ck_mail_activities_res_id_required__required;
+ALTER TABLE IF EXISTS messaging.mail_activities DROP CONSTRAINT IF EXISTS ck_mail_activities_res_model_required__required;

@@ -116,28 +116,28 @@ pub struct PatchMailTrackingValueDto {
     #[cfg_attr(feature = "openapi", schema(example = "example"))]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub field: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "field_desc")]
-    pub field_desc: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "field_type")]
-    pub field_type: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "old_value_integer")]
-    pub old_value_integer: Option<i32>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "old_value_float")]
-    pub old_value_float: Option<f64>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "old_value_text")]
-    pub old_value_text: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "old_value_datetime")]
-    pub old_value_datetime: Option<DateTime<Utc>>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "new_value_integer")]
-    pub new_value_integer: Option<i32>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "new_value_float")]
-    pub new_value_float: Option<f64>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "new_value_text")]
-    pub new_value_text: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "new_value_datetime")]
-    pub new_value_datetime: Option<DateTime<Utc>>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "currency_id")]
-    pub currency_id: Option<Uuid>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "field_desc")]
+    pub field_desc: Option<Option<String>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "field_type")]
+    pub field_type: Option<Option<String>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "old_value_integer")]
+    pub old_value_integer: Option<Option<i32>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "old_value_float")]
+    pub old_value_float: Option<Option<f64>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "old_value_text")]
+    pub old_value_text: Option<Option<String>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "old_value_datetime")]
+    pub old_value_datetime: Option<Option<DateTime<Utc>>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "new_value_integer")]
+    pub new_value_integer: Option<Option<i32>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "new_value_float")]
+    pub new_value_float: Option<Option<f64>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "new_value_text")]
+    pub new_value_text: Option<Option<String>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "new_value_datetime")]
+    pub new_value_datetime: Option<Option<DateTime<Utc>>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "currency_id")]
+    pub currency_id: Option<Option<Uuid>>,
 }
 
 impl PatchMailTrackingValueDto {
@@ -346,12 +346,4 @@ impl backbone_core::ApplyUpdateDto<UpdateMailTrackingValueDto> for MailTrackingV
         Ok(self)
     }
 }
-
-// =============================================================================
-// Custom DTOs
-// =============================================================================
-
-// Add custom DTOs specific to MailTrackingValue here.
-// This section will be preserved during regeneration.
-// >>> END CUSTOM DTOs
 

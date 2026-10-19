@@ -214,6 +214,16 @@ impl backbone_core::PersistentEntity for MailPresence {
     fn write_protected_fields() -> &'static [&'static str] {
         &["status"]
     }
+    fn state_fields() -> &'static [&'static str] {
+        &["status"]
+    }
+    fn references() -> &'static [backbone_core::Reference] {
+        const REFERENCES: &[backbone_core::Reference] = &[
+            backbone_core::Reference::new("user_id", "users", "id"),
+            backbone_core::Reference::new("guest_id", "messaging.mail_guests", "id"),
+        ];
+        REFERENCES
+    }
     fn entity_id(&self) -> String {
         self.id.to_string()
     }

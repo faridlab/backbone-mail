@@ -94,6 +94,13 @@ pub mod discuss_channel_member_errors {
 // Route Configuration
 // =============================================================================
 
+/// The permissions this entity's generic routes require: `discuss_channel_member:<action>` for `read`, `create`,
+/// `update`, `delete`, `restore` and `purge`, with any rename the schema's `requires:` declares.
+pub fn discuss_channel_member_permissions() -> backbone_core::http::CrudPermissions {
+    backbone_core::http::CrudPermissions::new("discuss_channel_member")
+        .in_module("messaging")
+}
+
 /// Create Axum router with all 16 Backbone endpoints for DiscussChannelMember.
 ///
 /// # Routes
@@ -123,21 +130,23 @@ pub mod discuss_channel_member_errors {
 /// let router = create_discuss_channel_member_routes(service);
 /// ```
 pub fn create_discuss_channel_member_routes(service: Arc<DiscussChannelMemberService>) -> Router {
-    BackboneCrudHandler::<DiscussChannelMemberService, DiscussChannelMember, CreateDiscussChannelMemberDto, UpdateDiscussChannelMemberDto, DiscussChannelMemberResponseDto>::routes(
+    BackboneCrudHandler::<DiscussChannelMemberService, DiscussChannelMember, CreateDiscussChannelMemberDto, UpdateDiscussChannelMemberDto, DiscussChannelMemberResponseDto>::routes_guarded(
         service,
         "/discuss_channel_members",
+        discuss_channel_member_permissions(),
     )
 }
 
 /// Create Axum router with only the read (GET) endpoints for DiscussChannelMember.
 ///
-/// Safe for public, unauthenticated exposure (e.g., reference data).
+/// Each route requires the entity's `read` permission, so it needs an authenticated caller.
 /// Mutations must be served separately via `create_discuss_channel_member_write_routes`,
 /// typically wrapped in an auth middleware layer.
 pub fn create_discuss_channel_member_read_routes(service: Arc<DiscussChannelMemberService>) -> Router {
-    BackboneCrudHandler::<DiscussChannelMemberService, DiscussChannelMember, CreateDiscussChannelMemberDto, UpdateDiscussChannelMemberDto, DiscussChannelMemberResponseDto>::read_routes(
+    BackboneCrudHandler::<DiscussChannelMemberService, DiscussChannelMember, CreateDiscussChannelMemberDto, UpdateDiscussChannelMemberDto, DiscussChannelMemberResponseDto>::read_routes_guarded(
         service,
         "/discuss_channel_members",
+        discuss_channel_member_permissions(),
     )
 }
 
@@ -153,9 +162,10 @@ pub fn create_discuss_channel_member_read_routes(service: Arc<DiscussChannelMemb
 /// service (e.g. a command router over its domain engine), serve THAT instead
 /// for any mutation that must respect domain rules.
 pub fn create_discuss_channel_member_write_routes(service: Arc<DiscussChannelMemberService>) -> Router {
-    BackboneCrudHandler::<DiscussChannelMemberService, DiscussChannelMember, CreateDiscussChannelMemberDto, UpdateDiscussChannelMemberDto, DiscussChannelMemberResponseDto>::write_routes(
+    BackboneCrudHandler::<DiscussChannelMemberService, DiscussChannelMember, CreateDiscussChannelMemberDto, UpdateDiscussChannelMemberDto, DiscussChannelMemberResponseDto>::write_routes_guarded(
         service,
         "/discuss_channel_members",
+        discuss_channel_member_permissions(),
     )
 }
 

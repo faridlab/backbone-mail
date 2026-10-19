@@ -31,7 +31,12 @@ pub struct CreatePhoneBlacklistDto {
     #[cfg_attr(feature = "openapi", schema(example = "example"))]
     pub number: String,
     #[cfg_attr(feature = "openapi", schema(example = true))]
+    #[serde(default = "default_create_phone_blacklist_active")]
     pub active: bool,
+}
+
+fn default_create_phone_blacklist_active() -> bool {
+    true
 }
 
 // =============================================================================
@@ -221,12 +226,4 @@ impl backbone_core::ApplyUpdateDto<UpdatePhoneBlacklistDto> for PhoneBlacklist {
         Ok(self)
     }
 }
-
-// =============================================================================
-// Custom DTOs
-// =============================================================================
-
-// Add custom DTOs specific to PhoneBlacklist here.
-// This section will be preserved during regeneration.
-// >>> END CUSTOM DTOs
 

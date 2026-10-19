@@ -89,6 +89,13 @@ pub mod sms_tracker_errors {
 // Route Configuration
 // =============================================================================
 
+/// The permissions this entity's generic routes require: `sms_tracker:<action>` for `read`, `create`,
+/// `update`, `delete`, `restore` and `purge`, with any rename the schema's `requires:` declares.
+pub fn sms_tracker_permissions() -> backbone_core::http::CrudPermissions {
+    backbone_core::http::CrudPermissions::new("sms_tracker")
+        .in_module("messaging")
+}
+
 /// Create Axum router with all 16 Backbone endpoints for SmsTracker.
 ///
 /// # Routes
@@ -118,21 +125,23 @@ pub mod sms_tracker_errors {
 /// let router = create_sms_tracker_routes(service);
 /// ```
 pub fn create_sms_tracker_routes(service: Arc<SmsTrackerService>) -> Router {
-    BackboneCrudHandler::<SmsTrackerService, SmsTracker, CreateSmsTrackerDto, UpdateSmsTrackerDto, SmsTrackerResponseDto>::routes(
+    BackboneCrudHandler::<SmsTrackerService, SmsTracker, CreateSmsTrackerDto, UpdateSmsTrackerDto, SmsTrackerResponseDto>::routes_guarded(
         service,
         "/sms_trackers",
+        sms_tracker_permissions(),
     )
 }
 
 /// Create Axum router with only the read (GET) endpoints for SmsTracker.
 ///
-/// Safe for public, unauthenticated exposure (e.g., reference data).
+/// Each route requires the entity's `read` permission, so it needs an authenticated caller.
 /// Mutations must be served separately via `create_sms_tracker_write_routes`,
 /// typically wrapped in an auth middleware layer.
 pub fn create_sms_tracker_read_routes(service: Arc<SmsTrackerService>) -> Router {
-    BackboneCrudHandler::<SmsTrackerService, SmsTracker, CreateSmsTrackerDto, UpdateSmsTrackerDto, SmsTrackerResponseDto>::read_routes(
+    BackboneCrudHandler::<SmsTrackerService, SmsTracker, CreateSmsTrackerDto, UpdateSmsTrackerDto, SmsTrackerResponseDto>::read_routes_guarded(
         service,
         "/sms_trackers",
+        sms_tracker_permissions(),
     )
 }
 
@@ -148,9 +157,10 @@ pub fn create_sms_tracker_read_routes(service: Arc<SmsTrackerService>) -> Router
 /// service (e.g. a command router over its domain engine), serve THAT instead
 /// for any mutation that must respect domain rules.
 pub fn create_sms_tracker_write_routes(service: Arc<SmsTrackerService>) -> Router {
-    BackboneCrudHandler::<SmsTrackerService, SmsTracker, CreateSmsTrackerDto, UpdateSmsTrackerDto, SmsTrackerResponseDto>::write_routes(
+    BackboneCrudHandler::<SmsTrackerService, SmsTracker, CreateSmsTrackerDto, UpdateSmsTrackerDto, SmsTrackerResponseDto>::write_routes_guarded(
         service,
         "/sms_trackers",
+        sms_tracker_permissions(),
     )
 }
 

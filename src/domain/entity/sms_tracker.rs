@@ -221,6 +221,13 @@ impl backbone_core::PersistentEntity for SmsTracker {
     fn write_protected_fields() -> &'static [&'static str] {
         &["state"]
     }
+    fn references() -> &'static [backbone_core::Reference] {
+        const REFERENCES: &[backbone_core::Reference] = &[
+            backbone_core::Reference::new("message_id", "messaging.mail_messages", "id"),
+            backbone_core::Reference::new("notification_id", "messaging.mail_notifications", "id"),
+        ];
+        REFERENCES
+    }
     fn entity_id(&self) -> String {
         self.id.to_string()
     }

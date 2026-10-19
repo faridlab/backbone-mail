@@ -98,14 +98,14 @@ pub struct PatchSmsDto {
     pub body: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub state: Option<SmsState>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "failure_type")]
-    pub failure_type: Option<SmsFailureType>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "error_message")]
-    pub error_message: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "mail_message_id")]
-    pub mail_message_id: Option<Uuid>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "iap_status_code")]
-    pub iap_status_code: Option<i32>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "failure_type")]
+    pub failure_type: Option<Option<SmsFailureType>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "error_message")]
+    pub error_message: Option<Option<String>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "mail_message_id")]
+    pub mail_message_id: Option<Option<Uuid>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "iap_status_code")]
+    pub iap_status_code: Option<Option<i32>>,
 }
 
 impl PatchSmsDto {
@@ -290,12 +290,4 @@ impl backbone_core::ApplyUpdateDto<UpdateSmsDto> for Sms {
         Ok(self)
     }
 }
-
-// =============================================================================
-// Custom DTOs
-// =============================================================================
-
-// Add custom DTOs specific to Sms here.
-// This section will be preserved during regeneration.
-// >>> END CUSTOM DTOs
 

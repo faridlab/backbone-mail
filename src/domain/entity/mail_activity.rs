@@ -267,6 +267,14 @@ impl backbone_core::PersistentEntity for MailActivity {
     fn write_protected_fields() -> &'static [&'static str] {
         &["state"]
     }
+    fn references() -> &'static [backbone_core::Reference] {
+        const REFERENCES: &[backbone_core::Reference] = &[
+            backbone_core::Reference::new("activity_type_id", "messaging.mail_activity_types", "id"),
+            backbone_core::Reference::new("user_id", "users", "id"),
+            backbone_core::Reference::new("requested_user_id", "users", "id"),
+        ];
+        REFERENCES
+    }
     fn entity_id(&self) -> String {
         self.id.to_string()
     }

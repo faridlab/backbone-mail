@@ -39,7 +39,12 @@ pub struct CreateSmsTemplateDto {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub condition: Option<String>,
     #[cfg_attr(feature = "openapi", schema(example = true))]
+    #[serde(default = "default_create_sms_template_active")]
     pub active: bool,
+}
+
+fn default_create_sms_template_active() -> bool {
+    true
 }
 
 // =============================================================================
@@ -86,12 +91,12 @@ pub struct PatchSmsTemplateDto {
     #[cfg_attr(feature = "openapi", schema(example = "example"))]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub body: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "model_id")]
-    pub model_id: Option<Uuid>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub lang: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub condition: Option<String>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "model_id")]
+    pub model_id: Option<Option<Uuid>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option")]
+    pub lang: Option<Option<String>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option")]
+    pub condition: Option<Option<String>>,
     #[cfg_attr(feature = "openapi", schema(example = true))]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub active: Option<bool>,
@@ -269,12 +274,4 @@ impl backbone_core::ApplyUpdateDto<UpdateSmsTemplateDto> for SmsTemplate {
         Ok(self)
     }
 }
-
-// =============================================================================
-// Custom DTOs
-// =============================================================================
-
-// Add custom DTOs specific to SmsTemplate here.
-// This section will be preserved during regeneration.
-// >>> END CUSTOM DTOs
 

@@ -70,14 +70,14 @@ pub struct UpdateMailPresenceDto {
 #[cfg_attr(feature = "openapi", derive(ToSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct PatchMailPresenceDto {
-    #[serde(skip_serializing_if = "Option::is_none", alias = "user_id")]
-    pub user_id: Option<Uuid>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "guest_id")]
-    pub guest_id: Option<Uuid>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "user_id")]
+    pub user_id: Option<Option<Uuid>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "guest_id")]
+    pub guest_id: Option<Option<Uuid>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub status: Option<MailPresenceStatus>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "last_poll")]
-    pub last_poll: Option<DateTime<Utc>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "last_poll")]
+    pub last_poll: Option<Option<DateTime<Utc>>>,
 }
 
 impl PatchMailPresenceDto {
@@ -239,12 +239,4 @@ impl backbone_core::ApplyUpdateDto<UpdateMailPresenceDto> for MailPresence {
         Ok(self)
     }
 }
-
-// =============================================================================
-// Custom DTOs
-// =============================================================================
-
-// Add custom DTOs specific to MailPresence here.
-// This section will be preserved during regeneration.
-// >>> END CUSTOM DTOs
 

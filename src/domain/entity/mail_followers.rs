@@ -193,6 +193,13 @@ impl super::Entity for MailFollowers {
 }
 
 impl backbone_core::PersistentEntity for MailFollowers {
+    fn references() -> &'static [backbone_core::Reference] {
+        const REFERENCES: &[backbone_core::Reference] = &[
+            backbone_core::Reference::new("partner_id", "parties", "id"),
+            backbone_core::Reference::new("channel_id", "messaging.discuss_channels", "id"),
+        ];
+        REFERENCES
+    }
     fn entity_id(&self) -> String {
         self.id.to_string()
     }

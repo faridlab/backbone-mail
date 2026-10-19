@@ -32,10 +32,12 @@ pub struct CreateFetchmailServerDto {
     #[cfg_attr(feature = "openapi", schema(example = "example"))]
     pub name: String,
     #[cfg_attr(feature = "openapi", schema(example = true))]
+    #[serde(default = "default_create_fetchmail_server_active")]
     pub active: bool,
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "default_thread_model")]
     pub default_thread_model: Option<String>,
     #[cfg_attr(feature = "openapi", schema(example = 42))]
+    #[serde(default = "default_create_fetchmail_server_priority")]
     pub priority: i32,
     #[cfg_attr(feature = "openapi", schema(example = "example"))]
     #[serde(alias = "token_hash")]
@@ -46,6 +48,14 @@ pub struct CreateFetchmailServerDto {
     pub error_at: Option<DateTime<Utc>>,
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "error_message")]
     pub error_message: Option<String>,
+}
+
+fn default_create_fetchmail_server_active() -> bool {
+    true
+}
+
+fn default_create_fetchmail_server_priority() -> i32 {
+    5
 }
 
 // =============================================================================
@@ -100,20 +110,20 @@ pub struct PatchFetchmailServerDto {
     pub active: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub state: Option<FetchmailState>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "default_thread_model")]
-    pub default_thread_model: Option<String>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "default_thread_model")]
+    pub default_thread_model: Option<Option<String>>,
     #[cfg_attr(feature = "openapi", schema(example = 42))]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub priority: Option<i32>,
     #[cfg_attr(feature = "openapi", schema(example = "example"))]
     #[serde(skip_serializing_if = "Option::is_none", alias = "token_hash")]
     pub token_hash: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "last_fetch_at")]
-    pub last_fetch_at: Option<DateTime<Utc>>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "error_at")]
-    pub error_at: Option<DateTime<Utc>>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "error_message")]
-    pub error_message: Option<String>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "last_fetch_at")]
+    pub last_fetch_at: Option<Option<DateTime<Utc>>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "error_at")]
+    pub error_at: Option<Option<DateTime<Utc>>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "error_message")]
+    pub error_message: Option<Option<String>>,
 }
 
 impl PatchFetchmailServerDto {
@@ -304,12 +314,4 @@ impl backbone_core::ApplyUpdateDto<UpdateFetchmailServerDto> for FetchmailServer
         Ok(self)
     }
 }
-
-// =============================================================================
-// Custom DTOs
-// =============================================================================
-
-// Add custom DTOs specific to FetchmailServer here.
-// This section will be preserved during regeneration.
-// >>> END CUSTOM DTOs
 

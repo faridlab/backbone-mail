@@ -299,6 +299,17 @@ impl super::Entity for DiscussChannelMember {
 }
 
 impl backbone_core::PersistentEntity for DiscussChannelMember {
+    fn references() -> &'static [backbone_core::Reference] {
+        const REFERENCES: &[backbone_core::Reference] = &[
+            backbone_core::Reference::new("channel_id", "messaging.discuss_channels", "id"),
+            backbone_core::Reference::new("partner_id", "parties", "id"),
+            backbone_core::Reference::new("guest_id", "messaging.mail_guests", "id"),
+            backbone_core::Reference::new("fetched_message_id", "messaging.mail_messages", "id"),
+            backbone_core::Reference::new("new_message_separator", "messaging.mail_messages", "id"),
+            backbone_core::Reference::new("seen_message_id", "messaging.mail_messages", "id"),
+        ];
+        REFERENCES
+    }
     fn entity_id(&self) -> String {
         self.id.to_string()
     }

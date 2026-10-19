@@ -52,20 +52,20 @@ pub struct CreateDiscussChannelMemberDto {
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "last_seen_dt")]
     pub last_seen_dt: Option<DateTime<Utc>>,
     #[cfg_attr(feature = "openapi", schema(example = 42))]
-    #[serde(alias = "message_unread_counter")]
+    #[serde(default, alias = "message_unread_counter")]
     pub message_unread_counter: i32,
     #[cfg_attr(feature = "openapi", schema(example = 42))]
-    #[serde(alias = "unread_counter")]
+    #[serde(default, alias = "unread_counter")]
     pub unread_counter: i32,
     #[cfg_attr(feature = "openapi", schema(example = 42))]
-    #[serde(alias = "message_follower_counter")]
+    #[serde(default, alias = "message_follower_counter")]
     pub message_follower_counter: i32,
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "seen_message_id")]
     pub seen_message_id: Option<Uuid>,
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "last_interest_dt")]
     pub last_interest_dt: Option<DateTime<Utc>>,
     #[cfg_attr(feature = "openapi", schema(example = true))]
-    #[serde(alias = "is_pinned")]
+    #[serde(default, alias = "is_pinned")]
     pub is_pinned: bool,
 }
 
@@ -135,24 +135,24 @@ pub struct PatchDiscussChannelMemberDto {
     #[cfg_attr(feature = "openapi", schema(example = "550e8400-e29b-41d4-a716-446655440000"))]
     #[serde(skip_serializing_if = "Option::is_none", alias = "channel_id")]
     pub channel_id: Option<Uuid>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "partner_id")]
-    pub partner_id: Option<Uuid>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "guest_id")]
-    pub guest_id: Option<Uuid>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "fold_state")]
-    pub fold_state: Option<SidebarFoldState>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "fetched_message_id")]
-    pub fetched_message_id: Option<Uuid>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "new_message_separator")]
-    pub new_message_separator: Option<Uuid>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "custom_notifications")]
-    pub custom_notifications: Option<MemberCustomNotifications>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "mute_until_dt")]
-    pub mute_until_dt: Option<DateTime<Utc>>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "unpin_dt")]
-    pub unpin_dt: Option<DateTime<Utc>>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "last_seen_dt")]
-    pub last_seen_dt: Option<DateTime<Utc>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "partner_id")]
+    pub partner_id: Option<Option<Uuid>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "guest_id")]
+    pub guest_id: Option<Option<Uuid>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "fold_state")]
+    pub fold_state: Option<Option<SidebarFoldState>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "fetched_message_id")]
+    pub fetched_message_id: Option<Option<Uuid>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "new_message_separator")]
+    pub new_message_separator: Option<Option<Uuid>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "custom_notifications")]
+    pub custom_notifications: Option<Option<MemberCustomNotifications>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "mute_until_dt")]
+    pub mute_until_dt: Option<Option<DateTime<Utc>>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "unpin_dt")]
+    pub unpin_dt: Option<Option<DateTime<Utc>>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "last_seen_dt")]
+    pub last_seen_dt: Option<Option<DateTime<Utc>>>,
     #[cfg_attr(feature = "openapi", schema(example = 42))]
     #[serde(skip_serializing_if = "Option::is_none", alias = "message_unread_counter")]
     pub message_unread_counter: Option<i32>,
@@ -162,10 +162,10 @@ pub struct PatchDiscussChannelMemberDto {
     #[cfg_attr(feature = "openapi", schema(example = 42))]
     #[serde(skip_serializing_if = "Option::is_none", alias = "message_follower_counter")]
     pub message_follower_counter: Option<i32>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "seen_message_id")]
-    pub seen_message_id: Option<Uuid>,
-    #[serde(skip_serializing_if = "Option::is_none", alias = "last_interest_dt")]
-    pub last_interest_dt: Option<DateTime<Utc>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "seen_message_id")]
+    pub seen_message_id: Option<Option<Uuid>>,
+    #[serde(default, deserialize_with = "crate::presentation::dto::double_option", alias = "last_interest_dt")]
+    pub last_interest_dt: Option<Option<DateTime<Utc>>>,
     #[cfg_attr(feature = "openapi", schema(example = true))]
     #[serde(skip_serializing_if = "Option::is_none", alias = "is_pinned")]
     pub is_pinned: Option<bool>,
@@ -395,12 +395,4 @@ impl backbone_core::ApplyUpdateDto<UpdateDiscussChannelMemberDto> for DiscussCha
         Ok(self)
     }
 }
-
-// =============================================================================
-// Custom DTOs
-// =============================================================================
-
-// Add custom DTOs specific to DiscussChannelMember here.
-// This section will be preserved during regeneration.
-// >>> END CUSTOM DTOs
 
