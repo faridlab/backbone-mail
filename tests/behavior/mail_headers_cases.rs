@@ -38,10 +38,10 @@ async fn seed_message(pool: &PgPool) -> Uuid {
     id
 }
 
-/// The module migrations do not create `messaging.outbox_events` (the outbox
-/// crate owns that table — same bootstrap the shared harness runs), and the
-/// queue verbs stage bus events in-tx: provision it on the scratch database
-/// before touching the queue.
+/// The module migrations create `messaging.outbox_events`; run the outbox
+/// crate's own idempotent boot step over it on the scratch database too, the
+/// same bootstrap the shared harness runs, before touching the queue (the queue
+/// verbs stage bus events in-tx).
 async fn migrate_outbox(pool: &PgPool) {
     backbone_outbox::outbox::migrate(pool, "messaging")
         .await

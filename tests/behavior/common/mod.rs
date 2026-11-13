@@ -1,8 +1,9 @@
 //! Shared harness: pool bootstrap + graceful SKIPPED-DB plumbing.
 //!
-//! The schema migrations do NOT create `messaging.outbox_events` (the outbox
-//! crate owns that table), so the harness runs the idempotent
-//! `backbone_outbox::outbox::migrate` before handing the pool to a test.
+//! The schema migrations create `messaging.outbox_events`; the harness still runs
+//! the idempotent `backbone_outbox::outbox::migrate` before handing the pool to a
+//! test, so the tests also exercise the framework's own boot step over the
+//! migrated table.
 
 use sqlx::postgres::PgPoolOptions;
 use sqlx::PgPool;

@@ -138,6 +138,14 @@ user_owned:
   # the same reason as the phone side above.
   - "src/infrastructure/persistence/mail_blacklist_verb_repository.rs"
 
+  # --- hand-authored migration: the transactional outbox ---------------------------
+  # The outbox and inbox tables the write verbs stage into and the realtime tailer
+  # reads. The tables are framework-owned, not model entities, so nothing derives them
+  # from the schema; the guard test reads the migration file directly.
+  - "migrations/20261113000000_create_messaging_outbox.up.sql"
+  - "migrations/20261113000000_create_messaging_outbox.down.sql"
+  - "tests/outbox_mirror_shape.rs"
+
   # Behavior tests (the golden cases / oracle) + BDD features.
   - "tests/behavior_tests.rs"
   - "tests/behavior/**"
